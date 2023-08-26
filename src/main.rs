@@ -13,7 +13,7 @@ use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv()?;
+    dotenvy::dotenv().ok();
 
     let config = envy::prefixed("LR_").from_env::<Config>()?;
     let authetication = Authentication::SessionToken(config.token);
