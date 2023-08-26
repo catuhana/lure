@@ -16,7 +16,7 @@ Grab a (linux only) binary from releases or compile it yourself (just `cargo bui
 | `LR_API_KEY`  | +        |                       | Last.fm API key. Create one [here](https://www.last.fm/api/account/create)     |
 | `LR_USER`     | +        |                       | Your Last.fm username                                                          |
 | `LR_DELAY`    | -        | 5                     | Delay between polling in seconds. Minimum of 5 is recommended                  |
-| `LR_TEMPLATE` | -        |` 🎵 %ARTIST% – %NAME%` | Status template when listening to music                                        |
+| `LR_TEMPLATE` | -        |`🎵 %ARTIST% – %NAME%`  | Status template when listening to music                                        |
 | `LR_IDLE`     | -        |                       | Status when not listening to music                                             |
 
 Also note that you can define variables in `.env` file.
