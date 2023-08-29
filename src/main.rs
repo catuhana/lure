@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     let config = envy::prefixed("LR_").from_env::<Config>()?;
-    let authetication = Authentication::SessionToken(std::env::var("LR_TOKEN").unwrap());
+    let authetication = Authentication::SessionToken(config.token);
     let client = rive_http::Client::new(authetication);
 
     let lastfm = LastFM {
