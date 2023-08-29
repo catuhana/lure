@@ -16,8 +16,6 @@ use platforms::{lastfm::LastFM, Platform};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv().ok();
-
     let cli = cli::Args::parse();
 
     match cli.command {
