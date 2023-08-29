@@ -1,3 +1,5 @@
+#![cfg(feature = "lastfm")]
+
 use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
 
 use super::{Platform, Track};

@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 async-trait = "0.1"
+clap = { version = "4", features = ["derive", "env"] }
 dotenvy = "0.15"
 envy = "0.4"
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
@@ -14,3 +15,7 @@ rive-models = "1.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
+
+[features]
+default = ["lastfm"]
+lastfm = []
