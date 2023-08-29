@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 fn default_template() -> String {
-    "🎵 %ARTIST% – %NAME%".to_string()
+    String::from("🎵 %ARTIST% – %NAME%")
 }
 
 fn default_delay() -> u64 {
