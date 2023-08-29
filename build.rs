@@ -1,17 +1,9 @@
 use std::env;
 
 fn main() {
-    let enabled_features: Vec<String> = env::vars()
-        .filter_map(|(key, _value)| {
-            if key.starts_with("CARGO_FEATURE_") {
-                Some(key[14..].to_string())
-            } else {
-                None
-            }
-        })
-        .collect();
+    let has_enabled_feature = env::vars().any(|(key, _value)| key.starts_with("CARGO_FEATURE_"));
 
-    if enabled_features.is_empty() {
+    if !has_enabled_feature {
         eprintln!("Error: Please enable at least one feature.");
         std::process::exit(1);
     }

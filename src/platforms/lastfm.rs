@@ -18,7 +18,7 @@ pub struct LastFM {
 
 #[async_trait::async_trait]
 impl Platform for LastFM {
-    type Platform = LastFM;
+    type Platform = Self;
 
     async fn initialise(mut self) -> anyhow::Result<Self::Platform> {
         self.client = ClientBuilder::new()

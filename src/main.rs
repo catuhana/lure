@@ -47,7 +47,7 @@ async fn main() -> anyhow::Result<()> {
                                     .replace("%ARTIST%", &track.artist)
                                     .replace("%NAME%", &track.name)
                             })
-                            .or(cli.status_idle.to_owned());
+                            .or_else(|| cli.status_idle.to_owned());
 
                         let data = status.map_or(
                             EditUserData {
