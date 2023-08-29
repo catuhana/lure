@@ -1,35 +1,39 @@
-mod api;
-mod config;
-
 use std::time::Duration;
 
-use config::Config;
 use rive_models::{
     authentication::Authentication,
     data::EditUserData,
     user::{FieldsUser, UserStatus},
 };
-use tokio::time::sleep;
+
+mod config;
+mod platforms;
+
+use config::Config;
+use platforms::{lastfm::LastFM, Platform};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     let config = envy::prefixed("LR_").from_env::<Config>()?;
-    let authetication = Authentication::SessionToken(config.token);
+    let authetication = Authentication::SessionToken(std::env::var("LR_TOKEN").unwrap());
     let client = rive_http::Client::new(authetication);
 
+    let lastfm = LastFM {
+        user: config.user,
+        api_key: config.api_key,
+        ..Default::default()
+    }
+    .initialise()
+    .await?;
+
     loop {
-        // yeah imma genius
-        if false {
-            break;
-        }
+        let track = lastfm.get_current_track().await;
 
-        let res = api::get_current_track(&config.api_key, &config.user).await;
-
-        match res {
-            Ok(res) => {
-                let text = res
+        match track {
+            Ok(track) => {
+                let status = track
                     .map(|track| {
                         config
                             .template
@@ -38,7 +42,7 @@ async fn main() -> anyhow::Result<()> {
                     })
                     .or(config.idle.to_owned());
 
-                let data = text.map_or(
+                let data = status.map_or(
                     EditUserData {
                         remove: Some(vec![FieldsUser::StatusText]),
                         ..Default::default()
@@ -62,8 +66,6 @@ async fn main() -> anyhow::Result<()> {
             }
         }
 
-        sleep(Duration::from_secs(config.delay)).await;
+        tokio::time::sleep(Duration::from_secs(config.delay)).await;
     }
-
-    Ok(())
 }
