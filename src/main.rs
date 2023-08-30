@@ -1,22 +1,21 @@
-use std::time::Duration;
-
 use clap::Parser;
 use cli::SubCommands;
-use rive_models::{
-    authentication::Authentication,
-    data::EditUserData,
-    user::{FieldsUser, UserStatus},
-};
+use rive_models::authentication::Authentication;
 
 mod cli;
 mod platforms;
 
 #[cfg(feature = "lastfm")]
-use platforms::{lastfm::LastFM, Platform};
+use crate::platforms::{lastfm::LastFM, Platform, Status};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = cli::Args::parse();
+
+    let status = Status {
+        template: cli.status_template,
+        idle: cli.status_idle,
+    };
 
     match cli.command {
         SubCommands::LastFM {
@@ -24,55 +23,20 @@ async fn main() -> anyhow::Result<()> {
             api_key,
             check_delay,
         } => {
-            let last_fm = LastFM {
+            let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
+
+            LastFM {
                 user,
                 api_key,
+                check_delay,
                 ..Default::default()
             }
             .initialise()
-            .await?;
-
-            let revolt_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
-
-            loop {
-                let track = last_fm.get_current_track().await;
-
-                match track {
-                    Ok(track) => {
-                        let status = track
-                            .map(|track| {
-                                cli.status_template
-                                    .replace("%ARTIST%", &track.artist)
-                                    .replace("%NAME%", &track.name)
-                            })
-                            .or_else(|| cli.status_idle.to_owned());
-
-                        let data = status.map_or(
-                            EditUserData {
-                                remove: Some(vec![FieldsUser::StatusText]),
-                                ..Default::default()
-                            },
-                            |text| EditUserData {
-                                status: Some(UserStatus {
-                                    text: Some(text),
-                                    ..Default::default()
-                                }),
-                                ..Default::default()
-                            },
-                        );
-
-                        match revolt_client.edit_user(data).await {
-                            Ok(_) => (),
-                            Err(err) => println!("Revolt API error: {err}"),
-                        };
-                    }
-                    Err(err) => {
-                        println!("Last.fm API error: {err}");
-                    }
-                }
-
-                tokio::time::sleep(Duration::from_secs(check_delay)).await;
-            }
+            .await?
+            .event_loop(rive_client, status)
+            .await;
         }
     }
+
+    Ok(())
 }

@@ -1,8 +1,16 @@
 #![cfg(feature = "lastfm")]
 
-use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
+use std::time::Duration;
 
-use super::{Platform, Track};
+use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
+use rive_http::Client as RiveClient;
+use rive_models::{
+    data::EditUserData,
+    user::{FieldsUser, UserStatus},
+};
+use tokio::time;
+
+use super::{Platform, Status, Track};
 
 #[derive(Default)]
 pub struct LastFM {
@@ -11,6 +19,7 @@ pub struct LastFM {
     pub api_url: Option<&'static str>,
     pub user: String,
     pub api_key: String,
+    pub check_delay: u64,
 }
 
 pub trait LastFMPlatform: Platform {
@@ -20,6 +29,52 @@ pub trait LastFMPlatform: Platform {
 
 impl LastFMPlatform for LastFM {
     const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
+}
+
+impl LastFM {
+    pub async fn event_loop(self, rive_client: RiveClient, status: Status) {
+        let mut interval = time::interval(Duration::from_secs(self.check_delay));
+
+        loop {
+            interval.tick().await;
+
+            let track = self.get_current_track().await;
+            match track {
+                Ok(track) => {
+                    let status = track
+                        .map(|track| {
+                            status
+                                .template
+                                .replace("%ARTIST%", &track.artist)
+                                .replace("%NAME%", &track.name)
+                        })
+                        .or_else(|| status.idle.to_owned());
+
+                    let data = status.map_or(
+                        EditUserData {
+                            remove: Some(vec![FieldsUser::StatusText]),
+                            ..Default::default()
+                        },
+                        |text| EditUserData {
+                            status: Some(UserStatus {
+                                text: Some(text),
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        },
+                    );
+
+                    match rive_client.edit_user(data).await {
+                        Ok(_) => (),
+                        Err(err) => println!("Revolt API error: {err}"),
+                    };
+                }
+                Err(err) => {
+                    println!("Last.fm API error: {err}");
+                }
+            }
+        }
+    }
 }
 
 #[async_trait::async_trait]

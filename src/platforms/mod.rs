@@ -6,6 +6,12 @@ pub struct Track {
     pub name: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct Status {
+    pub template: String,
+    pub idle: Option<String>,
+}
+
 #[async_trait::async_trait]
 pub trait Platform {
     type Platform;
