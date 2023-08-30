@@ -30,7 +30,7 @@ pub enum SubCommands {
         #[arg(long, env = "LR_LASTFM_API_KEY", required = true)]
         api_key: String,
         /// Check interval
-        #[arg(long, env = "LR_LASTFM_CHECK_DELAY", default_value_t = 6)]
+        #[arg(long, env = "LR_LASTFM_CHECK_DELAY", default_value_t = 12)]
         check_interval: u64,
     },
 }
