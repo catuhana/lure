@@ -19,7 +19,6 @@ pub struct LastFM {
     pub api_url: Option<&'static str>,
     pub user: String,
     pub api_key: String,
-    pub check_delay: u64,
 }
 
 pub trait LastFMPlatform: Platform {
@@ -32,8 +31,8 @@ impl LastFMPlatform for LastFM {
 }
 
 impl LastFM {
-    pub async fn event_loop(self, rive_client: RiveClient, status: Status) {
-        let mut interval = time::interval(Duration::from_secs(self.check_delay));
+    pub async fn event_loop(self, rive_client: RiveClient, status: Status, check_interval: u64) {
+        let mut interval = time::interval(Duration::from_secs(check_interval));
 
         loop {
             interval.tick().await;

@@ -21,19 +21,18 @@ async fn main() -> anyhow::Result<()> {
         SubCommands::LastFM {
             user,
             api_key,
-            check_delay,
+            check_interval,
         } => {
             let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
 
             LastFM {
                 user,
                 api_key,
-                check_delay,
                 ..Default::default()
             }
             .initialise()
             .await?
-            .event_loop(rive_client, status)
+            .event_loop(rive_client, status, check_interval)
             .await;
         }
     }
