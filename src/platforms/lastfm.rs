@@ -4,11 +4,9 @@ use std::time::Duration;
 
 use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
 use rive_http::Client as RiveClient;
-use rive_models::{
-    data::EditUserData,
-    user::{FieldsUser, UserStatus},
-};
 use tokio::time;
+
+use crate::rive::ClientExt;
 
 use super::{Platform, Status, Track};
 
@@ -49,24 +47,7 @@ impl LastFM {
                         })
                         .or_else(|| status.idle.to_owned());
 
-                    let data = status.map_or(
-                        EditUserData {
-                            remove: Some(vec![FieldsUser::StatusText]),
-                            ..Default::default()
-                        },
-                        |text| EditUserData {
-                            status: Some(UserStatus {
-                                text: Some(text),
-                                ..Default::default()
-                            }),
-                            ..Default::default()
-                        },
-                    );
-
-                    match rive_client.edit_user(data).await {
-                        Ok(_) => (),
-                        Err(err) => println!("Revolt API error: {err}"),
-                    };
+                    rive_client.set_status(status).await;
                 }
                 Err(err) => {
                     println!("Last.fm API error: {err}");

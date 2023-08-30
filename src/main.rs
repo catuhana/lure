@@ -4,6 +4,7 @@ use rive_models::authentication::Authentication;
 
 mod cli;
 mod platforms;
+mod rive;
 
 #[cfg(feature = "lastfm")]
 use crate::platforms::{lastfm::LastFM, Platform, Status};
