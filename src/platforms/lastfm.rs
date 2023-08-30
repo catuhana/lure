@@ -40,11 +40,6 @@ impl LastFM {
         let mut interval = time::interval(Duration::from_secs(check_interval));
 
         loop {
-            tokio::select! {
-                _ = interval.tick() => {},
-                _ = receiver.changed() => break
-            }
-
             let track = self.get_current_track().await;
             match track {
                 Ok(track) => {
@@ -62,6 +57,11 @@ impl LastFM {
                 Err(err) => {
                     println!("Last.fm API error: {err}");
                 }
+            }
+
+            tokio::select! {
+                _ = interval.tick() => {},
+                _ = receiver.changed() => break
             }
         }
 

@@ -28,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
         {
             use signal::unix::{signal, SignalKind};
 
-            let mut sigterm = signal(SignalKind::sigterm())?;
+            let mut sigterm = signal(SignalKind::terminate()).expect("SIGTERM handler could not be created");
 
             tokio::select! {
                 _ = ctrl_c => {},
