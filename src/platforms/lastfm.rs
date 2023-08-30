@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
 use rive_http::Client as RiveClient;
+use tokio::sync::watch;
 use tokio::time;
 
 use crate::rive::ClientExt;
@@ -29,11 +30,20 @@ impl LastFMPlatform for LastFM {
 }
 
 impl LastFM {
-    pub async fn event_loop(self, rive_client: RiveClient, status: Status, check_interval: u64) {
+    pub async fn event_loop(
+        self,
+        rive_client: RiveClient,
+        status: Status,
+        mut receiver: watch::Receiver<bool>,
+        check_interval: u64,
+    ) {
         let mut interval = time::interval(Duration::from_secs(check_interval));
 
         loop {
-            interval.tick().await;
+            tokio::select! {
+                _ = interval.tick() => {},
+                _ = receiver.changed() => break
+            }
 
             let track = self.get_current_track().await;
             match track {
@@ -54,6 +64,8 @@ impl LastFM {
                 }
             }
         }
+
+        rive_client.set_status(None).await;
     }
 }
 

@@ -1,6 +1,8 @@
 use clap::Parser;
 use cli::SubCommands;
 use rive_models::authentication::Authentication;
+use tokio::signal;
+use tokio::sync::watch;
 
 mod cli;
 mod platforms;
@@ -18,6 +20,28 @@ async fn main() -> anyhow::Result<()> {
         idle: cli.status_idle,
     };
 
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    tokio::spawn(async move {
+        let ctrl_c = signal::ctrl_c();
+
+        #[cfg(unix)]
+        {
+            use signal::unix::{signal, SignalKind};
+
+            let mut sigterm = signal(SignalKind::sigterm())?;
+
+            tokio::select! {
+                _ = ctrl_c => {},
+                _ = sigterm.recv() => {}
+            }
+        }
+
+        #[cfg(windows)]
+        ctrl_c.await.expect("CTRL-C handler could not be created");
+
+        shutdown_tx.send(true)
+    });
+
     match cli.command {
         SubCommands::LastFM {
             user,
@@ -33,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
             }
             .initialise()
             .await?
-            .event_loop(rive_client, status, check_interval)
+            .event_loop(rive_client, status, shutdown_rx, check_interval)
             .await;
         }
     }
