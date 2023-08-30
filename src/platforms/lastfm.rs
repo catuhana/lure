@@ -4,9 +4,6 @@ use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
 
 use super::{Platform, Track};
 
-static USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
-static API_URL: &str = "http://ws.audioscrobbler.com/2.0";
-
 #[derive(Default)]
 pub struct LastFM {
     pub client: ReqwestClient,
@@ -16,20 +13,29 @@ pub struct LastFM {
     pub api_key: String,
 }
 
+pub trait LastFMPlatform: Platform {
+    const USER_AGENT: &'static str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
+    const API_URL: &'static str;
+}
+
+impl LastFMPlatform for LastFM {
+    const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
+}
+
 #[async_trait::async_trait]
 impl Platform for LastFM {
     type Platform = Self;
 
     async fn initialise(mut self) -> anyhow::Result<Self::Platform> {
         self.client = ClientBuilder::new()
-            .user_agent(self.user_agent.unwrap_or(USER_AGENT))
+            .user_agent(self.user_agent.unwrap_or(Self::USER_AGENT))
             .build()?;
         Ok(self)
     }
 
     async fn get_current_track(&self) -> anyhow::Result<Option<Track>> {
         let url = Url::parse_with_params(
-            self.api_url.unwrap_or(API_URL),
+            self.api_url.unwrap_or(Self::API_URL),
             &[
                 ("method", "user.getrecenttracks"),
                 ("user", &self.user),
