@@ -13,7 +13,6 @@ impl ExitHandler {
         tokio::spawn(async move {
             let ctrl_c = signal::ctrl_c();
 
-            ctrl_c.await.expect("CTRL-C handler could not be created");
             #[cfg(unix)]
             {
                 use signal::unix::{signal, SignalKind};
@@ -26,6 +25,9 @@ impl ExitHandler {
                     _ = sigterm.recv() => {}
                 }
             }
+
+            #[cfg(windows)]
+            ctrl_c.await.expect("CTRL-C handler could not be created");
 
             self.0
                 .send(ChannelPayload::Exit)
