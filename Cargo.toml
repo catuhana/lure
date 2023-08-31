@@ -4,15 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1"
-async-trait = "0.1"
-clap = { version = "4", features = ["derive", "env"] }
-reqwest = { version = "0.11", features = ["json"] }
+anyhow = "1.0.75"
+async-trait = "0.1.73"
+clap = { version = "4.4.1", features = ["derive", "env"] }
+reqwest = { version = "0.11.20", features = ["json"] }
 rive-http = { git = "https://codeberg.org/rive/rive", rev = "fe1fe36258b41b92ad6b4460bafaefbedca0c8df" }
 rive-models = { git = "https://codeberg.org/rive/rive", rev = "fe1fe36258b41b92ad6b4460bafaefbedca0c8df" }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tokio = { version = "1", features = [
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.105"
+tokio = { version = "1.32.0", features = [
   "macros",
   "rt-multi-thread",
   "time",
