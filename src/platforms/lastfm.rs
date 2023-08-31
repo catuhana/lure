@@ -35,7 +35,7 @@ impl LastFMPlatform for LastFM {
             let track = self.get_current_track().await;
             match track {
                 Ok(track) => {
-                    if let Err(_) = event_tx.send(ChannelPayload::Data(track)) {
+                    if event_tx.send(ChannelPayload::Data(track)).is_err() {
                         eprintln!("receiver dropped");
                         break;
                     }

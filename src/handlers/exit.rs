@@ -5,7 +5,7 @@ use crate::ChannelPayload;
 pub struct ExitHandler(UnboundedSender<ChannelPayload>);
 
 impl ExitHandler {
-    pub fn new(rx: UnboundedSender<ChannelPayload>) -> Self {
+    pub const fn new(rx: UnboundedSender<ChannelPayload>) -> Self {
         Self(rx)
     }
 
@@ -31,11 +31,5 @@ impl ExitHandler {
                 .send(ChannelPayload::Exit)
                 .map_err(|err| eprintln!("{err}"))
         });
-    }
-}
-
-impl From<UnboundedSender<ChannelPayload>> for ExitHandler {
-    fn from(tx: UnboundedSender<ChannelPayload>) -> Self {
-        Self(tx.clone())
     }
 }
