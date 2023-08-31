@@ -9,9 +9,11 @@ mod platforms;
 mod rive;
 
 use crate::handlers::ExitHandler;
-use crate::platforms::Track;
 #[cfg(feature = "lastfm")]
-use crate::platforms::{lastfm::LastFM, Platform};
+use crate::platforms::{
+    lastfm::{LastFM, LastFMPlatform},
+    Platform, Track,
+};
 use crate::rive::ClientExt;
 
 #[derive(Clone, Debug)]

@@ -16,7 +16,6 @@ pub struct Status {
 pub trait Platform {
     type Platform;
 
-    fn new() -> Self;
     async fn initialise(self) -> anyhow::Result<Self::Platform>;
     async fn get_current_track(&self) -> anyhow::Result<Option<Track>>;
 }

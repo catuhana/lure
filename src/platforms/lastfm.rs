@@ -3,12 +3,10 @@
 use std::time::Duration;
 
 use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
-use tokio::sync::mpsc::UnboundedSender;
-use tokio::time;
-
-use crate::ChannelPayload;
+use tokio::{sync::mpsc::UnboundedSender, time};
 
 use super::{Platform, Track};
+use crate::ChannelPayload;
 
 #[derive(Default)]
 pub struct LastFM {
@@ -19,17 +17,19 @@ pub struct LastFM {
     pub api_key: String,
 }
 
+#[async_trait::async_trait]
 pub trait LastFMPlatform: Platform {
     const USER_AGENT: &'static str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     const API_URL: &'static str;
+
+    async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64);
 }
 
+#[async_trait::async_trait]
 impl LastFMPlatform for LastFM {
     const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
-}
 
-impl LastFM {
-    pub async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
+    async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
         let mut interval = time::interval(Duration::from_secs(check_interval));
         loop {
             let track = self.get_current_track().await;
@@ -42,6 +42,7 @@ impl LastFM {
                 }
                 Err(err) => println!("Last.fm API error: {err}"),
             }
+
             interval.tick().await;
         }
     }
