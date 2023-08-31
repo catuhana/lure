@@ -3,13 +3,12 @@
 use std::time::Duration;
 
 use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
-use rive_http::Client as RiveClient;
-use tokio::sync::watch;
+use tokio::sync::mpsc::UnboundedSender;
 use tokio::time;
 
-use crate::rive::ClientExt;
+use crate::ChannelPayload;
 
-use super::{Platform, Status, Track};
+use super::{Platform, Track};
 
 #[derive(Default)]
 pub struct LastFM {
@@ -30,42 +29,21 @@ impl LastFMPlatform for LastFM {
 }
 
 impl LastFM {
-    pub async fn event_loop(
-        self,
-        rive_client: RiveClient,
-        status: Status,
-        mut receiver: watch::Receiver<bool>,
-        check_interval: u64,
-    ) {
+    pub async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
         let mut interval = time::interval(Duration::from_secs(check_interval));
-
         loop {
             let track = self.get_current_track().await;
             match track {
                 Ok(track) => {
-                    let status = track
-                        .map(|track| {
-                            status
-                                .template
-                                .replace("%ARTIST%", &track.artist)
-                                .replace("%NAME%", &track.name)
-                        })
-                        .or_else(|| status.idle.to_owned());
-
-                    rive_client.set_status(status).await;
+                    if let Err(_) = event_tx.send(ChannelPayload::Data(track)) {
+                        eprintln!("receiver dropped");
+                        break;
+                    }
                 }
-                Err(err) => {
-                    println!("Last.fm API error: {err}");
-                }
+                Err(err) => println!("Last.fm API error: {err}"),
             }
-
-            tokio::select! {
-                _ = interval.tick() => {},
-                _ = receiver.changed() => break
-            }
+            interval.tick().await;
         }
-
-        rive_client.set_status(None).await;
     }
 }
 
