@@ -7,15 +7,15 @@ pub struct Args {
     pub command: SubCommands,
 
     /// Revolt session token
-    #[arg(long, env = "LR_TOKEN", required = true)]
+    #[arg(long, env = "LURE_TOKEN", required = true)]
     pub token: String,
 
     /// Status template to show when listening
-    #[arg(long, env = "LR_STATUS_TEMPLATE", default_value_t = String::from("🎵 %ARTIST% – %NAME%"))]
+    #[arg(long, env = "LURE_STATUS_TEMPLATE", default_value_t = String::from("🎵 %ARTIST% – %NAME%"))]
     pub status_template: String,
 
     /// Status to show when not listening
-    #[arg(long, env = "LR_STATUS_IDLE")]
+    #[arg(long, env = "LURE_STATUS_IDLE")]
     pub status_idle: Option<String>,
 }
 
@@ -24,13 +24,13 @@ pub enum SubCommands {
     #[cfg(feature = "lastfm")]
     LastFM {
         /// Last.fm username
-        #[arg(long, env = "LR_LASTFM_USER", required = true)]
+        #[arg(long, env = "LURE_LASTFM_USER", required = true)]
         user: String,
         /// Last.fm API key
-        #[arg(long, env = "LR_LASTFM_API_KEY", required = true)]
+        #[arg(long, env = "LURE_LASTFM_API_KEY", required = true)]
         api_key: String,
         /// Check interval
-        #[arg(long, env = "LR_LASTFM_CHECK_DELAY", default_value_t = 12)]
+        #[arg(long, env = "LURE_LASTFM_CHECK_DELAY", default_value_t = 12)]
         check_interval: u64,
     },
 }
