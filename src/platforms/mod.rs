@@ -1,6 +1,6 @@
 pub mod lastfm;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Track {
     pub artist: String,
     pub name: String,

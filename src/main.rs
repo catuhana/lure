@@ -63,10 +63,16 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
+    let mut previous_track: Option<Track> = None;
     while let Some(payload) = rx.recv().await {
         match payload {
             ChannelPayload::Data(track) => {
+                if previous_track == track {
+                    continue;
+                };
+
                 let status = track
+                    .as_ref()
                     .map(|track| {
                         cli.status_template
                             .replace("%ARTIST%", &track.artist)
@@ -75,6 +81,7 @@ async fn main() -> anyhow::Result<()> {
                     .or_else(|| cli.status_idle.to_owned());
 
                 rive_client.set_status(status).await;
+                previous_track = track;
             }
             ChannelPayload::Exit => {
                 tracing::info!("stopping lure");
