@@ -32,6 +32,8 @@ impl LastFMPlatform for LastFM {
     async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
         let mut interval = time::interval(Duration::from_secs(check_interval));
         loop {
+            interval.tick().await;
+
             let track = self.get_current_track().await;
             match track {
                 Ok(track) => {
@@ -42,8 +44,6 @@ impl LastFMPlatform for LastFM {
                 }
                 Err(err) => tracing::error!("Last.fm API error: {err}"),
             }
-
-            interval.tick().await;
         }
     }
 }
