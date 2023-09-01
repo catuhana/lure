@@ -22,14 +22,14 @@ pub trait LastFMPlatform: Platform {
     const USER_AGENT: &'static str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     const API_URL: &'static str;
 
-    async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64);
+    async fn event_loop(self, tx: UnboundedSender<ChannelPayload>, check_interval: u64);
 }
 
 #[async_trait::async_trait]
 impl LastFMPlatform for LastFM {
     const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
 
-    async fn event_loop(self, event_tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
+    async fn event_loop(self, tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
         let mut interval = time::interval(Duration::from_secs(check_interval));
         loop {
             interval.tick().await;
@@ -37,7 +37,7 @@ impl LastFMPlatform for LastFM {
             let track = self.get_current_track().await;
             match track {
                 Ok(track) => {
-                    if event_tx.send(ChannelPayload::Data(track)).is_err() {
+                    if tx.send(ChannelPayload::Data(track)).is_err() {
                         tracing::error!("receiver dropped");
                         break;
                     }

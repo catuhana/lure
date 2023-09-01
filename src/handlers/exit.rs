@@ -5,8 +5,8 @@ use crate::ChannelPayload;
 pub struct ExitHandler(UnboundedSender<ChannelPayload>);
 
 impl ExitHandler {
-    pub const fn new(rx: UnboundedSender<ChannelPayload>) -> Self {
-        Self(rx)
+    pub const fn new(tx: UnboundedSender<ChannelPayload>) -> Self {
+        Self(tx)
     }
 
     pub async fn handle(self) {
