@@ -78,7 +78,7 @@ async fn main() -> anyhow::Result<()> {
                             .replace("%ARTIST%", &track.artist)
                             .replace("%NAME%", &track.name)
                     })
-                    .or_else(|| cli.status_idle.to_owned());
+                    .or_else(|| cli.status_idle.clone());
 
                 rive_client.set_status(status).await;
                 previous_track = track;
