@@ -2,6 +2,7 @@ use clap::Parser;
 use cli::SubCommands;
 use rive_models::authentication::Authentication;
 use tokio::sync;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod cli;
 mod handlers;
@@ -25,6 +26,14 @@ pub enum ChannelPayload {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = cli::Args::parse();
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "lure=info".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
     ExitHandler::new(tx.clone()).handle().await;
@@ -68,6 +77,7 @@ async fn main() -> anyhow::Result<()> {
                 rive_client.set_status(status).await;
             }
             ChannelPayload::Exit => {
+                tracing::info!("stopping lure");
                 rive_client.set_status(None).await;
                 break;
             }

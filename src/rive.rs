@@ -12,6 +12,8 @@ pub trait ClientExt {
 #[async_trait::async_trait]
 impl ClientExt for Client {
     async fn set_status(&self, status: Option<String>) {
+        tracing::info!("updating revolt status to {:?}", &status);
+
         let data = status.map_or(
             EditUserData {
                 remove: Some(vec![FieldsUser::StatusText]),
@@ -28,7 +30,7 @@ impl ClientExt for Client {
 
         match self.edit_user(data).await {
             Ok(_) => (),
-            Err(err) => println!("Revolt API error: {err}"),
+            Err(err) => tracing::error!("Revolt API error: {err}"),
         };
     }
 }

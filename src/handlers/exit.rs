@@ -31,7 +31,8 @@ impl ExitHandler {
 
             self.0
                 .send(ChannelPayload::Exit)
-                .map_err(|err| eprintln!("{err}"))
+                .map_err(|err| tracing::error!("{err}"))
         });
+        tracing::debug!("spawned exit signal handler")
     }
 }

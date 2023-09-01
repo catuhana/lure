@@ -36,11 +36,11 @@ impl LastFMPlatform for LastFM {
             match track {
                 Ok(track) => {
                     if event_tx.send(ChannelPayload::Data(track)).is_err() {
-                        eprintln!("receiver dropped");
+                        tracing::error!("receiver dropped");
                         break;
                     }
                 }
-                Err(err) => println!("Last.fm API error: {err}"),
+                Err(err) => tracing::error!("Last.fm API error: {err}"),
             }
 
             interval.tick().await;
