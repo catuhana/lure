@@ -20,7 +20,7 @@ use crate::rive::ClientExt;
 #[derive(Clone, Debug)]
 pub enum ChannelPayload {
     Data(Option<Track>),
-    Exit,
+    Exit(bool),
 }
 
 #[tokio::main]
@@ -39,7 +39,7 @@ async fn main() -> anyhow::Result<()> {
     let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
 
     if rive_client.ping().await.is_none() {
-        tx.send(ChannelPayload::Exit)?;
+        tx.send(ChannelPayload::Exit(false))?;
     }
 
     ExitHandler::new(tx.clone()).handle().await;
@@ -87,9 +87,13 @@ async fn main() -> anyhow::Result<()> {
                 rive_client.set_status(status).await;
                 previous_track = track;
             }
-            ChannelPayload::Exit => {
+            ChannelPayload::Exit(reset_status) => {
                 tracing::info!("stopping lure");
-                rive_client.set_status(None).await;
+
+                if reset_status {
+                    rive_client.set_status(None).await;
+                }
+
                 break;
             }
         }

@@ -30,7 +30,7 @@ impl ExitHandler {
             ctrl_c.await.expect("CTRL-C handler could not be created");
 
             self.0
-                .send(ChannelPayload::Exit)
+                .send(ChannelPayload::Exit(true))
                 .map_err(|err| tracing::error!("{err}"))
         });
 
