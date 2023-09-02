@@ -9,7 +9,7 @@ impl ExitHandler {
         Self(tx)
     }
 
-    pub async fn handle(self) {
+    pub fn handle(self) {
         tokio::spawn(async move {
             let ctrl_c = signal::ctrl_c();
 

@@ -36,13 +36,13 @@ async fn main() -> anyhow::Result<()> {
     let cli = cli::Args::parse();
 
     let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
-    let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
 
+    let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
     if rive_client.ping().await.is_none() {
         tx.send(ChannelPayload::Exit(false))?;
     }
 
-    ExitHandler::new(tx.clone()).handle().await;
+    ExitHandler::new(tx.clone()).handle();
 
     // TODO: Write a handler for that, similar to ExitHandler.
     // Requires some trait work to do.
