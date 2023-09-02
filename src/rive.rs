@@ -6,11 +6,29 @@ use rive_models::{
 
 #[async_trait::async_trait]
 pub trait ClientExt {
+    async fn ping(&self) -> Option<()>;
     async fn set_status(&self, status: Option<String>) -> ();
 }
 
 #[async_trait::async_trait]
 impl ClientExt for Client {
+    async fn ping(&self) -> Option<()> {
+        tracing::debug!("pinging Revolt API");
+
+        match self.fetch_self().await {
+            Ok(_) => Some(()),
+            Err(error) => {
+                if error.to_string().contains("Unauthenticated") {
+                    tracing::error!("provided session token is not valid")
+                } else {
+                    tracing::error!("an unexpected API error ocurred: {error}")
+                }
+
+                None
+            }
+        }
+    }
+
     async fn set_status(&self, status: Option<String>) {
         tracing::info!("updating revolt status to {:?}", &status);
 

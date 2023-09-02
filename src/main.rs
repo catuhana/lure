@@ -25,8 +25,6 @@ pub enum ChannelPayload {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let cli = cli::Args::parse();
-
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -35,10 +33,16 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
-    ExitHandler::new(tx.clone()).handle().await;
+    let cli = cli::Args::parse();
 
+    let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
     let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
+
+    if rive_client.ping().await.is_none() {
+        tx.send(ChannelPayload::Exit)?;
+    }
+
+    ExitHandler::new(tx.clone()).handle().await;
 
     // TODO: Write a handler for that, similar to ExitHandler.
     // Requires some trait work to do.
