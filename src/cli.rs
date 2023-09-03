@@ -22,6 +22,7 @@ pub struct Args {
 #[derive(Subcommand)]
 pub enum SubCommands {
     #[cfg(feature = "lastfm")]
+    /// Show listening status from Last.fm
     LastFM {
         /// Last.fm username
         #[arg(long, env = "LURE_LASTFM_USER", required = true)]
@@ -34,6 +35,7 @@ pub enum SubCommands {
         check_interval: u64,
     },
     #[cfg(feature = "listenbrainz")]
+    /// Show listening status from ListenBrainz
     ListenBrainz {
         /// ListenBrainz username
         #[arg(long, env = "LURE_LISTENBRAINZ_USER", required = true)]
