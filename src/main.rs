@@ -48,6 +48,7 @@ async fn main() -> anyhow::Result<()> {
     // Requires some trait work to do.
     tokio::spawn(async move {
         match cli.command {
+            #[cfg(feature = "lastfm")]
             SubCommands::LastFM {
                 user,
                 api_key,
@@ -64,6 +65,7 @@ async fn main() -> anyhow::Result<()> {
                 .event_loop(tx.clone(), check_interval)
                 .await;
             }
+            #[cfg(feature = "listenbrainz")]
             SubCommands::ListenBrainz {
                 user,
                 api_url,
