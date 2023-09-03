@@ -33,4 +33,13 @@ pub enum SubCommands {
         #[arg(long, env = "LURE_LASTFM_CHECK_DELAY", default_value_t = 12)]
         check_interval: u64,
     },
+    #[cfg(feature = "listenbrainz")]
+    ListenBrainz {
+        /// ListenBrainz username
+        #[arg(long, env = "LURE_LISTENBRAINZ_USER", required = true)]
+        user: String,
+        /// Check interval
+        #[arg(long, env = "LURE_LISTENBRAINZ_CHECK_DELAY", default_value_t = 12)]
+        check_interval: u64,
+    },
 }

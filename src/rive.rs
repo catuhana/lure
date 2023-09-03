@@ -30,7 +30,7 @@ impl ClientExt for Client {
     }
 
     async fn set_status(&self, status: Option<String>) {
-        tracing::info!("updating revolt status to {:?}", &status);
+        tracing::info!("updating Revolt status to {:?}", &status);
 
         let data = status.map_or(
             EditUserData {

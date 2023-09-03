@@ -1,4 +1,5 @@
 pub mod lastfm;
+pub mod listenbrainz;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Track {

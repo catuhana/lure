@@ -1,5 +1,6 @@
 use clap::Parser;
 use cli::SubCommands;
+use platforms::listenbrainz::{ListenBrainz, ListenBrainzPlatform};
 use rive_models::authentication::Authentication;
 use tokio::sync;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -56,6 +57,20 @@ async fn main() -> anyhow::Result<()> {
                 LastFM {
                     user,
                     api_key,
+                    ..Default::default()
+                }
+                .initialise()
+                .await
+                .unwrap()
+                .event_loop(tx.clone(), check_interval)
+                .await;
+            }
+            SubCommands::ListenBrainz {
+                user,
+                check_interval,
+            } => {
+                ListenBrainz {
+                    user,
                     ..Default::default()
                 }
                 .initialise()
