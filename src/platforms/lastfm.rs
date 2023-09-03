@@ -77,8 +77,8 @@ impl Platform for LastFM {
         let json = response.json::<serde_json::Value>().await?;
         let track = &json["recenttracks"]["track"][0];
 
-        if track.get("@attr").is_some_and(|a| {
-            a.get("nowplaying")
+        if track.get("@attr").is_some_and(|attr| {
+            attr.get("nowplaying")
                 .is_some_and(|np| np.as_str().unwrap() == "true")
         }) {
             return Ok(Some(Track {

@@ -56,15 +56,20 @@ impl Platform for ListenBrainz {
 
         let json = response.json::<serde_json::Value>().await?;
         let track = &json["payload"]["listens"][0];
-        let track_metadata = &track["track_metadata"];
 
         if track
             .get("playing_now")
             .is_some_and(|playing| playing.as_bool().unwrap())
         {
             return Ok(Some(Track {
-                artist: track_metadata["artist_name"].as_str().unwrap().to_string(),
-                name: track_metadata["track_name"].as_str().unwrap().to_string(),
+                artist: track["track_metadata"]["artist_name"]
+                    .as_str()
+                    .unwrap()
+                    .to_string(),
+                name: track["track_metadata"]["track_name"]
+                    .as_str()
+                    .unwrap()
+                    .to_string(),
             }));
         }
 
