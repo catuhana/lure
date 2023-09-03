@@ -5,7 +5,7 @@
 
 use std::time::Duration;
 
-use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
+use reqwest::{Client as ReqwestClient, Url};
 use tokio::{sync::mpsc::UnboundedSender, time};
 
 use super::{Platform, Track};
@@ -42,8 +42,7 @@ impl ListenBrainz {
 impl Platform for ListenBrainz {
     type Platform = Self;
 
-    async fn initialise(mut self) -> anyhow::Result<Self::Platform> {
-        self.client = ClientBuilder::new().build()?;
+    async fn initialise(self) -> anyhow::Result<Self::Platform> {
         Ok(self)
     }
 
