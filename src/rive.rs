@@ -21,7 +21,7 @@ impl ClientExt for Client {
                 if error.to_string().contains("Unauthenticated") {
                     tracing::error!("provided session token is not valid");
                 } else {
-                    tracing::error!("an unexpected API error ocurred: {error}");
+                    tracing::error!("an unexpected API error occurred: {error}");
                 }
 
                 None
