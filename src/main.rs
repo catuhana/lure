@@ -1,6 +1,5 @@
 use clap::Parser;
 use cli::SubCommands;
-use platforms::listenbrainz::{ListenBrainz, ListenBrainzPlatform};
 use rive_models::authentication::Authentication;
 use tokio::sync;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -12,10 +11,10 @@ mod rive;
 
 use crate::handlers::ExitHandler;
 #[cfg(feature = "lastfm")]
-use crate::platforms::{
-    lastfm::{LastFM, LastFMPlatform},
-    Platform, Track,
-};
+use crate::platforms::lastfm::{LastFM, LastFMPlatform};
+#[cfg(feature = "listenbrainz")]
+use crate::platforms::listenbrainz::ListenBrainz;
+use crate::platforms::{Platform, Track};
 use crate::rive::ClientExt;
 
 #[derive(Clone, Debug)]
@@ -67,9 +66,11 @@ async fn main() -> anyhow::Result<()> {
             }
             SubCommands::ListenBrainz {
                 user,
+                api_url,
                 check_interval,
             } => {
                 ListenBrainz {
+                    api_url,
                     user,
                     ..Default::default()
                 }
