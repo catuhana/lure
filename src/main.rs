@@ -54,6 +54,8 @@ async fn main() -> anyhow::Result<()> {
                 api_key,
                 check_interval,
             } => {
+                tracing::info!("starting lure using Last.fm listener");
+
                 LastFM {
                     user,
                     api_key,
@@ -71,6 +73,8 @@ async fn main() -> anyhow::Result<()> {
                 api_url,
                 check_interval,
             } => {
+                tracing::info!("starting lure using ListenBrainz listener");
+
                 ListenBrainz {
                     api_url,
                     user,
