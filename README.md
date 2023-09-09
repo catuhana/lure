@@ -7,7 +7,7 @@
 lure is tested on Linux and Windows, and is expected to work on macOS too. To install, simply run:
 
 ```sh
-$ cargo install --git https://codeberg.org/tuhana/rive
+$ cargo install --git https://github.com/tuhanayim/lure
 ```
 
 lure currently has two platform features enabled by default. Unused platforms can be disabled by using `--no-default-features` and `--features`.
@@ -15,7 +15,7 @@ lure currently has two platform features enabled by default. Unused platforms ca
 For example, to build lure only with Last.fm platform feature, simply append `--no-default-features --features lastfm` to the build command above:
 
 ```sh
-$ cargo install --git https://codeberg.org/tuhana/rive --no-default-features --features lastfm
+$ cargo install --git https://github.com/tuhanayim/lure --no-default-features --features lastfm
 ```
 
 All available and current default platform features can be checked from [Cargo.toml](Cargo.toml) file.
@@ -28,7 +28,7 @@ lure uses environment variables and CLI arguments for configuration. To get help
 $ lure help
 ```
 
-> ![NOTE]
+> [!NOTE]
 > CLI arguments and sub-commands can be different depending on which platform features are used to build lure. For example, disabling `lastfm` feature will not generate Last.fm specific CLI arguments and sub-commands.
 
 If you'd like to configure options using environment variables, here's the table of current environment variables:
