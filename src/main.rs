@@ -1,14 +1,17 @@
 use clap::Parser;
-use cli::SubCommands;
+use confique::Config;
 use rive_models::authentication::Authentication;
 use tokio::sync;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod cli;
+mod config;
 mod handlers;
 mod platforms;
 mod rive;
 
+use crate::cli::Arguments;
+use crate::config::Options;
 use crate::handlers::ExitHandler;
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
@@ -33,92 +36,131 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let cli = cli::Args::parse();
+    match Arguments::parse().command {
+        cli::Subcommands::Start(start) => {
+            let options = {
+                let config_path = start.config.map_or(
+                    dirs::config_local_dir()
+                        .expect("unsupported operating system or platform")
+                        .join("lure")
+                        .join("config")
+                        .with_extension("toml"),
+                    |path| path,
+                );
 
-    let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
+                Options::builder().env().file(config_path).load()?
+            };
 
-    let rive_client = rive_http::Client::new(Authentication::SessionToken(cli.token));
-    if rive_client.ping().await.is_none() {
-        tx.send(ChannelPayload::Exit(false))?;
-    }
+            let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
+            // TODO: move this to somewhere so this wont run before the platforms initialise
+            let rive_client = {
+                let client =
+                    rive_http::Client::new(Authentication::SessionToken(options.session_token));
 
-    ExitHandler::new(tx.clone()).handle();
-
-    // TODO: Write a handler for that, similar to ExitHandler.
-    // Requires some trait work to do.
-    tokio::spawn(async move {
-        match cli.command {
-            #[cfg(feature = "lastfm")]
-            SubCommands::LastFM {
-                user,
-                api_key,
-                check_interval,
-            } => {
-                tracing::info!("starting lure using Last.fm listener");
-
-                LastFM {
-                    user,
-                    api_key,
-                    ..Default::default()
+                if client.ping().await.is_none() {
+                    tx.send(ChannelPayload::Exit(false))?;
                 }
-                .initialise()
-                .await
-                .unwrap()
-                .event_loop(tx.clone(), check_interval)
-                .await;
-            }
-            #[cfg(feature = "listenbrainz")]
-            SubCommands::ListenBrainz {
-                user,
-                api_url,
-                check_interval,
-            } => {
-                tracing::info!("starting lure using ListenBrainz listener");
 
-                ListenBrainz {
-                    api_url,
-                    user,
-                    ..Default::default()
+                client
+            };
+
+            ExitHandler::new(tx.clone()).handle();
+
+            tokio::spawn(async move {
+                match options.platform.to_lowercase().as_str() {
+                    #[cfg(feature = "lastfm")]
+                    "lastfm" => {
+                        tracing::info!("starting lure using Last.fm listener");
+                        let lastfm_options = options.lastfm;
+
+                        if lastfm_options.user.is_none() {
+                            tracing::error!("`user` value on `lastfm` listener is not specified.");
+                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
+                        } else if lastfm_options.api_key.is_none() {
+                            tracing::error!("`api_key` value on `lastfm` listener is not specified.");
+                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
+                        } else {
+                            LastFM {
+                                user: lastfm_options.user.unwrap(),
+                                api_key: lastfm_options.api_key.unwrap(),
+                                ..Default::default()
+                            }
+                            .initialise()
+                            .await
+                            .unwrap()
+                            .event_loop(tx.clone(), lastfm_options.check_interval)
+                            .await;
+                        }
+                    }
+                    #[cfg(feature = "listenbrainz")]
+                    "listenbrainz" => {
+                        tracing::info!("starting lure using ListenBrainz listener");
+                        let listenbrainz_options = options.listenbrainz;
+
+                        if listenbrainz_options.user.is_none() {
+                            tracing::error!("`user` value on `lastfm` listener is not specified.");
+                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
+                        } else {
+                            ListenBrainz {
+                                user: listenbrainz_options.user.unwrap(),
+                                ..Default::default()
+                            }
+                            .initialise()
+                            .await
+                            .unwrap()
+                            .event_loop(tx.clone(), listenbrainz_options.check_interval)
+                            .await;
+                        }
+                    }
+                    _ => tracing::error!("unknown `platform` value specified. supported values are `lastfm` and `listenbrainz`."),
                 }
-                .initialise()
-                .await
-                .unwrap()
-                .event_loop(tx.clone(), check_interval)
-                .await;
+            });
+
+            // TODO: Move this to `handlers` folder
+            let mut previous_track: Option<Track> = None;
+            while let Some(payload) = rx.recv().await {
+                match payload {
+                    ChannelPayload::Data(track) => {
+                        if previous_track == track {
+                            continue;
+                        };
+
+                        let status = track
+                            .as_ref()
+                            .map(|track| {
+                                options
+                                    .status
+                                    .template
+                                    .replace("%ARTIST%", &track.artist)
+                                    .replace("%NAME%", &track.name)
+                            })
+                            .or_else(|| options.status.idle.clone());
+
+                        rive_client.set_status(status).await;
+                        previous_track = track;
+                    }
+                    ChannelPayload::Exit(reset_status) => {
+                        tracing::info!("stopping lure");
+
+                        if reset_status {
+                            rive_client.set_status(None).await;
+                        }
+
+                        break;
+                    }
+                }
             }
         }
-    });
-
-    let mut previous_track: Option<Track> = None;
-    while let Some(payload) = rx.recv().await {
-        match payload {
-            ChannelPayload::Data(track) => {
-                if previous_track == track {
-                    continue;
-                };
-
-                let status = track
-                    .as_ref()
-                    .map(|track| {
-                        cli.status_template
-                            .replace("%ARTIST%", &track.artist)
-                            .replace("%NAME%", &track.name)
-                    })
-                    .or_else(|| cli.status_idle.clone());
-
-                rive_client.set_status(status).await;
-                previous_track = track;
-            }
-            ChannelPayload::Exit(reset_status) => {
-                tracing::info!("stopping lure");
-
-                if reset_status {
-                    rive_client.set_status(None).await;
+        cli::Subcommands::Config(config) => match config {
+            cli::ConfigSubcommand::Generate { print } => {
+                if print {
+                    println!("{}", Options::generate_config());
+                } else {
+                    let created_path = Options::create_config().await?;
+                    tracing::info!("created a configuration file at `{created_path}`");
                 }
-
-                break;
             }
-        }
+        },
     }
 
     Ok(())

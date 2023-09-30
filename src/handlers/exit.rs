@@ -9,6 +9,7 @@ impl ExitHandler {
         Self(tx)
     }
 
+    // FIXME: make this async after everything is done
     pub fn handle(self) {
         tokio::spawn(async move {
             let ctrl_c = signal::ctrl_c();

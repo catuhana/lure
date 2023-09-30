@@ -6,13 +6,18 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.73"
-clap = { version = "4.4.5", features = ["derive", "env"] }
+clap = { version = "4.4.5", features = ["derive"] }
+confique = { git = "https://github.com/tuhanayim/confique", rev = "2c85724", default-features = false, features = [
+  "toml",
+] }
+dirs = "5.0.1"
 reqwest = { version = "0.11.20", features = ["json"] }
 rive-http = { git = "https://codeberg.org/rive/rive", rev = "f49f7c6" }
 rive-models = { git = "https://codeberg.org/rive/rive", rev = "f49f7c6" }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
 tokio = { version = "1.32.0", features = [
+  "fs",
   "macros",
   "rt-multi-thread",
   "time",
