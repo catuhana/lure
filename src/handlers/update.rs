@@ -3,9 +3,9 @@ use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::{config::StatusOptions, platforms::Track, rive::ClientExt, ChannelPayload};
 
-pub struct UpdateHandler(UnboundedReceiver<ChannelPayload>);
+pub struct Handler(UnboundedReceiver<ChannelPayload>);
 
-impl UpdateHandler {
+impl Handler {
     pub const fn new(rx: UnboundedReceiver<ChannelPayload>) -> Self {
         Self(rx)
     }

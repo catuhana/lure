@@ -12,7 +12,7 @@ mod rive;
 
 use crate::cli::Arguments;
 use crate::config::Options;
-use crate::handlers::{ExitHandler, UpdateHandler};
+use crate::handlers::{exit, update};
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
 #[cfg(feature = "listenbrainz")]
@@ -64,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
                 client
             };
 
-            ExitHandler::new(tx.clone()).handle().await;
+            exit::Handler::new(tx.clone()).handle().await;
 
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {
@@ -117,7 +117,7 @@ async fn main() -> anyhow::Result<()> {
                 }
             });
 
-            UpdateHandler::new(rx)
+            update::Handler::new(rx)
                 .handle(rive_client, options.status)
                 .await;
         }

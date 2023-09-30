@@ -2,9 +2,9 @@ use tokio::{signal, sync::mpsc::UnboundedSender};
 
 use crate::ChannelPayload;
 
-pub struct ExitHandler(UnboundedSender<ChannelPayload>);
+pub struct Handler(UnboundedSender<ChannelPayload>);
 
-impl ExitHandler {
+impl Handler {
     pub const fn new(tx: UnboundedSender<ChannelPayload>) -> Self {
         Self(tx)
     }

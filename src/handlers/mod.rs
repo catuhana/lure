@@ -1,5 +1,2 @@
-mod exit;
-mod update;
-
-pub use exit::ExitHandler;
-pub use update::UpdateHandler;
+pub mod exit;
+pub mod update;
