@@ -11,6 +11,8 @@ impl UpdateHandler {
     }
 
     pub async fn handle(mut self, rive_client: RiveClient, status: StatusOptions) {
+        tracing::debug!("spawning update handler");
+
         let mut previous_track: Option<Track> = None;
         while let Some(payload) = self.0.recv().await {
             match payload {
