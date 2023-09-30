@@ -22,20 +22,26 @@ All available and current default platform features can be checked from [Cargo.t
 
 ## Configuration
 
-lure uses environment variables and CLI arguments for configuration. To get help about how to use cli, simply run:
+lure uses a config file and environment variables for configuration. To get help about how to use CLI, simply run:
 
 ```sh
 $ lure help
 ```
 
+To generate a config file for lure, simply run:
+
+```sh
+$ lure config generate
+```
+
 > [!NOTE]
-> CLI arguments and sub-commands can be different depending on which platform features are used to build lure. For example, disabling `lastfm` feature will not generate Last.fm specific CLI arguments and sub-commands.
+> Config fields can be different depending on which platform features are used to build lure. For example, disabling `lastfm` feature will not generate and use Last.fm specific configuration files.
 
 If you'd like to configure options using environment variables, here's the table of current environment variables:
 
 | Variable Name                      | Description                                       | Default Value                | Is Required | Platform Feature |
 | ---------------------------------- | ------------------------------------------------- | ---------------------------- | ----------- | ---------------- |
-| `LURE_TOKEN`                       | Revolt session token                              | None                         | Yes         | \*               |
+| `LURE_REVOLT_SESSION_TOKEN`        | Revolt session token                              | None                         | Yes         | \*               |
 | `LURE_STATUS_TEMPLATE`             | Status template to show when listening            | 🎵 %ARTIST% %NAME%           | No          | \*               |
 | `LURE_STATUS_IDLE`                 | Status to show when not listening anything        | None                         | No          | \*               |
 | `LURE_LASTFM_USER`                 | Last.fm username to check listens                 | None                         | Yes         | `lastfm`         |
