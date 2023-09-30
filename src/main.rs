@@ -12,7 +12,7 @@ mod rive;
 
 use crate::cli::Arguments;
 use crate::config::Options;
-use crate::handlers::ExitHandler;
+use crate::handlers::{ExitHandler, UpdateHandler};
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
 #[cfg(feature = "listenbrainz")]
@@ -51,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
                 Options::builder().env().file(config_path).load()?
             };
 
-            let (tx, mut rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
+            let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
             // TODO: move this to somewhere so this wont run before the platforms initialise
             let rive_client = {
                 let client =
@@ -103,6 +103,7 @@ async fn main() -> anyhow::Result<()> {
                         } else {
                             ListenBrainz {
                                 user: listenbrainz_options.user.unwrap(),
+                                api_url: listenbrainz_options.api_url,
                                 ..Default::default()
                             }
                             .initialise()
@@ -116,40 +117,9 @@ async fn main() -> anyhow::Result<()> {
                 }
             });
 
-            // TODO: Move this to `handlers` folder
-            let mut previous_track: Option<Track> = None;
-            while let Some(payload) = rx.recv().await {
-                match payload {
-                    ChannelPayload::Data(track) => {
-                        if previous_track == track {
-                            continue;
-                        };
-
-                        let status = track
-                            .as_ref()
-                            .map(|track| {
-                                options
-                                    .status
-                                    .template
-                                    .replace("%ARTIST%", &track.artist)
-                                    .replace("%NAME%", &track.name)
-                            })
-                            .or_else(|| options.status.idle.clone());
-
-                        rive_client.set_status(status).await;
-                        previous_track = track;
-                    }
-                    ChannelPayload::Exit(reset_status) => {
-                        tracing::info!("stopping lure");
-
-                        if reset_status {
-                            rive_client.set_status(None).await;
-                        }
-
-                        break;
-                    }
-                }
-            }
+            UpdateHandler::new(rx)
+                .handle(rive_client, options.status)
+                .await;
         }
         cli::Subcommands::Config(config) => match config {
             cli::ConfigSubcommand::Generate { print } => {
