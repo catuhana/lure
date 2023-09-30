@@ -64,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
                 client
             };
 
-            ExitHandler::new(tx.clone()).handle();
+            ExitHandler::new(tx.clone()).handle().await;
 
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {
