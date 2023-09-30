@@ -126,8 +126,7 @@ async fn main() -> anyhow::Result<()> {
                 if print {
                     println!("{}", Options::generate_config());
                 } else {
-                    let created_path = Options::create_config().await?;
-                    tracing::info!("created a configuration file at `{created_path}`");
+                    Options::create_config().await?;
                 }
             }
         },

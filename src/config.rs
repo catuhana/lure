@@ -32,7 +32,8 @@ impl Options {
     pub fn generate_config() -> String {
         toml::template::<Self>(&confique::toml::FormatOptions::default())
     }
-    pub async fn create_config() -> anyhow::Result<String> {
+
+    pub async fn create_config() -> anyhow::Result<()> {
         let config = Self::generate_config();
         let path = dirs::config_local_dir()
             .expect("unsupported operating system or platform")
@@ -43,16 +44,15 @@ impl Options {
         tokio::fs::create_dir_all(&path.parent().unwrap()).await?;
 
         if path.try_exists()? {
-            tracing::error!("configuration file already exists.");
-            return Err(anyhow::anyhow!("meow"));
+            return Err(anyhow::anyhow!("configuration file already exists."));
         }
 
         let mut file = File::create(&path).await?;
         file.write_all(config.as_bytes()).await?;
 
-        tracing::info!("configuration file is created at `{}`", path.display());
+        tracing::info!("created a configuration file at `{}`", path.display());
 
-        Ok(path.display().to_string())
+        Ok(())
     }
 }
 
