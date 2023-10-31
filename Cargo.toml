@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.73"
-clap = { version = "4.4.6", features = ["derive"] }
+clap = { version = "4.4.7", features = ["derive"] }
 confique = { git = "https://github.com/tuhanayim/confique", rev = "2c85724", default-features = false, features = [
   "toml",
 ] }
