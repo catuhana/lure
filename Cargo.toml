@@ -11,7 +11,7 @@ confique = { git = "https://github.com/tuhanayim/confique", rev = "2c85724", def
   "toml",
 ] }
 dirs = "5.0.1"
-reqwest = { version = "0.11.20", features = ["json"] }
+reqwest = { version = "0.11.22", features = ["json"] }
 rive-http = { git = "https://codeberg.org/rive/rive", rev = "f49f7c6" }
 rive-models = { git = "https://codeberg.org/rive/rive", rev = "f49f7c6" }
 serde = { version = "1.0.188", features = ["derive"] }
