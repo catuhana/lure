@@ -7,12 +7,14 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod cli;
 mod config;
 mod handlers;
+mod listeners;
 mod platforms;
 mod rive;
 
 use crate::cli::Arguments;
 use crate::config::Options;
-use crate::handlers::{exit, update};
+use crate::handlers::update;
+use crate::listeners::exit;
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
 #[cfg(feature = "listenbrainz")]
@@ -64,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
                 client
             };
 
-            exit::Handler::new(tx.clone()).handle().await;
+            exit::Listener::new(tx.clone()).listen().await;
 
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {
