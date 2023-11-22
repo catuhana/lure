@@ -49,8 +49,7 @@ jobs:
 
       - name: Setup or update Rust ${{ matrix.toolchain }} toolchain
         run: |
-          rustup toolchain install ${{ matrix.toolchain }} \
-            --profile default
+          rustup toolchain install ${{ matrix.toolchain }} --profile default
 
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2

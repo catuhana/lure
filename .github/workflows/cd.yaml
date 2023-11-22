@@ -36,8 +36,7 @@ jobs:
 
       - name: Setup or update Rust toolchain
         run: |
-          rustup toolchain install stable \
-            --profile default
+          rustup toolchain install stable --profile default
 
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
