@@ -44,7 +44,7 @@ impl ClientExt for Client {
             },
         );
 
-        match self.edit_user(data).await {
+        match self.edit_user(&data).await {
             Ok(_) => (),
             Err(err) => tracing::error!("Revolt API error: {err}"),
         };

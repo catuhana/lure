@@ -912,7 +912,7 @@ dependencies = [
 [[package]]
 name = "rive-http"
 version = "1.1.0"
-source = "git+https://codeberg.org/rive/rive?rev=f49f7c6#f49f7c69bce2b24a77d4ba95549d529e930e5717"
+source = "git+https://codeberg.org/rive/rive?rev=0c2f126#0c2f126d81b5f9033ae37f7912a44abf0d8e15d4"
 dependencies = [
  "async-trait",
  "reqwest",
@@ -925,7 +925,7 @@ dependencies = [
 [[package]]
 name = "rive-models"
 version = "1.2.1"
-source = "git+https://codeberg.org/rive/rive?rev=f49f7c6#f49f7c69bce2b24a77d4ba95549d529e930e5717"
+source = "git+https://codeberg.org/rive/rive?rev=0c2f126#0c2f126d81b5f9033ae37f7912a44abf0d8e15d4"
 dependencies = [
  "bitflags 2.4.1",
  "iso8601-timestamp",
