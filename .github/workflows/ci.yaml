@@ -1,0 +1,62 @@
+name: CI
+run-name: ${{ inputs.reason }}
+
+on:
+  push:
+    paths:
+      - .github/workflows/ci.yaml
+      - src/**
+      - build.rs
+      - Cargo.*
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/ci.yaml
+      - src/**
+      - build.rs
+      - Cargo.*
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Dispatch reason
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  ci:
+    name: Run CI
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        toolchain:
+          - stable
+          - nightly
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust problem matchers
+        uses: r7kamura/rust-problem-matchers@main
+
+      - name: Setup or update Rust ${{ matrix.toolchain }} toolchain
+        run: rustup toolchain install ${{ matrix.toolchain }} --profile default
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check code format
+        run: cargo +${{ matrix.toolchain }} fmt --verbose --all --check
+
+      - name: Check code lint
+        if: '!cancelled()'
+        run: cargo +${{ matrix.toolchain }} clippy --verbose -- -W clippy::nursery

@@ -1,0 +1,53 @@
+name: CD
+run-name: ${{ inputs.reason }}
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Dispatch reason
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  upload-artifact:
+    name: Build and Upload Binary
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    if: github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup or update Rust toolchain
+        run: rustup toolchain install stable --profile default
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build project
+        run: cargo build --verbose --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lure-${{ runner.os }}
+          path: target/release/lure
+
+  # TODO: add publish container image
