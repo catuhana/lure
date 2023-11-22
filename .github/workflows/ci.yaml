@@ -48,8 +48,7 @@ jobs:
         uses: r7kamura/rust-problem-matchers@main
 
       - name: Setup or update Rust ${{ matrix.toolchain }} toolchain
-        run: |
-          rustup toolchain install ${{ matrix.toolchain }} --profile default
+        run: rustup toolchain install ${{ matrix.toolchain }} --profile default
 
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
