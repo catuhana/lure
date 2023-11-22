@@ -47,7 +47,7 @@ jobs:
       - name: Setup Rust problem matchers
         uses: r7kamura/rust-problem-matchers@main
 
-      - name: Setup or Update Rust ${{ matrix.toolchain }} toolchain
+      - name: Setup or update Rust ${{ matrix.toolchain }} toolchain
         run: |
           rustup toolchain install ${{ matrix.toolchain }} \
             --profile default
