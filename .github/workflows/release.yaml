@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: write
     outputs:
-      release-upload-url: ${{ steps.create-release.outputs.upload_url }}
+      release-upload-url: ${{ steps.create-release.outputs.result }}
     steps:
       - name: Create release
         id: create-release

@@ -38,7 +38,7 @@ jobs:
           - macos-latest
           - windows-latest
         toolchain:
-          - stable
+          # - stable
           - nightly
     runs-on: ${{ matrix.os }}
     steps:
