@@ -13,7 +13,6 @@ pub struct Status {
     pub idle: Option<String>,
 }
 
-#[async_trait::async_trait]
 pub trait Platform {
     type Platform;
 

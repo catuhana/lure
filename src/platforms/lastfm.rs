@@ -17,7 +17,6 @@ pub struct LastFM {
     pub api_key: String,
 }
 
-#[async_trait::async_trait]
 pub trait LastFMPlatform: Platform {
     const USER_AGENT: &'static str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     const API_URL: &'static str;
@@ -25,7 +24,6 @@ pub trait LastFMPlatform: Platform {
     async fn event_loop(self, tx: UnboundedSender<ChannelPayload>, check_interval: u64);
 }
 
-#[async_trait::async_trait]
 impl LastFMPlatform for LastFM {
     const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
 
@@ -48,7 +46,6 @@ impl LastFMPlatform for LastFM {
     }
 }
 
-#[async_trait::async_trait]
 impl Platform for LastFM {
     type Platform = Self;
 
