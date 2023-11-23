@@ -44,13 +44,13 @@ impl Options {
         tokio::fs::create_dir_all(&path.parent().unwrap()).await?;
 
         if path.try_exists()? {
-            return Err(anyhow::anyhow!("configuration file already exists."));
+            anyhow::bail!("configuration file already exists.")
         }
 
         let mut file = File::create(&path).await?;
         file.write_all(config.as_bytes()).await?;
 
-        tracing::info!("created a configuration file at `{}`", path.display());
+        println!("created a configuration file at `{}`", path.display());
 
         Ok(())
     }

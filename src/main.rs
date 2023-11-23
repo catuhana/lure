@@ -59,14 +59,12 @@ async fn main() -> anyhow::Result<()> {
                 let client =
                     rive_http::Client::new(Authentication::SessionToken(options.session_token));
 
-                if client.ping().await.is_none() {
-                    tx.send(ChannelPayload::Exit(false))?;
-                }
+                client.ping().await?;
 
                 client
             };
 
-            exit::Listener::new(tx.clone()).listen().await;
+            exit::Listener::new(tx.clone()).listen().await?;
 
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {
@@ -76,23 +74,21 @@ async fn main() -> anyhow::Result<()> {
                         let lastfm_options = options.lastfm;
 
                         if lastfm_options.user.is_none() {
-                            tracing::error!("`user` value on `lastfm` listener is not specified.");
-                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
+                            anyhow::bail!("`user` value on `lastfm` listener is not specified.")
                         } else if lastfm_options.api_key.is_none() {
-                            tracing::error!("`api_key` value on `lastfm` listener is not specified.");
-                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
-                        } else {
-                            LastFM {
-                                user: lastfm_options.user.unwrap(),
-                                api_key: lastfm_options.api_key.unwrap(),
-                                ..Default::default()
-                            }
-                            .initialise()
-                            .await
-                            .unwrap()
-                            .event_loop(tx.clone(), lastfm_options.check_interval)
-                            .await;
+                            anyhow::bail!("`api_key` value on `lastfm` listener is not specified.")
                         }
+
+                        LastFM {
+                            user: lastfm_options.user.unwrap(),
+                            api_key: lastfm_options.api_key.unwrap(),
+                            ..Default::default()
+                        }
+                        .initialise()
+                        .await
+                        .unwrap()
+                        .event_loop(tx.clone(), lastfm_options.check_interval)
+                        .await?;
                     }
                     #[cfg(feature = "listenbrainz")]
                     "listenbrainz" => {
@@ -100,23 +96,25 @@ async fn main() -> anyhow::Result<()> {
                         let listenbrainz_options = options.listenbrainz;
 
                         if listenbrainz_options.user.is_none() {
-                            tracing::error!("`user` value on `lastfm` listener is not specified.");
-                            tx.send(ChannelPayload::Exit(false)).expect("channel is closed.");
-                        } else {
-                            ListenBrainz {
-                                user: listenbrainz_options.user.unwrap(),
-                                api_url: listenbrainz_options.api_url,
-                                ..Default::default()
-                            }
-                            .initialise()
-                            .await
-                            .unwrap()
-                            .event_loop(tx.clone(), listenbrainz_options.check_interval)
-                            .await;
+                            anyhow::bail!("`user` value on `lastfm` listener is not specified.")
                         }
+
+                        ListenBrainz {
+                            user: listenbrainz_options.user.unwrap(),
+                            api_url: listenbrainz_options.api_url,
+                            ..Default::default()
+                        }
+                        .initialise()
+                        .await
+                        .unwrap()
+                        .event_loop(tx.clone(), listenbrainz_options.check_interval)
+                        .await?;
+
                     }
                     _ => tracing::error!("unknown `platform` value specified. supported values are `lastfm` and `listenbrainz`."),
                 }
+
+                Ok(())
             });
 
             update::Handler::new(rx)

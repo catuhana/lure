@@ -5,26 +5,27 @@ use rive_models::{
 };
 
 pub trait ClientExt {
-    async fn ping(&self) -> Option<()>;
+    async fn ping(&self) -> anyhow::Result<(), anyhow::Error>;
     async fn set_status(&self, status: Option<String>);
 }
 
 impl ClientExt for Client {
-    async fn ping(&self) -> Option<()> {
+    async fn ping(&self) -> anyhow::Result<(), anyhow::Error> {
         tracing::debug!("pinging Revolt API");
 
-        match self.fetch_self().await {
-            Ok(_) => Some(()),
+        let result = match self.fetch_self().await {
+            Ok(_) => Ok(()),
             Err(error) => {
                 if error.to_string().contains("Unauthenticated") {
-                    tracing::error!("provided session token is not valid");
-                } else {
-                    tracing::error!("an unexpected API error occurred: {error}");
+                    anyhow::bail!("provided session token is not valid");
                 }
 
-                None
+                anyhow::bail!("an unexpected API error occurred: {error}");
             }
-        }
+        };
+        tracing::debug!("pinging Revolt API completed");
+
+        result
     }
 
     async fn set_status(&self, status: Option<String>) {
@@ -48,5 +49,7 @@ impl ClientExt for Client {
             Ok(_) => (),
             Err(err) => tracing::error!("Revolt API error: {err}"),
         };
+
+        tracing::info!("updated Revolt status");
     }
 }

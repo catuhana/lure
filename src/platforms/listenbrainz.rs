@@ -19,19 +19,18 @@ pub struct ListenBrainz {
 }
 
 impl ListenBrainz {
-    pub async fn event_loop(self, tx: UnboundedSender<ChannelPayload>, check_interval: u64) {
+    pub async fn event_loop(
+        self,
+        tx: UnboundedSender<ChannelPayload>,
+        check_interval: u64,
+    ) -> anyhow::Result<()> {
         let mut interval = time::interval(Duration::from_secs(check_interval));
         loop {
             interval.tick().await;
 
             let track = self.get_current_track().await;
             match track {
-                Ok(track) => {
-                    if tx.send(ChannelPayload::Data(track)).is_err() {
-                        tracing::error!("receiver dropped");
-                        break;
-                    }
-                }
+                Ok(track) => tx.send(ChannelPayload::Data(track))?,
                 Err(err) => tracing::error!("ListenBrainz API error: {err}"),
             }
         }
