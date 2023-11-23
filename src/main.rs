@@ -40,29 +40,25 @@ async fn main() -> anyhow::Result<()> {
 
     match Arguments::parse().command {
         cli::Subcommands::Start(start) => {
-            let options = {
-                let config_path = start.config.map_or(
+            let options = Options::builder()
+                .env()
+                .file(start.config.unwrap_or_else(|| {
                     dirs::config_local_dir()
                         .expect("unsupported operating system or platform")
                         .join("lure")
                         .join("config")
-                        .with_extension("toml"),
-                    |path| path,
-                );
-
-                Options::builder().env().file(config_path).load()?
-            };
+                        .with_extension("toml")
+                }))
+                .load()?;
 
             let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
+
             // TODO: move this to somewhere so this wont run before the platforms initialise
-            let rive_client = {
-                let client =
-                    rive_http::Client::new(Authentication::SessionToken(options.session_token));
-
-                client.ping().await?;
-
-                client
-            };
+            let rive_client =
+                rive_http::Client::new(Authentication::SessionToken(options.session_token));
+            if rive_client.ping().await.is_err() {
+                tx.send(ChannelPayload::Exit(false))?;
+            }
 
             exit::Listener::new(tx.clone()).listen().await?;
 

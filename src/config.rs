@@ -1,5 +1,5 @@
 use confique::{toml, Config};
-use tokio::{fs::File, io::AsyncWriteExt};
+use tokio::fs;
 
 #[derive(Config)]
 pub struct Options {
@@ -41,14 +41,12 @@ impl Options {
             .join("config")
             .with_extension("toml");
 
-        tokio::fs::create_dir_all(&path.parent().unwrap()).await?;
-
         if path.try_exists()? {
             anyhow::bail!("configuration file already exists.")
         }
 
-        let mut file = File::create(&path).await?;
-        file.write_all(config.as_bytes()).await?;
+        fs::create_dir_all(&path.parent().unwrap()).await?;
+        fs::write(&path, config).await?;
 
         println!("created a configuration file at `{}`", path.display());
 

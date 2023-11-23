@@ -21,15 +21,17 @@ impl Handler {
                         continue;
                     };
 
-                    let status = track
-                        .as_ref()
-                        .map(|track| {
-                            status
-                                .template
-                                .replace("%ARTIST%", &track.artist)
-                                .replace("%NAME%", &track.name)
-                        })
-                        .or_else(|| status.idle.clone());
+                    let status = track.as_ref().map_or_else(
+                        || status.idle.clone(),
+                        |track| {
+                            Some(
+                                status
+                                    .template
+                                    .replace("%ARTIST%", &track.artist)
+                                    .replace("%NAME%", &track.name),
+                            )
+                        },
+                    );
 
                     rive_client.set_status(status).await;
                     previous_track = track;
