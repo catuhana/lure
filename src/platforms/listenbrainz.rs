@@ -5,7 +5,7 @@
 
 use std::time::Duration;
 
-use reqwest::{Client as ReqwestClient, Url};
+use reqwest::Client as ReqwestClient;
 use tokio::{sync::mpsc::UnboundedSender, time};
 
 use super::{Platform, Track};
@@ -45,8 +45,7 @@ impl Platform for ListenBrainz {
     }
 
     async fn get_current_track(&self) -> anyhow::Result<Option<Track>> {
-        let url =
-            Url::parse(format!("{}/1/user/{}/playing-now", self.api_url, &self.user).as_str())?;
+        let url = format!("{}/1/user/{}/playing-now", self.api_url, &self.user);
 
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
@@ -62,11 +61,11 @@ impl Platform for ListenBrainz {
                 artist: track["track_metadata"]["artist_name"]
                     .as_str()
                     .unwrap()
-                    .to_string(),
+                    .into(),
                 name: track["track_metadata"]["track_name"]
                     .as_str()
                     .unwrap()
-                    .to_string(),
+                    .into(),
             }));
         }
 
