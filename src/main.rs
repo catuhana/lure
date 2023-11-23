@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
                 tx.send(ChannelPayload::Exit(false))?;
             }
 
-            exit::Listener::new(tx.clone()).listen().await?;
+            exit::Listener::new(tx.clone()).listen();
 
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {

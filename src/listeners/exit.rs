@@ -1,4 +1,4 @@
-use tokio::{signal, sync::mpsc::UnboundedSender, task::JoinHandle};
+use tokio::{signal, sync::mpsc::UnboundedSender};
 
 use crate::ChannelPayload;
 
@@ -9,17 +9,18 @@ impl Listener {
         Self(tx)
     }
 
-    pub async fn listen(self) -> anyhow::Result<()> {
+    pub fn listen(self) {
         tracing::debug!("spawning exit signal listener");
 
-        let _: JoinHandle<anyhow::Result<()>> = tokio::spawn(async move {
+        tokio::spawn(async move {
             let ctrl_c = signal::ctrl_c();
 
             #[cfg(unix)]
             {
                 use signal::unix::{signal, SignalKind};
 
-                let mut sigterm = signal(SignalKind::terminate())?;
+                let mut sigterm =
+                    signal(SignalKind::terminate()).expect("SIGTERM handler could not be created");
 
                 tokio::select! {
                     _ = ctrl_c => {},
@@ -28,15 +29,13 @@ impl Listener {
             }
 
             #[cfg(windows)]
-            ctrl_c.await?;
+            ctrl_c.await.expect("CTRL-C handler could not be created");
 
-            self.0.send(ChannelPayload::Exit(true))?;
-
-            Ok(())
+            self.0
+                .send(ChannelPayload::Exit(true))
+                .expect("CTRL-C handler could not be created");
         });
 
-        tracing::debug!("spawned exit signal listener");
-
-        Ok(())
+        tracing::debug!("spawned exit signal handler");
     }
 }
