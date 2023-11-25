@@ -19,7 +19,6 @@ pub struct LastFM {
     pub api_key: String,
 }
 
-#[async_trait::async_trait]
 pub trait LastFMPlatform: Platform {
     const USER_AGENT: &'static str = "reqwest/0.11 [lure]";
     const API_URL: &'static str;
@@ -31,7 +30,6 @@ pub trait LastFMPlatform: Platform {
     ) -> anyhow::Result<()>;
 }
 
-#[async_trait::async_trait]
 impl LastFMPlatform for LastFM {
     const API_URL: &'static str = "https://ws.audioscrobbler.com/2.0";
 
@@ -53,7 +51,6 @@ impl LastFMPlatform for LastFM {
     }
 }
 
-#[async_trait::async_trait]
 impl Platform for LastFM {
     type Platform = Self;
 
