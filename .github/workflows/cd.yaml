@@ -48,6 +48,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: lure-${{ runner.os }}
-          path: target/release/lure
+          path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
 
   # TODO: add publish container image
