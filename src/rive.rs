@@ -4,11 +4,13 @@ use rive_models::{
     user::{FieldsUser, UserStatus},
 };
 
+#[async_trait::async_trait]
 pub trait ClientExt {
     async fn ping(&self) -> anyhow::Result<(), anyhow::Error>;
-    async fn set_status(&self, status: Option<String>);
+    async fn set_status(&self, status: Option<String>) -> ();
 }
 
+#[async_trait::async_trait]
 impl ClientExt for Client {
     async fn ping(&self) -> anyhow::Result<(), anyhow::Error> {
         tracing::debug!("pinging Revolt API");

@@ -37,6 +37,7 @@ impl ListenBrainz {
     }
 }
 
+#[async_trait::async_trait]
 impl Platform for ListenBrainz {
     type Platform = Self;
 
