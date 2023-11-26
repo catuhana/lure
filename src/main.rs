@@ -2,7 +2,6 @@ use clap::Parser;
 use confique::Config;
 use rive_models::authentication::Authentication;
 use tokio::sync;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod cli;
 mod config;
@@ -13,8 +12,8 @@ mod rive;
 
 use crate::cli::Arguments;
 use crate::config::Options;
-use crate::handlers::update;
-use crate::listeners::exit;
+use crate::handlers::exit;
+use crate::listeners::update;
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
 #[cfg(feature = "listenbrainz")]
@@ -30,12 +29,11 @@ pub enum ChannelPayload {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::registry()
-        .with(
+    tracing_subscriber::fmt()
+        .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "lure=info".into()),
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("lure=info")),
         )
-        .with(tracing_subscriber::fmt::layer())
         .init();
 
     match Arguments::parse().command {
@@ -53,15 +51,9 @@ async fn main() -> anyhow::Result<()> {
 
             let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
 
-            // TODO: move this to somewhere so this wont run before the platforms initialise
-            let rive_client =
-                rive_http::Client::new(Authentication::SessionToken(options.session_token));
-            if rive_client.ping().await.is_err() {
-                tx.send(ChannelPayload::Exit(false))?;
-            }
+            exit::Handler::new(tx.clone()).handle();
 
-            exit::Listener::new(tx.clone()).listen();
-
+            let tx_main = tx.clone();
             tokio::spawn(async move {
                 match options.platform.to_lowercase().as_str() {
                     #[cfg(feature = "lastfm")]
@@ -83,7 +75,7 @@ async fn main() -> anyhow::Result<()> {
                         .initialise()
                         .await
                         .unwrap()
-                        .event_loop(tx.clone(), lastfm_options.check_interval)
+                        .event_loop(tx_main, lastfm_options.check_interval)
                         .await?;
                     }
                     #[cfg(feature = "listenbrainz")]
@@ -103,18 +95,24 @@ async fn main() -> anyhow::Result<()> {
                         .initialise()
                         .await
                         .unwrap()
-                        .event_loop(tx.clone(), listenbrainz_options.check_interval)
+                        .event_loop(tx_main, listenbrainz_options.check_interval)
                         .await?;
 
                     }
-                    _ => tracing::error!("unknown `platform` value specified. supported values are `lastfm` and `listenbrainz`."),
+                    _ => anyhow::bail!("unknown `platform` value specified. supported values are `lastfm` and `listenbrainz`."),
                 }
 
                 Ok(())
             });
 
-            update::Handler::new(rx)
-                .handle(rive_client, options.status)
+            let rive_client =
+                rive_http::Client::new(Authentication::SessionToken(options.session_token));
+            if rive_client.ping().await.is_err() {
+                tx.send(ChannelPayload::Exit(false))?;
+            }
+
+            update::Listener::new(rx)
+                .listen(rive_client, options.status)
                 .await;
         }
         cli::Subcommands::Config(config) => match config {

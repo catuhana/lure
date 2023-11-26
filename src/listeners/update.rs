@@ -3,15 +3,15 @@ use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::{config::StatusOptions, platforms::Track, rive::ClientExt, ChannelPayload};
 
-pub struct Handler(UnboundedReceiver<ChannelPayload>);
+pub struct Listener(UnboundedReceiver<ChannelPayload>);
 
-impl Handler {
+impl Listener {
     pub const fn new(rx: UnboundedReceiver<ChannelPayload>) -> Self {
         Self(rx)
     }
 
-    pub async fn handle(mut self, rive_client: RiveClient, status: StatusOptions) {
-        tracing::debug!("spawning update handler");
+    pub async fn listen(mut self, rive_client: RiveClient, status: StatusOptions) {
+        tracing::debug!("spawning update listener");
 
         let mut previous_track: Option<Track> = None;
         while let Some(payload) = self.0.recv().await {
