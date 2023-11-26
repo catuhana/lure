@@ -14,7 +14,6 @@ pub trait ClientExt {
 impl ClientExt for Client {
     async fn ping(&self) -> anyhow::Result<(), anyhow::Error> {
         tracing::debug!("pinging Revolt API");
-
         let result = match self.fetch_self().await {
             Ok(_) => Ok(()),
             Err(error) => {

@@ -2,15 +2,15 @@ use tokio::{signal, sync::mpsc::UnboundedSender};
 
 use crate::ChannelPayload;
 
-pub struct Listener(UnboundedSender<ChannelPayload>);
+pub struct Handler(UnboundedSender<ChannelPayload>);
 
-impl Listener {
+impl Handler {
     pub const fn new(tx: UnboundedSender<ChannelPayload>) -> Self {
         Self(tx)
     }
 
-    pub fn listen(self) {
-        tracing::debug!("spawning exit signal listener");
+    pub fn handle(self) {
+        tracing::debug!("spawning exit signal handler");
 
         tokio::spawn(async move {
             let ctrl_c = signal::ctrl_c();
