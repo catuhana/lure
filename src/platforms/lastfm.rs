@@ -44,7 +44,7 @@ impl LastFMPlatform for LastFM {
 
             let track = self.get_current_track().await;
             match track {
-                Ok(track) => tx.send(ChannelPayload::Data(track))?,
+                Ok(track) => tx.send(ChannelPayload::Track(track))?,
                 Err(err) => tracing::error!("Last.fm API error: {err}"),
             }
         }

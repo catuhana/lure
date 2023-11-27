@@ -3,17 +3,15 @@ use confique::Config;
 use rive_models::authentication::Authentication;
 use tokio::sync;
 
+mod channel_listener;
 mod cli;
 mod config;
-mod handlers;
-mod listeners;
+mod exit_handler;
 mod platforms;
 mod rive;
 
 use crate::cli::Arguments;
 use crate::config::Options;
-use crate::handlers::exit;
-use crate::listeners::update;
 #[cfg(feature = "lastfm")]
 use crate::platforms::lastfm::{LastFM, LastFMPlatform};
 #[cfg(feature = "listenbrainz")]
@@ -23,7 +21,7 @@ use crate::rive::ClientExt;
 
 #[derive(Clone, Debug)]
 pub enum ChannelPayload {
-    Data(Option<Track>),
+    Track(Option<Track>),
     Exit(bool),
 }
 
@@ -51,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
 
             let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
 
-            exit::Handler::new(tx.clone()).handle();
+            exit_handler::Handler::new(tx.clone()).handle();
 
             let tx_main = tx.clone();
             tokio::spawn(async move {
@@ -111,7 +109,7 @@ async fn main() -> anyhow::Result<()> {
                 tx.send(ChannelPayload::Exit(false))?;
             }
 
-            update::Listener::new(rx)
+            channel_listener::Listener::new(rx)
                 .listen(rive_client, options.status)
                 .await;
         }

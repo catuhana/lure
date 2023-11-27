@@ -16,7 +16,7 @@ impl Listener {
         let mut previous_track: Option<Track> = None;
         while let Some(payload) = self.0.recv().await {
             match payload {
-                ChannelPayload::Data(track) => {
+                ChannelPayload::Track(track) => {
                     if previous_track == track {
                         continue;
                     };
