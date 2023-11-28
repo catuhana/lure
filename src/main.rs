@@ -96,7 +96,6 @@ async fn main() -> anyhow::Result<()> {
                         .unwrap()
                         .event_loop(tx_main, listenbrainz_options.check_interval)
                         .await?;
-
                     }
                     _ => anyhow::bail!("unknown `platform` value specified. supported values are `lastfm` and `listenbrainz`."),
                 }
