@@ -7,6 +7,7 @@ mod channel_listener;
 mod cli;
 mod config;
 mod exit_handler;
+mod models;
 mod platforms;
 mod rive;
 
