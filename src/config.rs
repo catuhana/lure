@@ -57,7 +57,10 @@ impl Options {
 #[derive(Config)]
 pub struct StatusOptions {
     /// Status template to use when setting the status
-    #[config(default = "🎵 %ARTIST% – %NAME%", env = "LURE_STATUS_TEMPLATE")]
+    #[config(
+        default = "🎵 Listening to %NAME% by %ARTIST%",
+        env = "LURE_STATUS_TEMPLATE"
+    )]
     pub template: String,
 
     /// Idle status message to use when not listening anything
