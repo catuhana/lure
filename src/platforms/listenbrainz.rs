@@ -1,6 +1,3 @@
-// TODO: Maybe port this to ListenBrainz's
-// socket.io WebSocket server?
-
 #![cfg(feature = "listenbrainz")]
 
 use std::time::Duration;
@@ -9,6 +6,8 @@ use reqwest::Client as ReqwestClient;
 use tokio::{sync::mpsc::UnboundedSender, time};
 
 use super::{Platform, Track};
+
+use crate::models::listenbrainz;
 use crate::ChannelPayload;
 
 #[derive(Default)]
@@ -51,22 +50,16 @@ impl Platform for ListenBrainz {
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
 
-        let json = response.json::<serde_json::Value>().await?;
-        let track = &json["payload"]["listens"][0];
+        let track = &response
+            .json::<listenbrainz::user::playing_now::Payload>()
+            .await?
+            .payload
+            .listens[0];
 
-        if track
-            .get("playing_now")
-            .is_some_and(|playing| playing.as_bool().unwrap())
-        {
+        if track.playing_now {
             return Ok(Some(Track {
-                artist: track["track_metadata"]["artist_name"]
-                    .as_str()
-                    .unwrap()
-                    .into(),
-                name: track["track_metadata"]["track_name"]
-                    .as_str()
-                    .unwrap()
-                    .into(),
+                artist: track.track_metadata.artist_name.to_string(),
+                name: track.track_metadata.track_name.to_string(),
             }));
         }
 

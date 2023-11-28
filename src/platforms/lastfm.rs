@@ -6,6 +6,8 @@ use reqwest::{Client as ReqwestClient, ClientBuilder, Url};
 use tokio::{sync::mpsc::UnboundedSender, time};
 
 use super::{Platform, Track};
+
+use crate::models::lastfm;
 use crate::ChannelPayload;
 
 #[derive(Default)]
@@ -77,18 +79,20 @@ impl Platform for LastFM {
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
 
-        let json = response.json::<serde_json::Value>().await?;
-        let track = &json["recenttracks"]["track"][0];
+        let track = &response
+            .json::<lastfm::user::get_recent_tracks::Payload>()
+            .await?
+            .recenttracks
+            .track[0];
 
         if track
-            .get("@attr")
-            .and_then(|attr| attr.get("nowplaying"))
-            .and_then(|np| np.as_str())
-            .map_or(false, |np| np == "true")
+            .attr
+            .as_ref()
+            .is_some_and(|attr| attr.nowplaying.is_some())
         {
             return Ok(Some(Track {
-                artist: track["artist"]["#text"].as_str().unwrap().into(),
-                name: track["name"].as_str().unwrap().into(),
+                artist: track.artist.text.to_string(),
+                name: track.name.to_string(),
             }));
         }
 
