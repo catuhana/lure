@@ -79,20 +79,20 @@ impl Platform for LastFM {
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
 
-        let track = &response
+        let json = response
             .json::<lastfm::user::get_recent_tracks::Payload>()
-            .await?
-            .recenttracks
-            .track[0];
+            .await?;
+        let track = json.recenttracks.track.first();
 
-        if track
-            .attr
-            .as_ref()
-            .is_some_and(|attr| attr.nowplaying.is_some())
-        {
+        if track.is_some_and(|track| {
+            track
+                .attr
+                .as_ref()
+                .is_some_and(|attr| attr.nowplaying.is_some())
+        }) {
             return Ok(Some(Track {
-                artist: track.artist.text.to_string(),
-                name: track.name.to_string(),
+                artist: track.unwrap().artist.text.to_string(),
+                name: track.unwrap().name.to_string(),
             }));
         }
 

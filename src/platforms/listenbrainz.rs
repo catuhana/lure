@@ -50,16 +50,15 @@ impl Platform for ListenBrainz {
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
 
-        let track = &response
+        let json = response
             .json::<listenbrainz::user::playing_now::Payload>()
-            .await?
-            .payload
-            .listens[0];
+            .await?;
+        let track = json.payload.listens.first();
 
-        if track.playing_now {
+        if track.is_some_and(|track| track.playing_now) {
             return Ok(Some(Track {
-                artist: track.track_metadata.artist_name.to_string(),
-                name: track.track_metadata.track_name.to_string(),
+                artist: track.unwrap().track_metadata.artist_name.to_string(),
+                name: track.unwrap().track_metadata.track_name.to_string(),
             }));
         }
 
