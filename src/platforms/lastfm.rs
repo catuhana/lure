@@ -82,18 +82,18 @@ impl Platform for LastFM {
         let json = response
             .json::<lastfm::user::get_recent_tracks::Payload>()
             .await?;
-        let track = json.recenttracks.track.first();
 
-        if track.is_some_and(|track| {
-            track
+        if let Some(track) = json.recenttracks.track.first() {
+            if track
                 .attr
                 .as_ref()
-                .is_some_and(|attr| attr.nowplaying.is_some())
-        }) {
-            return Ok(Some(Track {
-                artist: track.unwrap().artist.text.to_string(),
-                name: track.unwrap().name.to_string(),
-            }));
+                .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| np == "true"))
+            {
+                return Ok(Some(Track {
+                    artist: track.artist.text.to_string(),
+                    name: track.name.to_string(),
+                }));
+            }
         }
 
         Ok(None)
