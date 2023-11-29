@@ -1,7 +1,8 @@
 use clap::Parser;
 use confique::Config;
 use rive_models::authentication::Authentication;
-use tokio::sync;
+use tokio::sync::mpsc;
+use tracing_subscriber::EnvFilter;
 
 mod channel_listener;
 mod cli;
@@ -21,7 +22,7 @@ use crate::platforms::{Platform, Track};
 use crate::rive::ClientExt;
 
 #[derive(Clone, Debug)]
-pub enum ChannelPayload {
+pub enum ChannelMessage {
     Track(Option<Track>),
     Exit(bool),
 }
@@ -30,8 +31,7 @@ pub enum ChannelPayload {
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("lure=info")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("lure=info")),
         )
         .init();
 
@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
                 }))
                 .load()?;
 
-            let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
+            let (tx, rx) = mpsc::unbounded_channel::<ChannelMessage>();
 
             exit_handler::handle(tx.clone());
 
@@ -106,7 +106,7 @@ async fn main() -> anyhow::Result<()> {
             let rive_client =
                 rive_http::Client::new(Authentication::SessionToken(options.session_token));
             if rive_client.ping().await.is_err() {
-                tx.send(ChannelPayload::Exit(false))?;
+                tx.send(ChannelMessage::Exit(false))?;
             }
 
             channel_listener::listen(rx, rive_client, options.status).await;

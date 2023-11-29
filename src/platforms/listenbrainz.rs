@@ -8,7 +8,7 @@ use tokio::{sync::mpsc::UnboundedSender, time};
 use super::{Platform, Track};
 
 use crate::models::listenbrainz;
-use crate::ChannelPayload;
+use crate::ChannelMessage;
 
 #[derive(Default)]
 pub struct ListenBrainz {
@@ -20,7 +20,7 @@ pub struct ListenBrainz {
 impl ListenBrainz {
     pub async fn event_loop(
         self,
-        tx: UnboundedSender<ChannelPayload>,
+        tx: UnboundedSender<ChannelMessage>,
         check_interval: u64,
     ) -> anyhow::Result<()> {
         let mut interval = time::interval(Duration::from_secs(check_interval));
@@ -29,7 +29,7 @@ impl ListenBrainz {
 
             let track = self.get_current_track().await;
             match track {
-                Ok(track) => tx.send(ChannelPayload::Track(track))?,
+                Ok(track) => tx.send(ChannelMessage::Track(track))?,
                 Err(err) => tracing::error!("ListenBrainz API error: {err}"),
             }
         }

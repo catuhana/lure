@@ -1,8 +1,8 @@
 use tokio::{signal, sync::mpsc::UnboundedSender};
 
-use crate::ChannelPayload;
+use crate::ChannelMessage;
 
-pub fn handle(tx: UnboundedSender<ChannelPayload>) {
+pub fn handle(tx: UnboundedSender<ChannelMessage>) {
     tracing::debug!("spawning exit signal handler");
 
     tokio::spawn(async move {
@@ -24,7 +24,7 @@ pub fn handle(tx: UnboundedSender<ChannelPayload>) {
         #[cfg(windows)]
         ctrl_c.await.expect("CTRL-C handler could not be created");
 
-        tx.send(ChannelPayload::Exit(true))
+        tx.send(ChannelMessage::Exit(true))
             .expect("CTRL-C handler could not be created");
     });
 
