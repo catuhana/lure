@@ -75,6 +75,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               release_id: ${{ needs.create-release.outputs.release-id }},
-              name: "lure-release-${{ runner.os }}",
+              name: "lure-release-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}",
               data: asset
             });
