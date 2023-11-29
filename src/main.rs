@@ -50,7 +50,7 @@ async fn main() -> anyhow::Result<()> {
 
             let (tx, rx) = sync::mpsc::unbounded_channel::<ChannelPayload>();
 
-            exit_handler::Handler::new(tx.clone()).handle();
+            exit_handler::handle(tx.clone());
 
             let tx_main = tx.clone();
             tokio::spawn(async move {
@@ -109,9 +109,7 @@ async fn main() -> anyhow::Result<()> {
                 tx.send(ChannelPayload::Exit(false))?;
             }
 
-            channel_listener::Listener::new(rx)
-                .listen(rive_client, options.status)
-                .await;
+            channel_listener::listen(rx, rive_client, options.status).await;
         }
         cli::Subcommands::Config(config) => match config {
             cli::ConfigSubcommand::Generate { print } => {
