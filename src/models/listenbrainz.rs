@@ -9,12 +9,12 @@ pub mod user {
         use super::{Deserialize, Serialize};
 
         #[derive(Deserialize, Serialize, Debug)]
-        pub struct Payload<'a> {
-            pub payload: PayloadPayload<'a>,
+        pub struct Data<'a> {
+            pub payload: Payload<'a>,
         }
 
         #[derive(Deserialize, Serialize, Debug)]
-        pub struct PayloadPayload<'a> {
+        pub struct Payload<'a> {
             pub count: u32,
             pub listens: Vec<Listen<'a>>,
             pub playing_now: bool,

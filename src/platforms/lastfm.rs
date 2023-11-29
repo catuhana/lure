@@ -80,7 +80,7 @@ impl Platform for LastFM {
         response.error_for_status_ref()?;
 
         let json = response
-            .json::<lastfm::user::get_recent_tracks::Payload>()
+            .json::<lastfm::user::get_recent_tracks::Data>()
             .await?;
 
         if let Some(track) = json.recenttracks.track.first() {

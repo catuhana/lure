@@ -51,7 +51,7 @@ impl Platform for ListenBrainz {
         response.error_for_status_ref()?;
 
         let json = response
-            .json::<listenbrainz::user::playing_now::Payload>()
+            .json::<listenbrainz::user::playing_now::Data>()
             .await?;
 
         if let Some(track) = json.payload.listens.first() {
