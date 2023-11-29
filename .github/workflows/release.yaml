@@ -69,7 +69,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const asset = await (await import("node:fs")).readFile(`target/release/${github.repository.name}${{ runner.os == 'Windows' && '.exe' || '' }}`);
+            const asset = await (await import("node:fs")).readFile(`target/release/${context.repo.repo}${{ runner.os == 'Windows' && '.exe' || '' }}`);
 
             await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
