@@ -2,16 +2,16 @@
 
 lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small _daemon_ that sets the currently playing track on Last.fm, ListenBrainz (and other platforms) as Revolt user status.
 
-[![CI Status](https://img.shields.io/github/actions/workflow/status/tuhanayim/lure/ci.yaml?style=flat-square&label=CI)](https://github.com/tuhanayim/lure/actions/workflows/ci.yaml)
-[![CD Status](https://img.shields.io/github/actions/workflow/status/tuhanayim/lure/cd.yaml?style=flat-square&label=CD)](https://github.com/tuhanayim/lure/actions/workflows/cd.yaml)
-[![Latest Release](https://img.shields.io/github/v/release/tuhanayim/lure?style=flat-square)](https://github.com/tuhanayim/lure/releases/latest)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/ci.yaml?style=flat-square&label=CI)](https://github.com/catuhana/lure/actions/workflows/ci.yaml)
+[![CD Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/cd.yaml?style=flat-square&label=CD)](https://github.com/catuhana/lure/actions/workflows/cd.yaml)
+[![Latest Release](https://img.shields.io/github/v/release/catuhana/lure?style=flat-square)](https://github.com/catuhana/lure/releases/latest)
 
 ## Installation
 
 lure is tested on Linux and Windows, and is expected to work on macOS too. To install, simply run:
 
 ```sh
-cargo install --git https://github.com/tuhanayim/lure
+cargo install --git https://github.com/catuhana/lure
 ```
 
 lure currently has two platform features enabled by default. Unused platforms can be disabled by using `--no-default-features` and `--features`.
@@ -19,7 +19,7 @@ lure currently has two platform features enabled by default. Unused platforms ca
 For example, to build lure only with Last.fm platform feature, simply append `--no-default-features --features lastfm` to the build command above:
 
 ```sh
-cargo install --git https://github.com/tuhanayim/lure --no-default-features --features lastfm
+cargo install --git https://github.com/catuhana/lure --no-default-features --features lastfm
 ```
 
 All available and current default platform features can be checked from [Cargo.toml](Cargo.toml) file.

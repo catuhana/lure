@@ -206,7 +206,7 @@ checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 [[package]]
 name = "confique"
 version = "0.2.4"
-source = "git+https://github.com/tuhanayim/confique?rev=2c85724#2c85724629c038df7b78b3ea3bbb947b4e4c9f7d"
+source = "git+https://github.com/catuhana/confique?rev=2c85724#2c85724629c038df7b78b3ea3bbb947b4e4c9f7d"
 dependencies = [
  "confique-macro",
  "serde",
@@ -216,7 +216,7 @@ dependencies = [
 [[package]]
 name = "confique-macro"
 version = "0.0.8"
-source = "git+https://github.com/tuhanayim/confique?rev=2c85724#2c85724629c038df7b78b3ea3bbb947b4e4c9f7d"
+source = "git+https://github.com/catuhana/confique?rev=2c85724#2c85724629c038df7b78b3ea3bbb947b4e4c9f7d"
 dependencies = [
  "heck",
  "proc-macro2",
