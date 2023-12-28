@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.76"
+anyhow = "1.0.77"
 async-trait = "0.1.75"
 clap = { version = "4.4.11", features = ["derive"] }
 confique = { git = "https://github.com/catuhana/confique", rev = "2c85724", default-features = false, features = [
