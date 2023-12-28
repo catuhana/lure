@@ -8,7 +8,7 @@ use tokio::{sync::mpsc::UnboundedSender, time};
 use super::{Platform, Track};
 
 use crate::models::lastfm;
-use crate::ChannelPayload;
+use crate::ChannelMessage;
 
 #[derive(Default)]
 pub struct LastFM {
@@ -25,7 +25,7 @@ pub trait LastFMPlatform: Platform {
 
     async fn event_loop(
         self,
-        tx: UnboundedSender<ChannelPayload>,
+        tx: UnboundedSender<ChannelMessage>,
         check_interval: u64,
     ) -> anyhow::Result<()>;
 }
@@ -35,7 +35,7 @@ impl LastFMPlatform for LastFM {
 
     async fn event_loop(
         self,
-        tx: UnboundedSender<ChannelPayload>,
+        tx: UnboundedSender<ChannelMessage>,
         check_interval: u64,
     ) -> anyhow::Result<()> {
         let mut interval = time::interval(Duration::from_secs(check_interval));
@@ -44,7 +44,7 @@ impl LastFMPlatform for LastFM {
 
             let track = self.get_current_track().await;
             match track {
-                Ok(track) => tx.send(ChannelPayload::Track(track))?,
+                Ok(track) => tx.send(ChannelMessage::Track(track))?,
                 Err(err) => tracing::error!("Last.fm API error: {err}"),
             }
         }
@@ -77,7 +77,7 @@ impl Platform for LastFM {
         response.error_for_status_ref()?;
 
         let json = response
-            .json::<lastfm::user::get_recent_tracks::Payload>()
+            .json::<lastfm::user::get_recent_tracks::Data>()
             .await?;
 
         if let Some(track) = json.recenttracks.track.first() {

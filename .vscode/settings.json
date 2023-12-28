@@ -1,0 +1,11 @@
+{
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[markdown][json][yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+}

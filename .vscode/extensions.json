@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "serayuzgur.crates",
+    "tamasfe.even-better-toml",
+    "github.vscode-github-actions",
+    "esbenp.prettier-vscode",
+    "rust-lang.rust-analyzer"
+  ]
+}

@@ -9,7 +9,7 @@ pub mod user {
         use super::{Deserialize, Serialize};
 
         #[derive(Deserialize, Serialize, Debug)]
-        pub struct Payload<'a> {
+        pub struct Data<'a> {
             pub recenttracks: RecentTracks<'a>,
         }
 
