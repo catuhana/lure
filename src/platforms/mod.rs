@@ -6,13 +6,6 @@ pub struct Track {
     pub artist: String,
     pub name: String,
 }
-
-#[derive(Debug, Clone)]
-pub struct Status {
-    pub template: String,
-    pub idle: Option<String>,
-}
-
 pub trait Platform {
     type Platform;
 
