@@ -10,7 +10,7 @@ confique = { git = "https://github.com/catuhana/confique", rev = "2c85724", defa
   "toml",
 ] }
 dirs = "5.0.1"
-reqwest = { version = "0.11.24", features = ["json"] }
+reqwest = { version = "0.11.26", features = ["json"] }
 rive-http = { git = "https://codeberg.org/rive/rive", rev = "0c2f126" }
 rive-models = { git = "https://codeberg.org/rive/rive", rev = "0c2f126" }
 serde = { version = "1.0.197", features = ["derive"] }
