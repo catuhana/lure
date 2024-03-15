@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.80"
-clap = { version = "4.5.1", features = ["derive"] }
+clap = { version = "4.5.3", features = ["derive"] }
 confique = { git = "https://github.com/catuhana/confique", rev = "2c85724", default-features = false, features = [
   "toml",
 ] }
