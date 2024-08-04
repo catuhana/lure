@@ -5,7 +5,7 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "[markdown][json][yaml]": {
+  "[markdown][json][jsonc][yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  }
 }
