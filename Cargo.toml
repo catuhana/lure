@@ -1,5 +1,11 @@
 [package]
 name = "lure"
+description = "Display your currently playing track from Last.fm, ListenBrainz, and other services in your Revolt status!"
+authors = ["tuhana <tuhana.cat+git@gmail.com>"]
 version = "0.4.0"
 rust-version = "1.80"
 edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+clap = { version = "4.5.13", features = ["derive"] }

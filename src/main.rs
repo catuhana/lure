@@ -1,7 +1,10 @@
-fn greet(name: &str) -> String {
-    format!("Hello, {name}!")
-}
+use clap::Parser as _;
+use cli::Command as _;
 
-fn main() {
-    println!("{}", greet("lure"))
+mod cli;
+
+fn main() -> anyhow::Result<()> {
+    match cli::Cli::parse().subcommand {
+        cli::Subcommands::Start(start) => start.run(),
+    }
 }
