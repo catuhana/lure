@@ -12,8 +12,6 @@ pub struct CommandArguments {
 }
 
 impl Command for CommandArguments {
-    type Arguments = Self;
-
     fn run(&self) -> anyhow::Result<()> {
         println!("meow");
 

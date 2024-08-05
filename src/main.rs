@@ -6,5 +6,6 @@ mod cli;
 fn main() -> anyhow::Result<()> {
     match cli::Cli::parse().subcommand {
         cli::Subcommands::Start(start) => start.run(),
+        cli::Subcommands::Config(config) => config.run(),
     }
 }

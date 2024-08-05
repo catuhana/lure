@@ -1,10 +1,9 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
+mod config;
 mod start;
 
 pub trait Command {
-    type Arguments: Args;
-
     fn run(&self) -> anyhow::Result<()>;
 }
 
@@ -19,4 +18,8 @@ pub struct Cli {
 pub enum Subcommands {
     /// Start lure.
     Start(start::CommandArguments),
+
+    /// Lure configuration options
+    #[command(subcommand)]
+    Config(config::CommandSubcommands),
 }
