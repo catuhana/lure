@@ -18,7 +18,6 @@ pub struct Cli {
 pub enum Subcommands {
     /// Start lure.
     Start(start::CommandArguments),
-
     /// Lure configuration options
     #[command(subcommand)]
     Config(config::CommandSubcommands),

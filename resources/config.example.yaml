@@ -1,0 +1,46 @@
+## Which service to enable for checking your listening status.
+## Only one service can be enabled at a time.
+##
+## This field is ignored if all of the `services_` prefixed
+## features are disabled.
+##
+## Available services: lastfm, listenbrainz
+enable: lastfm
+
+## Configuration for the services.
+##
+## This field is ignored if all of the `services_` prefixed
+## features are disabled.
+services:
+  ## Common options for all services.
+  _common:
+    ## Interval in seconds to check for new listening activity.
+    ##
+    ## Default: 16
+    check_interval: 16
+  ## Options for the Last.fm service.
+  lastfm:
+    ## Last.fm username to check for listening activity.
+    username:
+    ## Last.fm API key to use for checking listening activity.
+    api_key:
+  ## Options for the ListenBrainz service.
+  listenbrainz:
+    ## ListenBrainz username to check for listening activity.
+    username:
+    ## ListenBrainz API URL to use for checking listening activity.
+    ##
+    ## Default: https://api.listenbrainz.org
+    api_url: https://api.listenbrainz.org
+
+## Configuration for Revolt.
+revolt:
+  ## The API URL of the instance.
+  ##
+  ## Default: https://api.revolt.chat
+  api_url: https://api.revolt.chat
+  ## The session token of the account.
+  ##
+  ## To obtain a new session token for lure, run `lure config revolt get-session-token`
+  ## and follow the provided steps.
+  session_token:

@@ -6,11 +6,16 @@ use super::Command;
 pub enum CommandSubcommands {
     /// Generate an example lure configuration file and print it.
     Generate,
+    // TODO: Implement `revolt get-session-token`
 }
 
 impl Command for CommandSubcommands {
     fn run(&self) -> anyhow::Result<()> {
-        println!("config");
+        match self {
+            Self::Generate => {
+                print!("{}", include_str!("../../resources/config.example.yaml"));
+            }
+        }
 
         Ok(())
     }

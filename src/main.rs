@@ -2,6 +2,7 @@ use clap::Parser as _;
 use cli::Command as _;
 
 mod cli;
+mod config;
 
 fn main() -> anyhow::Result<()> {
     match cli::Cli::parse().subcommand {
