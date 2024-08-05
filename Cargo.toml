@@ -10,6 +10,8 @@ edition = "2021"
 anyhow = "1.0.86"
 clap = { version = "4.5.13", features = ["derive"] }
 figment = { version = "0.10.19", features = ["env", "yaml"] }
+inquire = { version = "0.7.5", default-features = false, features = ["crossterm"] }
+regex = "1.10.6"
 serde = { version = "1.0.204", features = ["derive"] }
 
 [features]
