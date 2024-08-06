@@ -24,8 +24,13 @@ Important note: Session token allows full access to your account! Never share it
 
 static REVOLT_SESSION_FRIENDLY_NAME: LazyLock<String> = LazyLock::new(|| {
     format!(
-        "lure on {} (github.com/catuhana/lure)",
-        std::env::consts::OS
+        "lure on {os}{repo}",
+        os = std::env::consts::OS,
+        repo = if let Some(stripped_repo) = env!("CARGO_PKG_REPOSITORY").strip_prefix("https://") {
+            format!(" ({})", stripped_repo)
+        } else {
+            String::default()
+        }
     )
 });
 
@@ -149,7 +154,7 @@ impl Command for CommandSubcommands {
                             ticket: mfa_ticket,
                             allowed_methods,
                         } => {
-                            let prompt = if allowed_methods.len() > 1 {
+                            let mfa_prompt = if allowed_methods.len() > 1 {
                                 Text::new("Enter 2FA authentication or recovery code:")
                                     .with_validator(INQUIRE_TOTP_OR_REGEX_VALIDATOR.as_ref())
                             } else {
@@ -157,7 +162,7 @@ impl Command for CommandSubcommands {
                                     .with_validator(INQUIRE_TOTP_VALIDATOR.as_ref())
                             };
 
-                            let mfa_data = match prompt.prompt() {
+                            let mfa_data = match mfa_prompt.prompt() {
                                 Ok(mfa_code) => {
                                     if TOTP_REGEX.is_match(&mfa_code) {
                                         MFAData::Totp {
