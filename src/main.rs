@@ -4,9 +4,10 @@ use cli::Command as _;
 mod cli;
 mod config;
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     match cli::Cli::parse().subcommand {
-        cli::Subcommands::Start(start) => start.run(),
-        cli::Subcommands::Config(config) => config.run(),
+        cli::Subcommands::Start(start) => start.run().await,
+        cli::Subcommands::Config(config) => config.run().await,
     }
 }

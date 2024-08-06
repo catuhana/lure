@@ -64,10 +64,10 @@ pub struct LastFMServiceOptions {
 #[cfg(feature = "services_listenbrainz")]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ListenbrainzServiceOptions {
-    /// ListenBrainz username to check for listening activity.
+    /// `ListenBrainz` username to check for listening activity.
     pub username: String,
 
-    /// ListenBrainz API URL to use for checking listening activity.
+    /// `ListenBrainz` API URL to use for checking listening activity.
     #[serde(default = "default_listenbrainz_api_url")]
     pub api_url: String,
 }

@@ -4,7 +4,7 @@ mod config;
 mod start;
 
 pub trait Command {
-    fn run(&self) -> anyhow::Result<()>;
+    async fn run(&self) -> anyhow::Result<()>;
 }
 
 #[derive(Parser, Debug)]

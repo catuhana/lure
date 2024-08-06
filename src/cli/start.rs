@@ -18,7 +18,7 @@ pub struct CommandArguments {
 }
 
 impl Command for CommandArguments {
-    fn run(&self) -> anyhow::Result<()> {
+    async fn run(&self) -> anyhow::Result<()> {
         let config_path = self
             .config
             .clone()
