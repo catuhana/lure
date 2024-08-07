@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     /// Which service to enable for checking your listening status.
-    #[cfg(any(feature = "services_lastfm", feature = "services_listenbrainz"))]
+    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     pub enable: Option<Services>,
     /// Configuration for the services.
-    #[cfg(any(feature = "services_lastfm", feature = "services_listenbrainz"))]
+    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     pub services: ServiceOptions,
     /// Configuration for Revolt.
     pub revolt: RevoltOptions,
@@ -16,10 +16,10 @@ pub struct Config {
 #[serde(rename_all = "lowercase")]
 pub enum Services {
     /// Last.fm service.
-    #[cfg(feature = "services_lastfm")]
+    #[cfg(feature = "services-lastfm")]
     LastFM,
     /// Listenbrainz service.
-    #[cfg(feature = "services_listenbrainz")]
+    #[cfg(feature = "services-listenbrainz")]
     Listenbrainz,
 }
 
@@ -29,10 +29,10 @@ pub struct ServiceOptions {
     #[serde(default = "default_common_service_options")]
     pub _common: Option<CommonServiceOptions>,
     /// Options for the Last.fm service.
-    #[cfg(feature = "services_lastfm")]
+    #[cfg(feature = "services-lastfm")]
     pub lastfm: Option<LastFMServiceOptions>,
     /// Options for the Listenbrainz service.
-    #[cfg(feature = "services_listenbrainz")]
+    #[cfg(feature = "services-listenbrainz")]
     pub listenbrainz: Option<ListenbrainzServiceOptions>,
 }
 
@@ -52,7 +52,7 @@ pub struct CommonServiceOptions {
     pub check_interval: u8,
 }
 
-#[cfg(feature = "services_lastfm")]
+#[cfg(feature = "services-lastfm")]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct LastFMServiceOptions {
     /// Last.fm username to check for listening activity.
@@ -61,7 +61,7 @@ pub struct LastFMServiceOptions {
     pub api_key: String,
 }
 
-#[cfg(feature = "services_listenbrainz")]
+#[cfg(feature = "services-listenbrainz")]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ListenbrainzServiceOptions {
     /// `ListenBrainz` username to check for listening activity.
@@ -86,7 +86,7 @@ const fn default_check_interval() -> u8 {
     16
 }
 
-#[cfg(feature = "services_listenbrainz")]
+#[cfg(feature = "services-listenbrainz")]
 fn default_listenbrainz_api_url() -> String {
     String::from("https://api.listenbrainz.org")
 }
