@@ -49,30 +49,34 @@ impl Listenbrainz {
 }
 
 impl ServiceProvider for Listenbrainz {
-    async fn initialise(&mut self) -> anyhow::Result<&Self> {
+    fn initialise(&mut self) -> anyhow::Result<&Self> {
         Ok(self)
     }
 
-    async fn event_loop(
-        &self,
-        tx: mpsc::Sender<crate::cli::start::ChannelData>,
-    ) -> anyhow::Result<()> {
-        // TODO: Maybe turn this into a trait implementation? Since it
-        // seems like it will look the same most of the time.
-        let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
-        loop {
-            interval.tick().await;
+    // TODO: Maybe turn this into a trait implementation? Since it
+    // seems like it will look the same most of the time.
+    fn track_check_loop(self, tx: mpsc::Sender<crate::cli::start::ChannelData>) {
+        tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
+            loop {
+                interval.tick().await;
 
-            let track = self.get_current_playing_track().await;
-            match track {
-                Ok(track) => tx.send(ChannelData::Track(track)).await?,
-                Err(err) => {
-                    // TODO: Use tracing::error!
-                    eprintln!("Listenbrainz API error: {err}");
-                    tx.send(ChannelData::Exit(false)).await?;
+                let track = self.get_current_playing_track().await;
+                match track {
+                    Ok(track) => tx.send(ChannelData::Track(track)).await?,
+                    Err(err) => {
+                        // TODO: Use tracing::error!
+                        eprintln!("Listenbrainz API error: {err}");
+
+                        tx.send(ChannelData::Exit(false)).await?;
+
+                        break;
+                    }
                 }
             }
-        }
+
+            Ok::<_, anyhow::Error>(())
+        });
     }
 }
 

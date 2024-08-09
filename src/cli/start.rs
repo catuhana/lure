@@ -62,12 +62,8 @@ impl Command for CommandArguments {
                         ..Default::default()
                     };
 
-                    service.initialise().await?;
-                    tokio::spawn(async move {
-                        service.event_loop(tx).await?;
-
-                        Ok::<_, anyhow::Error>(())
-                    });
+                    service.initialise()?;
+                    service.track_check_loop(tx);
 
                     channel_listener(rx).await?;
                 }
@@ -92,12 +88,8 @@ impl Command for CommandArguments {
                         ..Default::default()
                     };
 
-                    service.initialise().await?;
-                    tokio::spawn(async move {
-                        service.event_loop(tx).await?;
-
-                        Ok::<_, anyhow::Error>(())
-                    });
+                    service.initialise()?;
+                    service.track_check_loop(tx);
 
                     channel_listener(rx).await?;
                 }

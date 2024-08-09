@@ -16,7 +16,7 @@ pub struct TrackInfo {
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 pub trait ServiceProvider: Sized {
-    async fn initialise(&mut self) -> anyhow::Result<&Self>;
+    fn initialise(&mut self) -> anyhow::Result<&Self>;
 
-    async fn event_loop(&self, tx: Sender<ChannelData>) -> anyhow::Result<()>;
+    fn track_check_loop(self, tx: Sender<ChannelData>);
 }

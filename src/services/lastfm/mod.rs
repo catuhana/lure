@@ -69,27 +69,33 @@ impl LastFM {
 }
 
 impl ServiceProvider for LastFM {
-    async fn initialise(&mut self) -> anyhow::Result<&Self> {
+    fn initialise(&mut self) -> anyhow::Result<&Self> {
         self.http_client = ClientBuilder::new().user_agent(Self::USER_AGENT).build()?;
 
         Ok(self)
     }
 
-    async fn event_loop(&self, tx: Sender<ChannelData>) -> anyhow::Result<()> {
-        let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
-        loop {
-            interval.tick().await;
+    fn track_check_loop(self, tx: Sender<ChannelData>) {
+        tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
+            loop {
+                interval.tick().await;
 
-            let track = self.get_current_playing_track().await;
-            match track {
-                Ok(track) => tx.send(ChannelData::Track(track)).await?,
-                Err(err) => {
-                    // TODO: Use tracing::error!
-                    eprintln!("Last.fm API error: {err}");
-                    tx.send(ChannelData::Exit(false)).await?;
+                let track = self.get_current_playing_track().await;
+                match track {
+                    Ok(track) => tx.send(ChannelData::Track(track)).await?,
+                    Err(err) => {
+                        // TODO: Use tracing::error!
+                        eprintln!("Last.fm API error: {err}");
+                        tx.send(ChannelData::Exit(false)).await?;
+
+                        break;
+                    }
                 }
             }
-        }
+
+            Ok::<_, anyhow::Error>(())
+        });
     }
 }
 
