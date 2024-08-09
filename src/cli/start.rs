@@ -7,6 +7,7 @@ use figment::{
     providers::{Env, Format, Yaml},
     Figment,
 };
+use figment_file_provider_adapter::FileAdapter;
 use tokio::{signal, sync::mpsc};
 use tracing::trace;
 
@@ -32,10 +33,12 @@ impl Command for CommandArguments {
             .clone()
             .unwrap_or_else(|| PathBuf::from("config.yaml"));
 
-        let config = Figment::new()
-            .merge(Yaml::file(config_path))
+        let config: config::Config = Figment::new()
+            .merge(Yaml::file(&config_path))
             .merge(Env::raw().split("__"))
-            .extract::<config::Config>()?;
+            .merge(FileAdapter::wrap(Yaml::file(config_path)).only(&["api_key"]))
+            .merge(FileAdapter::wrap(Env::raw().split("__")).only(&["session_token"]))
+            .extract()?;
 
         let (tx, rx) = mpsc::channel::<ChannelData>(1);
 
