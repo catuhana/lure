@@ -6,6 +6,7 @@ use tokio::{
     sync::mpsc,
     time::{interval, Duration},
 };
+use tracing::{error, trace};
 
 use crate::{cli::start::ChannelData, config::ListenbrainzServiceOptions};
 
@@ -57,8 +58,11 @@ impl ServiceProvider for Listenbrainz {
     // TODO: Maybe turn this into a trait implementation? Since it
     // seems like it will look the same most of the time.
     fn track_check_loop(self, tx: mpsc::Sender<crate::cli::start::ChannelData>) {
+        trace!("spawning task for `track_check_loop`");
         tokio::spawn(async move {
             let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
+
+            trace!("looping `track_check_loop`");
             loop {
                 interval.tick().await;
 
@@ -66,8 +70,7 @@ impl ServiceProvider for Listenbrainz {
                 match track {
                     Ok(track) => tx.send(ChannelData::Track(track)).await?,
                     Err(err) => {
-                        // TODO: Use tracing::error!
-                        eprintln!("Listenbrainz API error: {err}");
+                        error!("Listenbrainz API error: {err}");
 
                         tx.send(ChannelData::Exit(false)).await?;
 
@@ -75,9 +78,11 @@ impl ServiceProvider for Listenbrainz {
                     }
                 }
             }
+            trace!("got out of `track_check_loop` loop");
 
             Ok::<_, anyhow::Error>(())
         });
+        trace!("spawned task for `track_check_loop`");
     }
 }
 

@@ -8,6 +8,7 @@ use tokio::{
     sync::mpsc::Sender,
     time::{interval, Duration},
 };
+use tracing::{error, trace};
 
 use crate::{cli::start::ChannelData, config::LastFMServiceOptions};
 
@@ -70,14 +71,19 @@ impl LastFM {
 
 impl ServiceProvider for LastFM {
     fn initialise(&mut self) -> anyhow::Result<&Self> {
+        trace!("initialising self fields");
         self.http_client = ClientBuilder::new().user_agent(Self::USER_AGENT).build()?;
+        trace!("initialised self fields");
 
         Ok(self)
     }
 
     fn track_check_loop(self, tx: Sender<ChannelData>) {
+        trace!("spawning task for `track_check_loop`");
         tokio::spawn(async move {
             let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
+
+            trace!("looping `track_check_loop`");
             loop {
                 interval.tick().await;
 
@@ -85,17 +91,19 @@ impl ServiceProvider for LastFM {
                 match track {
                     Ok(track) => tx.send(ChannelData::Track(track)).await?,
                     Err(err) => {
-                        // TODO: Use tracing::error!
-                        eprintln!("Last.fm API error: {err}");
+                        error!("Last.fm API error: {err}");
+
                         tx.send(ChannelData::Exit(false)).await?;
 
                         break;
                     }
                 }
             }
+            trace!("got out of `track_check_loop` loop");
 
             Ok::<_, anyhow::Error>(())
         });
+        trace!("spawned task for `track_check_loop`");
     }
 }
 

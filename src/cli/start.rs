@@ -8,6 +8,7 @@ use figment::{
     Figment,
 };
 use tokio::{signal, sync::mpsc};
+use tracing::trace;
 
 use crate::services::TrackInfo;
 use crate::{config, services::ServiceProvider};
@@ -23,6 +24,9 @@ pub struct CommandArguments {
 
 impl Command for CommandArguments {
     async fn run(&self) -> anyhow::Result<()> {
+        trace!("`start` subcommand");
+
+        // TODO: Use default from config.rs
         let config_path = self
             .config
             .clone()
@@ -110,6 +114,7 @@ pub enum ChannelData {
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 async fn channel_listener(mut rx: mpsc::Receiver<ChannelData>) -> anyhow::Result<()> {
+    trace!("looping `channel_listener`");
     while let Some(data) = rx.recv().await {
         match data {
             ChannelData::Track(track) => {
@@ -124,12 +129,14 @@ async fn channel_listener(mut rx: mpsc::Receiver<ChannelData>) -> anyhow::Result
             }
         }
     }
+    trace!("got out of `channel_listener` loop");
 
     Ok(())
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 fn exit_handler(tx: mpsc::Sender<ChannelData>) {
+    trace!("spawning task for `exit_handler`");
     tokio::spawn(async move {
         let ctrl_c = signal::ctrl_c();
 
@@ -153,4 +160,5 @@ fn exit_handler(tx: mpsc::Sender<ChannelData>) {
             .await
             .expect("CTRL-C handler could not be created");
     });
+    trace!("spawned task for `exit_handler`")
 }

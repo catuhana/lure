@@ -9,6 +9,7 @@ use regex::Regex;
 use reqwest::StatusCode;
 use rive_models::{data::LoginData, mfa::MFAData, session::LoginResponse};
 use serde::{de, Deserialize, Deserializer};
+use tracing::trace;
 
 use super::Command;
 
@@ -103,12 +104,17 @@ pub enum RevoltSubcommands {
 
 impl Command for CommandSubcommands {
     async fn run(&self) -> anyhow::Result<()> {
+        trace!("`config` subcommand");
+
         match self {
             Self::Generate => {
+                trace!("`config generate` subcommand");
                 print!("{}", include_str!("../../resources/config.example.yaml"));
             }
             Self::Revolt(revolt_subcommand) => match revolt_subcommand {
                 RevoltSubcommands::GetSessionToken { revolt_api_url } => {
+                    trace!("`config revolt get-session-token` subcommand");
+
                     let reqwest_client = reqwest::Client::new();
 
                     let Ok(email) = Text::new("Revolt e-mail:")
