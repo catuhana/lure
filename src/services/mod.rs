@@ -5,6 +5,7 @@ use crate::cli::start::ChannelData;
 use tokio::sync::mpsc::Sender;
 
 pub mod lastfm;
+pub mod listenbrainz;
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 #[derive(Debug)]

@@ -1,0 +1,76 @@
+#![cfg(feature = "services-listenbrainz")]
+
+use tokio::{
+    sync::mpsc,
+    time::{interval, Duration},
+};
+
+use crate::{cli::start::ChannelData, config::ListenbrainzServiceOptions};
+
+use super::{ServiceProvider, TrackInfo};
+
+mod models;
+
+#[derive(Default, Debug)]
+pub struct Listenbrainz {
+    pub http_client: reqwest::Client,
+    pub options: ListenbrainzServiceOptions,
+}
+
+impl Listenbrainz {
+    async fn get_current_playing_track(&self) -> anyhow::Result<Option<TrackInfo>> {
+        let url = format!(
+            "{}/1/user/{}/playing-now",
+            self.options.api_url, &self.options.username
+        );
+
+        let listens: models::user::playing_now::Data = self
+            .http_client
+            .get(url)
+            .send()
+            .await?
+            // TODO: handle this user friendly
+            .error_for_status()?
+            .json()
+            .await?;
+
+        if let Some(track) = listens.payload.listens.first() {
+            if track.playing_now {
+                return Ok(Some(TrackInfo {
+                    artist: track.track_metadata.artist_name.to_string(),
+                    name: track.track_metadata.track_name.to_string(),
+                }));
+            }
+        }
+
+        Ok(None)
+    }
+}
+
+impl ServiceProvider for Listenbrainz {
+    async fn initialise(&mut self) -> anyhow::Result<&Self> {
+        Ok(self)
+    }
+
+    async fn event_loop(
+        &self,
+        tx: mpsc::Sender<crate::cli::start::ChannelData>,
+    ) -> anyhow::Result<()> {
+        // TODO: Maybe turn this into a trait implementation? Since it
+        // seems like it will look the same most of the time.
+        let mut interval = interval(Duration::from_secs(self.options.check_interval.into()));
+        loop {
+            interval.tick().await;
+
+            let track = self.get_current_playing_track().await;
+            match track {
+                Ok(track) => tx.send(ChannelData::Track(track)).await?,
+                Err(err) => {
+                    // TODO: Use tracing::error!
+                    eprintln!("Listenbrainz API error: {err}");
+                    tx.send(ChannelData::Exit(false)).await?;
+                }
+            }
+        }
+    }
+}

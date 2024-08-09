@@ -16,7 +16,6 @@ use super::{ServiceProvider, TrackInfo};
 #[derive(Default, Debug)]
 pub struct LastFM {
     pub http_client: reqwest::Client,
-
     pub options: LastFMServiceOptions,
 }
 

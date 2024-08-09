@@ -72,7 +72,35 @@ impl Command for CommandArguments {
                     channel_listener(rx).await?;
                 }
                 #[cfg(feature = "services-listenbrainz")]
-                config::Services::Listenbrainz => unimplemented!(),
+                config::Services::Listenbrainz => {
+                    #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
+                    if config.services.listenbrainz.is_none() {
+                        anyhow::bail!("No Listenbrainz config specified, even though it's enabled.")
+                    }
+
+                    let mut service = crate::services::listenbrainz::Listenbrainz {
+                        #[cfg(all(
+                            feature = "services-listenbrainz",
+                            not(feature = "services-lastfm")
+                        ))]
+                        options: config.services.listenbrainz,
+                        #[cfg(all(
+                            feature = "services-listenbrainz",
+                            feature = "services-lastfm"
+                        ))]
+                        options: config.services.listenbrainz.unwrap(),
+                        ..Default::default()
+                    };
+
+                    service.initialise().await?;
+                    tokio::spawn(async move {
+                        service.event_loop(tx).await?;
+
+                        Ok::<_, anyhow::Error>(())
+                    });
+
+                    channel_listener(rx).await?;
+                }
             },
             None => return Ok(()),
         }
