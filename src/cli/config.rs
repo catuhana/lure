@@ -6,6 +6,7 @@ use inquire::{
     CustomUserError, Password, Text,
 };
 use regex::Regex;
+use reqwest::StatusCode;
 use rive_models::{data::LoginData, mfa::MFAData, session::LoginResponse};
 use serde::{de, Deserialize, Deserializer};
 
@@ -281,35 +282,39 @@ impl ReqwestResponseExt for reqwest::Response {
     where
         Self: Sized,
     {
-        match self.status().as_u16() {
-            200 | 204 => Ok(self),
-            400 | 401 | 403 => match self.json::<CommonRevoltLoginErrors>().await? {
-                CommonRevoltLoginErrors::UnverifiedAccount => {
-                    anyhow::bail!("Account you're trying to login is unverified.")
-                }
-                CommonRevoltLoginErrors::InvalidCredentials => {
-                    anyhow::bail!("Wrong credentials provided for login.")
-                }
-                CommonRevoltLoginErrors::InvalidToken => {
-                    anyhow::bail!("Wrong 2FA code provided.")
-                }
-                CommonRevoltLoginErrors::CompromisedPassword => {
-                    anyhow::bail!(
+        match self.status() {
+            StatusCode::OK | StatusCode::NO_CONTENT => Ok(self),
+            StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
+                match self.json::<CommonRevoltLoginErrors>().await? {
+                    CommonRevoltLoginErrors::UnverifiedAccount => {
+                        anyhow::bail!("Account you're trying to login is unverified.")
+                    }
+                    CommonRevoltLoginErrors::InvalidCredentials => {
+                        anyhow::bail!("Wrong credentials provided for login.")
+                    }
+                    CommonRevoltLoginErrors::InvalidToken => {
+                        anyhow::bail!("Wrong 2FA code provided.")
+                    }
+                    CommonRevoltLoginErrors::CompromisedPassword => {
+                        anyhow::bail!(
                         "Entered password is compromised. You might have entered a wrong password."
                     )
+                    }
+                    CommonRevoltLoginErrors::ShortPassword => anyhow::bail!(
+                        "Entered password is too short. You might have entered a wrong password."
+                    ),
+                    CommonRevoltLoginErrors::Blacklisted => {
+                        anyhow::bail!(
+                            "Entered e-mail is blacklisted. You might have entered a wrong e-mail."
+                        )
+                    }
+                    CommonRevoltLoginErrors::LockedOut => {
+                        anyhow::bail!(
+                            "This account is locked out. Please try again some time later."
+                        )
+                    }
                 }
-                CommonRevoltLoginErrors::ShortPassword => anyhow::bail!(
-                    "Entered password is too short. You might have entered a wrong password."
-                ),
-                CommonRevoltLoginErrors::Blacklisted => {
-                    anyhow::bail!(
-                        "Entered e-mail is blacklisted. You might have entered a wrong e-mail."
-                    )
-                }
-                CommonRevoltLoginErrors::LockedOut => {
-                    anyhow::bail!("This account is locked out. Please try again some time later.")
-                }
-            },
+            }
             _ => anyhow::bail!("Unexpected error: {}", self.text().await?),
         }
     }
