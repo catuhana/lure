@@ -1,6 +1,7 @@
 #![cfg(feature = "services-listenbrainz")]
 
 use reqwest::StatusCode;
+use serde::Deserialize;
 use tokio::{
     sync::mpsc,
     time::{interval, Duration},
@@ -80,6 +81,11 @@ impl ServiceProvider for Listenbrainz {
     }
 }
 
+#[derive(Deserialize)]
+struct ListenbrainzError {
+    error: String,
+}
+
 trait ReqwestResponseExt: Sized {
     async fn handle_user_friendly_error(self) -> anyhow::Result<Self>;
 }
@@ -89,7 +95,8 @@ impl ReqwestResponseExt for reqwest::Response {
         match self.status() {
             StatusCode::OK => Ok(self),
             StatusCode::NOT_FOUND => {
-                anyhow::bail!("The requested user was not found.");
+                let error: ListenbrainzError = self.json().await?;
+                anyhow::bail!("{}", error.error);
             }
             _ => anyhow::bail!(
                 "Unexpected response from Listenbrainz api: {}",
