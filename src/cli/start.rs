@@ -160,5 +160,5 @@ fn exit_handler(tx: mpsc::Sender<ChannelData>) {
             .await
             .expect("CTRL-C handler could not be created");
     });
-    trace!("spawned task for `exit_handler`")
+    trace!("spawned task for `exit_handler`");
 }

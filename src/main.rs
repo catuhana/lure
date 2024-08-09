@@ -1,6 +1,5 @@
 use clap::Parser as _;
 use cli::Command as _;
-use tracing::trace;
 
 mod cli;
 mod config;
