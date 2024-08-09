@@ -1,5 +1,6 @@
 #![cfg(feature = "services-listenbrainz")]
 
+use reqwest::StatusCode;
 use tokio::{
     sync::mpsc,
     time::{interval, Duration},
@@ -29,8 +30,8 @@ impl Listenbrainz {
             .get(url)
             .send()
             .await?
-            // TODO: handle this user friendly
-            .error_for_status()?
+            .handle_user_friendly_error()
+            .await?
             .json()
             .await?;
 
@@ -71,6 +72,25 @@ impl ServiceProvider for Listenbrainz {
                     tx.send(ChannelData::Exit(false)).await?;
                 }
             }
+        }
+    }
+}
+
+trait ReqwestResponseExt: Sized {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>;
+}
+
+impl ReqwestResponseExt for reqwest::Response {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
+        match self.status() {
+            StatusCode::OK => Ok(self),
+            StatusCode::NOT_FOUND => {
+                anyhow::bail!("The requested user was not found.");
+            }
+            _ => anyhow::bail!(
+                "Unexpected response from Listenbrainz api: {}",
+                self.text().await?
+            ),
         }
     }
 }
