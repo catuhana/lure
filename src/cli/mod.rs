@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
-mod config;
-mod start;
+pub mod config;
+pub mod start;
 
 pub trait Command {
     async fn run(&self) -> anyhow::Result<()>;
@@ -16,6 +16,7 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Subcommands {
+    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     /// Start lure.
     Start(start::CommandArguments),
     /// Lure configuration options

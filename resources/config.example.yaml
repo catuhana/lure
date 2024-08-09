@@ -12,18 +12,16 @@ enable: lastfm
 ## This field is ignored if all of the `services_` prefixed
 ## features are disabled.
 services:
-  ## Common options for all services.
-  _common:
-    ## Interval in seconds to check for new listening activity.
-    ##
-    ## Default: 16
-    check_interval: 16
   ## Options for the Last.fm service.
   lastfm:
     ## Last.fm username to check for listening activity.
     username:
     ## Last.fm API key to use for checking listening activity.
     api_key:
+    ## Interval in seconds to check for listening activity.
+    ##
+    ## Default: 16
+    check_interval: 16
   ## Options for the ListenBrainz service.
   listenbrainz:
     ## ListenBrainz username to check for listening activity.
@@ -32,6 +30,10 @@ services:
     ##
     ## Default: https://api.listenbrainz.org
     api_url: https://api.listenbrainz.org
+    ## Interval in seconds to check for listening activity.
+    ##
+    ## Default: 16
+    check_interval: 16
 
 ## Configuration for Revolt.
 revolt:

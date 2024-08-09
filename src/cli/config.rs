@@ -27,11 +27,11 @@ static REVOLT_SESSION_FRIENDLY_NAME: LazyLock<String> = LazyLock::new(|| {
     format!(
         "lure on {os}{repo}",
         os = std::env::consts::OS,
-        repo = if let Some(stripped_repo) = env!("CARGO_PKG_REPOSITORY").strip_prefix("https://") {
-            format!(" ({})", stripped_repo)
-        } else {
-            String::default()
-        }
+        repo = env!("CARGO_PKG_REPOSITORY")
+            .strip_prefix("https://")
+            .map_or_else(String::default, |stripped_repo| format!(
+                " ({stripped_repo})"
+            ))
     )
 });
 
@@ -271,17 +271,12 @@ impl<'de> Deserialize<'de> for CommonRevoltLoginErrors {
     }
 }
 
-trait ReqwestResponseExt {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>
-    where
-        Self: Sized;
+trait ReqwestResponseExt: Sized {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>;
 }
 
 impl ReqwestResponseExt for reqwest::Response {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
         match self.status() {
             StatusCode::OK | StatusCode::NO_CONTENT => Ok(self),
             StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
