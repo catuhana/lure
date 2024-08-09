@@ -2,15 +2,13 @@
 
 use serde::Deserialize;
 
+#[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 #[derive(Deserialize, Debug)]
 pub struct Config {
     /// Which service to enable for checking your listening status.
-    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     pub enable: Option<Services>,
     /// Configuration for the services.
-    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     pub services: ServiceOptions,
-    #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
     /// Configuration for Revolt.
     pub revolt: RevoltOptions,
 }

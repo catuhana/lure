@@ -44,7 +44,7 @@ impl Command for CommandArguments {
                     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
                     {
                         if config.services.lastfm.is_none() {
-                            anyhow::bail!("No lastfm config specified, even though it's enabled.")
+                            anyhow::bail!("No Last.fm config specified, even though it's enabled.")
                         }
                     }
 
