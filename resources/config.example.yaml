@@ -37,6 +37,17 @@ services:
 
 ## Configuration for Revolt.
 revolt:
+  ## The user status.
+  status:
+    ## The status template that will be used.
+    ##
+    ## Default: 🎵 Listening to %NAME% by %ARTIST%
+    template: 🎵 Listening to %NAME% by %ARTIST%
+    ## The idle status.
+    ##
+    ## If this option is not set, the status will be cleared when the user is
+    ## not listening to anything.
+    idle:
   ## The API URL of the instance.
   ##
   ## Default: https://api.revolt.chat

@@ -44,6 +44,8 @@ pub struct ServiceOptions {
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 #[derive(Deserialize, Debug)]
 pub struct RevoltOptions {
+    /// Status options.
+    pub status: Option<RevoltStatusOptions>,
     /// The API URL of the instance.
     #[serde(default = "default_revolt_api_url")]
     pub api_url: String,
@@ -55,8 +57,29 @@ pub struct RevoltOptions {
 impl Default for RevoltOptions {
     fn default() -> Self {
         Self {
+            status: Some(RevoltStatusOptions::default()),
             api_url: default_revolt_api_url(),
             session_token: String::default(),
+        }
+    }
+}
+
+#[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
+#[derive(Deserialize, Debug)]
+pub struct RevoltStatusOptions {
+    /// The status text to set.
+    #[serde(default = "default_revolt_status_template")]
+    pub template: Option<String>,
+    /// The status emoji to set.
+    pub idle: Option<String>,
+}
+
+#[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
+impl Default for RevoltStatusOptions {
+    fn default() -> Self {
+        Self {
+            template: Some(String::from("🎵 Listening to %NAME% by %ARTIST%")),
+            idle: None,
         }
     }
 }
@@ -106,6 +129,11 @@ impl Default for ListenbrainzServiceOptions {
             check_interval: default_check_interval(),
         }
     }
+}
+
+#[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
+fn default_revolt_status_template() -> Option<String> {
+    Some(String::from("🎵 Listening to %NAME% by %ARTIST%"))
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
