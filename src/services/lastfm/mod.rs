@@ -110,8 +110,6 @@ impl ServiceProvider for LastFM {
 #[derive(Deserialize)]
 struct LastFMError {
     message: String,
-    #[serde(rename = "error", skip)]
-    _error: usize,
 }
 
 trait ReqwestResponseExt: Sized {
@@ -127,7 +125,7 @@ impl ReqwestResponseExt for reqwest::Response {
                 anyhow::bail!("{}", error_json.message);
             }
             _ => anyhow::bail!(
-                "Unexpected response from Last.fm api: {}",
+                "Received an unexpected response from the Last.fm API: {}",
                 self.text().await?
             ),
         }

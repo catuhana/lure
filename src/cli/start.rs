@@ -51,7 +51,7 @@ impl Command for CommandArguments {
                     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
                     {
                         if config.services.lastfm.is_none() {
-                            anyhow::bail!("No Last.fm config specified, even though it's enabled.")
+                            anyhow::bail!("Last.fm is enabled, but no configuration is provided.")
                         }
                     }
 
@@ -78,7 +78,7 @@ impl Command for CommandArguments {
                 config::Services::Listenbrainz => {
                     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
                     if config.services.listenbrainz.is_none() {
-                        anyhow::bail!("No Listenbrainz config specified, even though it's enabled.")
+                        anyhow::bail!("Listenbrainz is enabled, but no configuration is provided.")
                     }
 
                     let mut service = crate::services::listenbrainz::Listenbrainz {
@@ -147,8 +147,8 @@ fn exit_handler(tx: mpsc::Sender<ChannelData>) {
         {
             use signal::unix::{signal, SignalKind};
 
-            let mut sigterm =
-                signal(SignalKind::terminate()).expect("SIGTERM handler could not be created");
+            let mut sigterm = signal(SignalKind::terminate())
+                .expect("SIGTERM signal handler could not be created");
 
             tokio::select! {
                 _ = ctrl_c => {},
@@ -157,11 +157,13 @@ fn exit_handler(tx: mpsc::Sender<ChannelData>) {
         }
 
         #[cfg(windows)]
-        ctrl_c.await.expect("CTRL-C handler could not be created");
+        ctrl_c
+            .await
+            .expect("CTRL-C signal handler could not be created");
 
         tx.send(ChannelData::Exit(true))
             .await
-            .expect("CTRL-C handler could not be created");
+            .expect("CTRL-C response could not be sent");
     });
     trace!("spawned task for `exit_handler`");
 }

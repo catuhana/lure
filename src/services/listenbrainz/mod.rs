@@ -104,7 +104,7 @@ impl ReqwestResponseExt for reqwest::Response {
                 anyhow::bail!("{}", error.error);
             }
             _ => anyhow::bail!(
-                "Unexpected response from Listenbrainz api: {}",
+                "Received an unexpected response from the Listenbrainz API: {}",
                 self.text().await?
             ),
         }

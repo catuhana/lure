@@ -117,7 +117,7 @@ impl Command for CommandSubcommands {
 
                     let reqwest_client = reqwest::Client::new();
 
-                    let email = match Text::new("Revolt e-mail:")
+                    let email = match Text::new("E-mail:")
                         .with_placeholder("i@love.cat")
                         .with_validator(INQUIRE_EMAIL_VALIDATOR.as_ref())
                         .prompt()
@@ -125,7 +125,7 @@ impl Command for CommandSubcommands {
                         Ok(email) => email,
                         Err(_) => return Ok(()),
                     };
-                    let password = match Password::new("Revolt password:")
+                    let password = match Password::new("Password:")
                         .with_validator(ValueRequiredValidator::default())
                         .with_help_message(
                             "We won't keep your password and only use it to get a session token.",
@@ -213,12 +213,12 @@ impl Command for CommandSubcommands {
                                     allowed_methods: _,
                                 } => unreachable!("MFA after MFA is not supposed to be possible."),
                                 LoginResponse::Disabled { user_id: _ } => {
-                                    anyhow::bail!("Account is disabled.");
+                                    anyhow::bail!("The account is disabled.");
                                 }
                             }
                         }
                         LoginResponse::Disabled { user_id: _ } => {
-                            anyhow::bail!("Account is disabled.");
+                            anyhow::bail!("The account is disabled.");
                         }
                     }
                 }
@@ -289,33 +289,20 @@ impl ReqwestResponseExt for reqwest::Response {
             StatusCode::OK | StatusCode::NO_CONTENT => Ok(self),
             StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
                 match self.json::<CommonRevoltLoginErrors>().await? {
-                    CommonRevoltLoginErrors::UnverifiedAccount => {
-                        anyhow::bail!("Account you're trying to login is unverified.")
-                    }
-                    CommonRevoltLoginErrors::InvalidCredentials => {
-                        anyhow::bail!("Wrong credentials provided for login.")
-                    }
-                    CommonRevoltLoginErrors::InvalidToken => {
-                        anyhow::bail!("Wrong 2FA code provided.")
-                    }
-                    CommonRevoltLoginErrors::CompromisedPassword => {
-                        anyhow::bail!(
-                        "Entered password is compromised. You might have entered a wrong password."
-                    )
-                    }
-                    CommonRevoltLoginErrors::ShortPassword => anyhow::bail!(
-                        "Entered password is too short. You might have entered a wrong password."
-                    ),
-                    CommonRevoltLoginErrors::Blacklisted => {
-                        anyhow::bail!(
-                            "Entered e-mail is blacklisted. You might have entered a wrong e-mail."
-                        )
-                    }
-                    CommonRevoltLoginErrors::LockedOut => {
-                        anyhow::bail!(
-                            "This account is locked out. Please try again some time later."
-                        )
-                    }
+                    CommonRevoltLoginErrors::UnverifiedAccount =>
+                        anyhow::bail!("The account you are trying to log in to is unverified."),
+                    CommonRevoltLoginErrors::InvalidCredentials =>
+                        anyhow::bail!("Invalid login credentials provided."),
+                    CommonRevoltLoginErrors::InvalidToken =>
+                        anyhow::bail!("Incorrect 2FA code provided."),
+                    CommonRevoltLoginErrors::CompromisedPassword =>
+                        anyhow::bail!("The entered password is compromised. Please ensure you have entered the correct password."),
+                    CommonRevoltLoginErrors::ShortPassword => 
+                        anyhow::bail!("The entered password is too short. Please ensure you have entered the correct password."),
+                    CommonRevoltLoginErrors::Blacklisted =>
+                        anyhow::bail!("The entered email is blacklisted. Please ensure you have entered the correct email."),
+                    CommonRevoltLoginErrors::LockedOut => 
+                        anyhow::bail!("This account is locked out. Please try again some time later.")
                 }
             }
             _ => anyhow::bail!("Unexpected error: {}", self.text().await?),
