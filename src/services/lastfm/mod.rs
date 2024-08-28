@@ -59,8 +59,8 @@ impl LastFM {
                 .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| np == "true"))
             {
                 return Ok(Some(TrackInfo {
-                    artist: track.artist.text.to_string(),
-                    name: track.name.to_string(),
+                    artist: track.artist.text.clone(),
+                    name: track.name.clone(),
                 }));
             }
         }

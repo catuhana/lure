@@ -40,8 +40,8 @@ impl Listenbrainz {
         if let Some(track) = listens.payload.listens.first() {
             if track.playing_now {
                 return Ok(Some(TrackInfo {
-                    artist: track.track_metadata.artist_name.to_string(),
-                    name: track.track_metadata.track_name.to_string(),
+                    artist: track.track_metadata.artist_name.clone(),
+                    name: track.track_metadata.track_name.clone(),
                 }));
             }
         }

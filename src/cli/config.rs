@@ -117,26 +117,28 @@ impl Command for CommandSubcommands {
 
                     let reqwest_client = reqwest::Client::new();
 
-                    let Ok(email) = Text::new("Revolt e-mail:")
+                    let email = match Text::new("Revolt e-mail:")
                         .with_placeholder("i@love.cat")
                         .with_validator(INQUIRE_EMAIL_VALIDATOR.as_ref())
                         .prompt()
-                    else {
-                        return Ok(());
+                    {
+                        Ok(email) => email,
+                        Err(_) => return Ok(()),
                     };
-                    let Ok(password) = Password::new("Revolt password:")
+                    let password = match Password::new("Revolt password:")
                         .with_validator(ValueRequiredValidator::default())
                         .with_help_message(
                             "We won't keep your password and only use it to get a session token.",
                         )
                         .without_confirmation()
                         .prompt()
-                    else {
-                        return Ok(());
+                    {
+                        Ok(password) => password,
+                        Err(_) => return Ok(()),
                     };
 
                     let login_response: LoginResponse = reqwest_client
-                        .post(revolt_api_url.to_owned() + "/auth/session/login")
+                        .post(format!("{revolt_api_url}/auth/session/login"))
                         .json(&LoginData::Email {
                             email,
                             password,
@@ -185,7 +187,7 @@ impl Command for CommandSubcommands {
                             };
 
                             let mfa_response: LoginResponse = reqwest_client
-                                .post(revolt_api_url.to_owned() + "/auth/session/login")
+                                .post(format!("{revolt_api_url}/auth/session/login"))
                                 .json(&LoginData::MFA {
                                     mfa_ticket,
                                     mfa_response: Some(mfa_data),
