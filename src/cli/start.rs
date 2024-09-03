@@ -118,7 +118,9 @@ impl Command for CommandArguments {
                     channel_listener(rx, revolt_client, config.revolt.status).await?;
                 }
             },
-            None => return Ok(()),
+            None => anyhow::bail!(
+                "No service is enabled. Please enable a service in the configuration file."
+            ),
         }
 
         Ok(())
