@@ -8,7 +8,7 @@ pub mod lastfm;
 pub mod listenbrainz;
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TrackInfo {
     pub artist: String,
     pub name: String,

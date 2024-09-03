@@ -8,11 +8,15 @@ use figment::{
     Figment,
 };
 use figment_file_provider_adapter::FileAdapter;
+use rive_models::authentication::Authentication;
 use tokio::{signal, sync::mpsc};
-use tracing::trace;
+use tracing::{debug, trace};
 
-use crate::services::TrackInfo;
-use crate::{config, services::ServiceProvider};
+use crate::{
+    config::{self, RevoltStatusOptions},
+    services::ServiceProvider,
+};
+use crate::{revolt, services::TrackInfo};
 
 use super::Command;
 
@@ -46,6 +50,7 @@ impl Command for CommandArguments {
 
         match config.enable {
             Some(enabled_service) => match enabled_service {
+                // TODO: Create a macro for this.
                 #[cfg(feature = "services-lastfm")]
                 config::Services::LastFM => {
                     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
@@ -69,10 +74,17 @@ impl Command for CommandArguments {
                         ..Default::default()
                     };
 
+                    let revolt_client = revolt::HttpClient::try_new(
+                        config.revolt.api_url,
+                        &Authentication::SessionToken(config.revolt.session_token),
+                    )?;
+                    // revolt_client.ping().await?;
+
                     service.initialise()?;
                     service.track_check_loop(tx);
 
-                    channel_listener(rx).await?;
+                    channel_listener(rx, revolt_client, config.revolt.status.unwrap_or_default())
+                        .await?;
                 }
                 #[cfg(feature = "services-listenbrainz")]
                 config::Services::Listenbrainz => {
@@ -95,10 +107,17 @@ impl Command for CommandArguments {
                         ..Default::default()
                     };
 
+                    let revolt_client = revolt::HttpClient::try_new(
+                        config.revolt.api_url,
+                        &Authentication::SessionToken(config.revolt.session_token),
+                    )?;
+                    revolt_client.ping().await?;
+
                     service.initialise()?;
                     service.track_check_loop(tx);
 
-                    channel_listener(rx).await?;
+                    channel_listener(rx, revolt_client, config.revolt.status.unwrap_or_default())
+                        .await?;
                 }
             },
             None => return Ok(()),
@@ -116,16 +135,50 @@ pub enum ChannelData {
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
-async fn channel_listener(mut rx: mpsc::Receiver<ChannelData>) -> anyhow::Result<()> {
+async fn channel_listener(
+    mut rx: mpsc::Receiver<ChannelData>,
+    revolt_client: revolt::HttpClient,
+    revolt_status: RevoltStatusOptions,
+) -> anyhow::Result<()> {
     trace!("looping `channel_listener`");
+    let mut previous_track: Option<TrackInfo> = None;
     while let Some(data) = rx.recv().await {
         match data {
             ChannelData::Track(track) => {
-                dbg!(track);
+                if previous_track == track {
+                    debug!(
+                        "track `{track:?}` is the same `{previous_track:?}`, skipping status update"
+                    );
+                    continue;
+                }
+
+                let status = track.as_ref().map_or_else(
+                    || revolt_status.idle.clone(),
+                    |track| {
+                        Some(
+                            revolt_status
+                                .template
+                                .clone()
+                                .replace("%ARTIST%", &track.artist)
+                                .replace("%NAME%", &track.name),
+                        )
+                    },
+                );
+
+                revolt_client.set_status(status).await.map_err(|error| {
+                    tracing::error!("could not update status: {:?}", error);
+                    error
+                })?;
+                previous_track = track;
             }
             ChannelData::Exit(graceful) => {
+                tracing::info!("stopping lure");
+
                 if graceful {
-                    println!("graceful exit");
+                    revolt_client.set_status(None).await.map_err(|error| {
+                        tracing::error!("could not reset status: {:?}", error);
+                        error
+                    })?;
                 }
 
                 break;

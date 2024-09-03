@@ -3,6 +3,7 @@ use cli::Command as _;
 
 mod cli;
 mod config;
+mod revolt;
 mod services;
 mod utils;
 

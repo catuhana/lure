@@ -117,24 +117,22 @@ impl Command for CommandSubcommands {
 
                     let reqwest_client = reqwest::Client::new();
 
-                    let email = match Text::new("E-mail:")
+                    let Ok(email) = Text::new("E-mail:")
                         .with_placeholder("i@love.cat")
                         .with_validator(INQUIRE_EMAIL_VALIDATOR.as_ref())
                         .prompt()
-                    {
-                        Ok(email) => email,
-                        Err(_) => return Ok(()),
+                    else {
+                        return Ok(());
                     };
-                    let password = match Password::new("Password:")
+                    let Ok(password) = Password::new("Password:")
                         .with_validator(ValueRequiredValidator::default())
                         .with_help_message(
                             "We won't keep your password and only use it to get a session token.",
                         )
                         .without_confirmation()
                         .prompt()
-                    {
-                        Ok(password) => password,
-                        Err(_) => return Ok(()),
+                    else {
+                        return Ok(());
                     };
 
                     let login_response: LoginResponse = reqwest_client
@@ -297,11 +295,11 @@ impl ReqwestResponseExt for reqwest::Response {
                         anyhow::bail!("Incorrect 2FA code provided."),
                     CommonRevoltLoginErrors::CompromisedPassword =>
                         anyhow::bail!("The entered password is compromised. Please ensure you have entered the correct password."),
-                    CommonRevoltLoginErrors::ShortPassword => 
+                    CommonRevoltLoginErrors::ShortPassword =>
                         anyhow::bail!("The entered password is too short. Please ensure you have entered the correct password."),
                     CommonRevoltLoginErrors::Blacklisted =>
                         anyhow::bail!("The entered email is blacklisted. Please ensure you have entered the correct email."),
-                    CommonRevoltLoginErrors::LockedOut => 
+                    CommonRevoltLoginErrors::LockedOut =>
                         anyhow::bail!("This account is locked out. Please try again some time later.")
                 }
             }

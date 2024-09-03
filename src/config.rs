@@ -69,7 +69,7 @@ impl Default for RevoltOptions {
 pub struct RevoltStatusOptions {
     /// The status text to set.
     #[serde(default = "default_revolt_status_template")]
-    pub template: Option<String>,
+    pub template: String,
     /// The status emoji to set.
     pub idle: Option<String>,
 }
@@ -78,7 +78,7 @@ pub struct RevoltStatusOptions {
 impl Default for RevoltStatusOptions {
     fn default() -> Self {
         Self {
-            template: Some(String::from("🎵 Listening to %NAME% by %ARTIST%")),
+            template: default_revolt_status_template(),
             idle: None,
         }
     }
@@ -132,8 +132,8 @@ impl Default for ListenbrainzServiceOptions {
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
-fn default_revolt_status_template() -> Option<String> {
-    Some(String::from("🎵 Listening to %NAME% by %ARTIST%"))
+fn default_revolt_status_template() -> String {
+    String::from("🎵 Listening to %NAME% by %ARTIST%")
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
