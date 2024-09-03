@@ -57,4 +57,44 @@ jobs:
         with:
           name: lure-${{ runner.os }}
           path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
-  # TODO: add publish container image
+
+  push-container-image:
+    name: Push Container Image
+    runs-on: ubuntu-latest
+    needs: upload-artifact
+    env:
+      IMAGE_NAME: lure
+    if: github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Extract metadata for container image
+        uses: docker/metadata-action@v5
+        id: container-metadata
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=edge
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+
+      - name: Build and publish container image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          file: Containerfile
+          tags: ${{ steps.container-metadata.outputs.tags }}
+          labels: ${{ steps.container-metadata.outputs.labels }}
