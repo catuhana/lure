@@ -90,8 +90,8 @@ impl ServiceProvider for LastFM {
                 let track = self.get_current_playing_track().await;
                 match track {
                     Ok(track) => tx.send(ChannelData::Track(track)).await?,
-                    Err(err) => {
-                        error!("Last.fm API error: {err}");
+                    Err(error) => {
+                        error!("Last.fm API error: {error}");
 
                         tx.send(ChannelData::Exit(false)).await?;
 

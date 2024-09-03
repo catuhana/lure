@@ -69,8 +69,8 @@ impl ServiceProvider for Listenbrainz {
                 let track = self.get_current_playing_track().await;
                 match track {
                     Ok(track) => tx.send(ChannelData::Track(track)).await?,
-                    Err(err) => {
-                        error!("Listenbrainz API error: {err}");
+                    Err(error) => {
+                        error!("Listenbrainz API error: {error}");
 
                         tx.send(ChannelData::Exit(false)).await?;
 
