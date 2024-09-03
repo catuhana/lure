@@ -102,10 +102,14 @@ trait ReqwestResponseExt: Sized {
 
 impl ReqwestResponseExt for reqwest::Response {
     async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
+        dbg!(&self);
         match self.status() {
             StatusCode::OK => Ok(self),
+            StatusCode::TOO_MANY_REQUESTS => {
+                anyhow::bail!("Hit Revolt API rate limit. Please try again some time later.")
+            }
             StatusCode::UNAUTHORIZED => {
-                anyhow::bail!("Revolt API returned 401 Unauthorized. Please check your authentication details.")
+                anyhow::bail!("Revolt API authentication failed. Please check your credentials.")
             }
             _ => anyhow::bail!("Unexpected error: {}", self.text().await?),
         }
