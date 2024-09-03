@@ -31,7 +31,6 @@ impl Command for CommandArguments {
     async fn run(&self) -> anyhow::Result<()> {
         trace!("`start` subcommand");
 
-        // TODO: Use default from config.rs
         let config_path = self
             .config
             .clone()
@@ -141,7 +140,10 @@ async fn channel_listener(
     revolt_status: RevoltStatusOptions,
 ) -> anyhow::Result<()> {
     trace!("looping `channel_listener`");
+
+    let previous_status = revolt_client.get_status().await?;
     let mut previous_track: Option<TrackInfo> = None;
+
     while let Some(data) = rx.recv().await {
         match data {
             ChannelData::Track(track) => {
@@ -153,7 +155,13 @@ async fn channel_listener(
                 }
 
                 let status = track.as_ref().map_or_else(
-                    || revolt_status.idle.clone(),
+                    || {
+                        if revolt_status.idle.is_none() {
+                            previous_status.clone()
+                        } else {
+                            revolt_status.idle.clone()
+                        }
+                    },
                     |track| {
                         Some(
                             revolt_status
@@ -175,16 +183,20 @@ async fn channel_listener(
                 tracing::info!("stopping lure");
 
                 if graceful {
-                    revolt_client.set_status(None).await.map_err(|error| {
-                        tracing::error!("{error}");
-                        error
-                    })?;
+                    revolt_client
+                        .set_status(previous_status)
+                        .await
+                        .map_err(|error| {
+                            tracing::error!("{error}");
+                            error
+                        })?;
                 }
 
                 break;
             }
         }
     }
+
     trace!("got out of `channel_listener` loop");
 
     Ok(())

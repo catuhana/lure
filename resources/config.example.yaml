@@ -45,8 +45,8 @@ revolt:
     template: 🎵 Listening to %NAME% by %ARTIST%
     ## The idle status.
     ##
-    ## If this option is not set, the status will be cleared when the user is
-    ## not listening to anything.
+    ## If this option is not set, the status will be returned to
+    ## the previous status when not listening to anything.
     idle:
   ## The API URL of the instance.
   ##
