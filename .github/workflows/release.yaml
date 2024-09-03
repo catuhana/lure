@@ -1,0 +1,87 @@
+name: Release
+run-name: ${{ inputs.reason }}
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Dispatch reason
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      release-id: ${{ steps.create-release.outputs.result }}
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Create release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.split('/').at(-1);
+            const release = await github.rest.repos.createRelease({
+              name: `Release ${tag}`,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              generate_release_notes: true
+            });
+
+            return release.data.id;
+
+  build-and-upload:
+    name: Build and Upload
+    needs: create-release
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup or update Rust toolchain
+        run: rustup toolchain install stable --profile default
+
+      - name: Set up Rust cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build project
+        run: cargo build --verbose --release
+
+      - name: Upload release asset
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const asset = await (await import("node:fs/promises")).readFile(
+              `target/release/${context.repo.repo}${{ runner.os == 'Windows' && '.exe' || '' }}`,
+            );
+
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ needs.create-release.outputs.release-id }},
+              name: "lure-release-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}",
+              data: asset
+            });
