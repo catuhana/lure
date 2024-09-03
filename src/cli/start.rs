@@ -78,7 +78,7 @@ impl Command for CommandArguments {
                         config.revolt.api_url,
                         &Authentication::SessionToken(config.revolt.session_token),
                     )?;
-                    // revolt_client.ping().await?;
+                    revolt_client.ping().await?;
 
                     service.initialise()?;
                     service.track_check_loop(tx);
@@ -166,7 +166,7 @@ async fn channel_listener(
                 );
 
                 revolt_client.set_status(status).await.map_err(|error| {
-                    tracing::error!("could not update status: {:?}", error);
+                    tracing::error!("{error}");
                     error
                 })?;
                 previous_track = track;
@@ -176,7 +176,7 @@ async fn channel_listener(
 
                 if graceful {
                     revolt_client.set_status(None).await.map_err(|error| {
-                        tracing::error!("could not reset status: {:?}", error);
+                        tracing::error!("{error}");
                         error
                     })?;
                 }
