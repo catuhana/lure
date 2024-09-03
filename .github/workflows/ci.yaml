@@ -1,0 +1,68 @@
+name: CI
+run-name: ${{ inputs.reason }}
+
+on:
+  push:
+    paths-ignore:
+      - .vscode/**
+      - .gitignore
+      - LICENCE
+      - README.md
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - .vscode/**
+      - .gitignore
+      - LICENCE
+      - README.md
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Dispatch reason
+        type: string
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  ci:
+    name: Check Code, Code Formatting and Linting
+    strategy:
+      matrix:
+        rust-toolchain:
+          - stable
+          - nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set-up Rust problem matchers
+        uses: catuhana/rust-problem-matchers@v1
+
+      - name: Set-up or update Rust ${{ matrix.rust-toolchain }} toolchain
+        run: rustup toolchain install ${{ matrix.rust-toolchain }} --profile default
+
+      - name: Set-up Rust cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check Rust code
+        run: cargo +${{ matrix.rust-toolchain }} check --verbose --all
+
+      - name: Check Rust code format
+        if: '!cancelled()'
+        run: cargo +${{ matrix.rust-toolchain }} fmt --verbose --all --check
+
+      - name: Check Rust code lint
+        if: '!cancelled()'
+        run: cargo +${{ matrix.rust-toolchain }} clippy --verbose -- -W clippy::nursery
