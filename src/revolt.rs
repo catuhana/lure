@@ -9,7 +9,7 @@ use reqwest::{
 use rive_models::{
     authentication::Authentication,
     data::EditUserData,
-    user::{FieldsUser, UserStatus},
+    user::{FieldsUser, User, UserStatus},
 };
 use tracing::trace;
 
@@ -74,6 +74,25 @@ impl HttpClient {
         tracing::debug!("updated Revolt status");
 
         Ok(())
+    }
+
+    pub async fn get_status(&self) -> anyhow::Result<Option<String>> {
+        trace!("fetching user data from Revolt API (get_status)...");
+
+        let response = self
+            .client
+            .get(format!("{}/users/@me", self.base_url))
+            .send()
+            .await?
+            .handle_user_friendly_error()
+            .await?;
+
+        let user_data: User = response.json().await?;
+        let status = user_data.status.and_then(|status| status.text);
+
+        trace!("successfully fetched the Revolt status");
+
+        Ok(status)
     }
 
     pub async fn ping(&self) -> anyhow::Result<()> {
