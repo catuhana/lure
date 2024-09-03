@@ -83,8 +83,7 @@ impl Command for CommandArguments {
                     service.initialise()?;
                     service.track_check_loop(tx);
 
-                    channel_listener(rx, revolt_client, config.revolt.status.unwrap_or_default())
-                        .await?;
+                    channel_listener(rx, revolt_client, config.revolt.status).await?;
                 }
                 #[cfg(feature = "services-listenbrainz")]
                 config::Services::Listenbrainz => {
@@ -116,8 +115,7 @@ impl Command for CommandArguments {
                     service.initialise()?;
                     service.track_check_loop(tx);
 
-                    channel_listener(rx, revolt_client, config.revolt.status.unwrap_or_default())
-                        .await?;
+                    channel_listener(rx, revolt_client, config.revolt.status).await?;
                 }
             },
             None => return Ok(()),

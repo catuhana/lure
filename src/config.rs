@@ -45,7 +45,8 @@ pub struct ServiceOptions {
 #[derive(Deserialize, Debug)]
 pub struct RevoltOptions {
     /// Status options.
-    pub status: Option<RevoltStatusOptions>,
+    #[serde(default = "RevoltStatusOptions::default")]
+    pub status: RevoltStatusOptions,
     /// The API URL of the instance.
     #[serde(default = "default_revolt_api_url")]
     pub api_url: String,
@@ -57,7 +58,7 @@ pub struct RevoltOptions {
 impl Default for RevoltOptions {
     fn default() -> Self {
         Self {
-            status: Some(RevoltStatusOptions::default()),
+            status: RevoltStatusOptions::default(),
             api_url: default_revolt_api_url(),
             session_token: String::default(),
         }
