@@ -1,32 +1,46 @@
 [package]
 name = "lure"
-version = "0.3.0"
+description = "Display your currently playing track from Last.fm, ListenBrainz, and other services in your Revolt status!"
+repository = "https://github.com/catuhana/lure"
+authors = ["tuhana <tuhana.cat+git@gmail.com>"]
+version = "0.4.0"
+rust-version = "1.80"
 edition = "2021"
 
+[profile.release]
+opt-level = "z"
+lto = "fat"
+
 [dependencies]
-anyhow = "1.0.82"
-clap = { version = "4.5.4", features = ["derive"] }
-confique = { git = "https://github.com/catuhana/confique", rev = "2c85724", default-features = false, features = [
-  "toml",
+anyhow = "1.0.86"
+clap = { version = "4.5.17", features = ["derive"] }
+figment = { version = "0.10.19", features = ["env", "yaml"], optional = true }
+figment_file_provider_adapter = { version = "0.1.1", optional = true }
+inquire = { version = "0.7.5", default-features = false, features = [
+  "crossterm",
 ] }
-dirs = "5.0.1"
-reqwest = { version = "0.12.4", features = ["json"] }
-rive-http = { git = "https://codeberg.org/rive/rive", rev = "0c2f126" }
-rive-models = { git = "https://codeberg.org/rive/rive", rev = "0c2f126" }
-serde = { version = "1.0.200", features = ["derive"] }
-serde_json = "1.0.116"
-tokio = { version = "1.37.0", features = [
-  "fs",
-  "macros",
-  "rt-multi-thread",
-  "time",
-  "sync",
-  "signal",
-] }
+regex = "1.10.6"
+reqwest = { version = "0.12.7", features = ["json"] }
+rive-models = "1.2.1"
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json = "1.0.127"
+tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 [features]
-default = ["lastfm", "listenbrainz"]
-lastfm = []
-listenbrainz = []
+default = ["services-lastfm", "services-listenbrainz"]
+services-lastfm = [
+  "dep:figment",
+  "dep:figment_file_provider_adapter",
+  "tokio/sync",
+  "tokio/signal",
+  "tokio/time",
+]
+services-listenbrainz = [
+  "dep:figment",
+  "dep:figment_file_provider_adapter",
+  "tokio/sync",
+  "tokio/signal",
+  "tokio/time",
+]

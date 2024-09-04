@@ -12,15 +12,16 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     name: Create Release
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       release-id: ${{ steps.create-release.outputs.result }}
+    if: github.event_name == 'push'
     steps:
       - name: Create release
         id: create-release
@@ -48,8 +49,6 @@ jobs:
           - windows-latest
           - macos-latest
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,10 +56,16 @@ jobs:
       - name: Setup or update Rust toolchain
         run: rustup toolchain install stable --profile default
 
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+      - name: Set-up Rust cache
+        uses: actions/cache@v4
         with:
-          key: stable
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build project
         run: cargo build --verbose --release
@@ -69,7 +74,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const asset = await (await import("node:fs/promises")).readFile(`target/release/${context.repo.repo}${{ runner.os == 'Windows' && '.exe' || '' }}`);
+            const asset = await (await import("node:fs/promises")).readFile(
+              `target/release/${context.repo.repo}${{ runner.os == 'Windows' && '.exe' || '' }}`,
+            );
 
             await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
@@ -78,3 +85,9 @@ jobs:
               name: "lure-release-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}",
               data: asset
             });
+
+  push-container-image:
+    name: Push Container Image
+    uses: ./.github/workflows/docker-push.yaml
+    with:
+      image-name: lure

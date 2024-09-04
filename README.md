@@ -1,56 +1,76 @@
 # lure
 
-lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small _daemon_ that sets the currently playing track on Last.fm, ListenBrainz (and other platforms) as Revolt user status.
-
 [![CI Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/ci.yaml?style=flat-square&label=CI)](https://github.com/catuhana/lure/actions/workflows/ci.yaml)
 [![CD Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/cd.yaml?style=flat-square&label=CD)](https://github.com/catuhana/lure/actions/workflows/cd.yaml)
 [![Latest Release](https://img.shields.io/github/v/release/catuhana/lure?style=flat-square)](https://github.com/catuhana/lure/releases/latest)
 
+Lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small process that sets the currently playing track on Last.fm, ListenBrainz (and other future platforms, PRs welcome!) as Revolt user status.
+
+> [!WARNING]
+> Version 1 contains big configuration changes. If you were on previous versions, check [configuration](#configuration) section.
+
 ## Installation
 
-lure is tested on Linux and Windows, and is expected to work on macOS too. To install, simply run:
+> [!IMPORTANT]
+> Lure is tested on Linux and Windows, and is expected to work on macOS too.
 
 ```sh
 cargo install --git https://github.com/catuhana/lure
 ```
 
-lure currently has two platform features enabled by default. Unused platforms can be disabled by using `--no-default-features` and `--features`.
-
-For example, to build lure only with Last.fm platform feature, simply append `--no-default-features --features lastfm` to the build command above:
+Or if you'd want to use an container image (Docker, Podman, etc.), you can pull the image from GitHub Container Registry.
 
 ```sh
-cargo install --git https://github.com/catuhana/lure --no-default-features --features lastfm
+docker pull ghcr.io/catuhana/lure:latest
 ```
 
-All available and current default platform features can be checked from [Cargo.toml](Cargo.toml) file.
+> [!TIP]
+> Container images support AMD64, ARM64 and ARM64v7 architectures.
+
+## Running
+
+> [!IMPORTANT]
+> Reading the [configuration](#configuration) first is highly recommended.
+
+To run lure, run:
+
+```sh
+lure start
+```
+
+Or using a container management tool:
+
+```sh
+docker/podman run -v $(pwd)/config.yaml:/app/config.yaml:ro lure:latest
+```
+
+> [!TIP]
+> By default, lure logs useful information to the console. If you'd want to see other log levels, use the `LURE_LOG` environment variable. Check [`EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) documentation from [`tracing-subscriber`](https://docs.rs/tracing-subscriber) for more information.
+>
+> ```sh
+> export LURE_LOG="lure=trace" # log trace level logs only from lure
+> export LURE_LOG="trace" # log trace level logs from every library used that supports it
+> # for container management tools, use `-e LURE_LOG=` option
+> ```
 
 ## Configuration
 
-lure uses a config file and environment variables for configuration. To get help about how to use CLI, simply run:
+Lure uses a YAML configuration file and environment variables for configuration. Check [the sample configuration file](resources/config.sample.yaml) as a reference, as it contains important information for every option (including environment variables).
+
+To generate an example configuration file, run:
 
 ```sh
-lure help
+lure config generate # prints to the stdout
+lure config generate >config.yaml # creates a file
 ```
 
-To generate a config file for lure, simply run:
+### Container Management Tools
 
-```sh
-lure config generate
-```
+If you're using any container management tools, you can either mount the host configuration file to the container or use environment variables. The volume for the app and its configuration file is `/app`. Refer to the [run section](#run) for example.
 
-> [!NOTE]
-> Config fields can be different depending on which platform features are used to build lure. For example, disabling `lastfm` feature will not generate and use Last.fm specific configuration options.
+### Services (Features)
 
-If you'd like to configure options using environment variables, here's the table of current environment variables:
+Lure currently has two service features and, they're enabled by default: LastFM and ListenBrainz. PRs for adding new platforms is very welcome.
 
-| Variable Name                      | Description                                       | Default Value                | Is Required | Platform Feature |
-| ---------------------------------- | ------------------------------------------------- | ---------------------------- | ----------- | ---------------- |
-| `LURE_REVOLT_SESSION_TOKEN`        | Revolt session token                              | None                         | Yes         | \*               |
-| `LURE_STATUS_TEMPLATE`             | Status template to show when listening            | 🎵 %ARTIST% %NAME%           | No          | \*               |
-| `LURE_STATUS_IDLE`                 | Status to show when not listening anything        | None                         | No          | \*               |
-| `LURE_LASTFM_USER`                 | Last.fm username to check listens                 | None                         | Yes         | `lastfm`         |
-| `LURE_LASTFM_API_KEY`              | Last.fm API key to fetch listens                  | None                         | Yes         | `lastfm`         |
-| `LURE_LASTFM_CHECK_INTERVAL`       | Checking listening status interval in seconds     | 12                           | No          | `lastfm`         |
-| `LURE_LISTENBRAINZ_USER`           | ListenBrainz username to check listens            | None                         | Yes         | `listenbrainz`   |
-| `LURE_LISTENBRAINZ_API_URL`        | Custom ListenBrainz API URL to check listens from | https://api.listenbrainz.org | No          | `listenbrainz`   |
-| `LURE_LISTENBRAINZ_CHECK_INTERVAL` | Checking listening status interval in seconds     | 12                           | No          | `listenbrainz`   |
+> [!TIP]
+> If you'd like to only enable the service you're using, you can pass `--no-default-features` and `--features services-<platform>` to the [install command above](#install), `<platform>` being the lowercase platform string. To see all exact feature names, [see Cargo.toml](Cargo.toml)

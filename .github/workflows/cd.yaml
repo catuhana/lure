@@ -35,13 +35,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup or update Rust toolchain
+      - name: Set-up or update Rust toolchain
         run: rustup toolchain install stable --profile default
 
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+      - name: Set-up Rust cache
+        uses: actions/cache@v4
         with:
-          key: stable
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build project
         run: cargo build --verbose --release
@@ -52,4 +58,8 @@ jobs:
           name: lure-${{ runner.os }}
           path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
 
-  # TODO: add publish container image
+  push-container-image:
+    name: Push Container Image
+    uses: ./.github/workflows/docker-push.yaml
+    with:
+      image-name: lure

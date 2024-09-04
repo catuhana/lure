@@ -3,62 +3,72 @@ run-name: ${{ inputs.reason }}
 
 on:
   push:
-    paths:
-      - .github/workflows/ci.yaml
-      - src/**
-      - build.rs
-      - Cargo.*
+    paths-ignore:
+      - .github/workflows/**
+      - '!.github/workflows/ci.yaml'
+      - '!.github/workflows/docker-push.yaml'
+      - .vscode/**
+      - .gitignore
+      - LICENCE
+      - README.md
   pull_request:
     branches:
       - main
-    paths:
-      - .github/workflows/ci.yaml
-      - src/**
-      - build.rs
-      - Cargo.*
+    paths-ignore:
+      - .github/workflows/**
+      - '!.github/workflows/ci.yaml'
+      - '!.github/workflows/docker-push.yaml'
+      - .vscode/**
+      - .gitignore
+      - LICENCE
+      - README.md
   workflow_dispatch:
     inputs:
       reason:
         description: Dispatch reason
-        required: true
         type: string
+        required: true
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
 
 jobs:
   ci:
-    name: Run CI
-
+    name: Check Code, Code Formatting and Linting
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-        toolchain:
+        rust-toolchain:
           - stable
           - nightly
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Rust problem matchers
-        uses: r7kamura/rust-problem-matchers@main
+      - name: Set-up Rust problem matchers
+        uses: catuhana/rust-problem-matchers@v1
 
-      - name: Setup or update Rust ${{ matrix.toolchain }} toolchain
-        run: rustup toolchain install ${{ matrix.toolchain }} --profile default
+      - name: Set-up or update Rust ${{ matrix.rust-toolchain }} toolchain
+        run: rustup toolchain install ${{ matrix.rust-toolchain }} --profile default
 
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+      - name: Set-up Rust cache
+        uses: actions/cache@v4
         with:
-          key: ${{ matrix.toolchain }}
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Check code format
-        run: cargo +${{ matrix.toolchain }} fmt --verbose --all --check
+      - name: Check Rust code
+        run: cargo +${{ matrix.rust-toolchain }} check --verbose --all
 
-      - name: Check code lint
+      - name: Check Rust code format
         if: '!cancelled()'
-        run: cargo +${{ matrix.toolchain }} clippy --verbose -- -W clippy::nursery
+        run: cargo +${{ matrix.rust-toolchain }} fmt --verbose --all --check
+
+      - name: Check Rust code lint
+        if: '!cancelled()'
+        run: cargo +${{ matrix.rust-toolchain }} clippy --verbose -- -W clippy::nursery
