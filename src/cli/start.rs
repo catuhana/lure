@@ -38,9 +38,12 @@ impl Command for CommandArguments {
 
         let config: config::Config = Figment::new()
             .merge(Yaml::file(config_path))
-            .merge(Env::raw().split("__"))
+            .merge(Env::prefixed("LURE_").split("__"))
             .merge(FileAdapter::wrap(Yaml::file(config_path)).only(&["session_token", "api_key"]))
-            .merge(FileAdapter::wrap(Env::raw().split("__")).only(&["session_token", "api_key"]))
+            .merge(
+                FileAdapter::wrap(Env::prefixed("LURE_").split("__"))
+                    .only(&["session_token", "api_key"]),
+            )
             .extract()?;
 
         let (tx, rx) = mpsc::channel::<ChannelData>(1);
