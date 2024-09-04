@@ -1,6 +1,6 @@
 #![cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::Args;
 use figment::{
@@ -34,11 +34,10 @@ impl Command for CommandArguments {
         let config_path = self
             .config
             .as_ref()
-            .map(PathBuf::as_path)
-            .unwrap_or_else(|| std::path::Path::new("config.yaml"));
+            .map_or_else(|| Path::new("config.yaml"), PathBuf::as_path);
 
         let config: config::Config = Figment::new()
-            .merge(Yaml::file(&config_path))
+            .merge(Yaml::file(config_path))
             .merge(Env::raw().split("__"))
             .merge(FileAdapter::wrap(Yaml::file(config_path)).only(&["session_token", "api_key"]))
             .merge(FileAdapter::wrap(Env::raw().split("__")).only(&["session_token", "api_key"]))
