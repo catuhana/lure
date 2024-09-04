@@ -9,7 +9,7 @@ Lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small proc
 > [!WARNING]
 > Version 1 contains big configuration changes. If you were on previous versions, check [configuration](#configuration) section.
 
-## Install
+## Installation
 
 > [!IMPORTANT]
 > Lure is tested on Linux and Windows, and is expected to work on macOS too.
@@ -24,10 +24,10 @@ Or if you'd want to use an container image (Docker, Podman, etc.), you can pull 
 docker pull ghcr.io/catuhana/lure:latest
 ```
 
-> [TIP]
+> [!TIP]
 > Container images support AMD64, ARM64 and ARM64v7 architectures.
 
-## Run
+## Running
 
 > [!IMPORTANT]
 > Reading the [configuration](#configuration) first is highly recommended.
