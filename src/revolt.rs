@@ -121,7 +121,6 @@ trait ReqwestResponseExt: Sized {
 
 impl ReqwestResponseExt for reqwest::Response {
     async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
-        dbg!(&self);
         match self.status() {
             StatusCode::OK => Ok(self),
             StatusCode::TOO_MANY_REQUESTS => {
