@@ -22,7 +22,7 @@ RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian12
 
-ENV RUST_LOG="lure=info"
+ENV LURE_LOG="lure=info"
 
 WORKDIR /app
 COPY --from=cook /usr/src/lure/target/release/lure /app

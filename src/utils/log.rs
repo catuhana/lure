@@ -61,7 +61,7 @@ pub fn set_up() -> anyhow::Result<()> {
 
     let collector =
         tracing_subscriber::registry()
-            .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+            .with(EnvFilter::try_from_env("LURE_LOG").unwrap_or_else(|_| {
                 EnvFilter::new(format!("{}=info", std::env!("CARGO_PKG_NAME")))
             }))
             .with(fmt::Layer::new().with_writer(std_writer));

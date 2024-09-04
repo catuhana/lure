@@ -45,12 +45,12 @@ docker/podman run -v $(pwd)/config.yaml:/app/config.yaml:ro lure:latest
 ```
 
 > [!TIP]
-> By default, lure logs useful information to the console. If you'd want to see other log levels, use the `RUST_LOG` environment variable. Check [`EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) documentation from [`tracing-subscriber`](https://docs.rs/tracing-subscriber) for more information.
+> By default, lure logs useful information to the console. If you'd want to see other log levels, use the `LURE_LOG` environment variable. Check [`EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) documentation from [`tracing-subscriber`](https://docs.rs/tracing-subscriber) for more information.
 >
 > ```sh
-> export RUST_LOG="lure=trace" # log trace level logs only from lure
-> export RUST_LOG="trace" # log trace level logs from every library used that supports it
-> # for container management tools, use `-e RUST_LOG=` option
+> export LURE_LOG="lure=trace" # log trace level logs only from lure
+> export LURE_LOG="trace" # log trace level logs from every library used that supports it
+> # for container management tools, use `-e LURE_LOG=` option
 > ```
 
 ## Configuration
