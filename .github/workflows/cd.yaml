@@ -60,6 +60,6 @@ jobs:
 
   push-container-image:
     name: Push Container Image
-    uses: ./.github/workflows/docker-push@reusable.yaml
+    uses: ./.github/workflows/docker-push.yaml
     with:
       image-name: lure
