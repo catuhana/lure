@@ -7,6 +7,12 @@ on:
         required: true
         type: string
 
+permissions:
+  attestations: write
+  contents: read
+  id-token: write
+  packages: write
+
 jobs:
   push-container-image:
     name: Push Container Image
@@ -50,6 +56,7 @@ jobs:
             type=sha
 
       - name: Build and publish container image
+        id: docker-push
         uses: docker/build-push-action@v6
         with:
           platforms: ${{ matrix.docker-platform }}
@@ -59,3 +66,10 @@ jobs:
           labels: ${{ steps.container-metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Generate artefact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}
+          subject-digest: ${{ steps.docker-push.outputs.digest }}
+          push-to-registry: true
