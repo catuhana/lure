@@ -58,6 +58,12 @@ jobs:
           name: lure-${{ runner.os }}
           path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
 
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: lure-${{ runner.os }}
+          subject-path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
+
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml
