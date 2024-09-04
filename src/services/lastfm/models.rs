@@ -1,8 +1,6 @@
 pub mod user {
-    use serde::Deserialize;
-
     pub mod get_recent_tracks {
-        use super::Deserialize;
+        use serde::Deserialize;
 
         #[derive(Deserialize, Debug)]
         pub struct Data {
