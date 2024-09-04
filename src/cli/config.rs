@@ -103,6 +103,8 @@ pub enum RevoltSubcommands {
 }
 
 impl Command for CommandSubcommands {
+    // :3
+    #[allow(clippy::too_many_lines)]
     async fn run(&self) -> anyhow::Result<()> {
         trace!("`config` subcommand");
 
