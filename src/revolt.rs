@@ -127,7 +127,7 @@ impl ReqwestResponseExt for reqwest::Response {
                 anyhow::bail!("Hit Revolt API rate limit. Please try again some time later.")
             }
             StatusCode::UNAUTHORIZED => {
-                anyhow::bail!("Revolt API authentication failed. Please check your credentials.")
+                anyhow::bail!("Revolt API authentication failed. Please check your credentials. If you'd want to create a new, use `lure config revolt get-session-token` command.")
             }
             _ => anyhow::bail!("Unexpected error: {}", self.text().await?),
         }
