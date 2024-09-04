@@ -57,3 +57,5 @@ jobs:
           file: Containerfile
           tags: ${{ steps.container-metadata.outputs.tags }}
           labels: ${{ steps.container-metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
