@@ -33,8 +33,9 @@ impl Command for CommandArguments {
 
         let config_path = self
             .config
-            .clone()
-            .unwrap_or_else(|| PathBuf::from("config.yaml"));
+            .as_ref()
+            .map(PathBuf::as_path)
+            .unwrap_or_else(|| std::path::Path::new("config.yaml"));
 
         let config: config::Config = Figment::new()
             .merge(Yaml::file(&config_path))
@@ -166,7 +167,6 @@ async fn channel_listener(
                         Some(
                             revolt_status
                                 .template
-                                .clone()
                                 .replace("%ARTIST%", &track.artist)
                                 .replace("%NAME%", &track.name),
                         )
