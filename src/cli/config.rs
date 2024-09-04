@@ -111,7 +111,7 @@ impl Command for CommandSubcommands {
         match self {
             Self::Generate => {
                 trace!("`config generate` subcommand");
-                print!("{}", include_str!("../../resources/config.example.yaml"));
+                print!("{}", include_str!("../../resources/config.sample.yaml"));
             }
             Self::Revolt(revolt_subcommand) => match revolt_subcommand {
                 RevoltSubcommands::GetSessionToken { revolt_api_url } => {
