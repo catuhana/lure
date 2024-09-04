@@ -4,6 +4,9 @@ run-name: ${{ inputs.reason }}
 on:
   push:
     paths-ignore:
+      - .github/workflows/**
+      - '!.github/workflows/ci.yaml'
+      - '!.github/workflows/docker-push.yaml'
       - .vscode/**
       - .gitignore
       - LICENCE
@@ -12,6 +15,9 @@ on:
     branches:
       - main
     paths-ignore:
+      - .github/workflows/**
+      - '!.github/workflows/ci.yaml'
+      - '!.github/workflows/docker-push.yaml'
       - .vscode/**
       - .gitignore
       - LICENCE
