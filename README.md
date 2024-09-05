@@ -25,7 +25,7 @@ docker pull ghcr.io/catuhana/lure:latest
 ```
 
 > [!TIP]
-> Container images support AMD64, ARM64 and ARMv7 architectures.
+> Container images support AMD64 and ARM64 architectures.
 
 ## Running
 
