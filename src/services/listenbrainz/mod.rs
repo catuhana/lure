@@ -55,8 +55,6 @@ impl ServiceProvider for Listenbrainz {
         Ok(self)
     }
 
-    // TODO: Maybe turn this into a trait implementation? Since it
-    // seems like it will look the same most of the time.
     fn track_check_loop(self, tx: mpsc::Sender<crate::cli::start::ChannelData>) {
         trace!("spawning task for `track_check_loop`");
         tokio::spawn(async move {
