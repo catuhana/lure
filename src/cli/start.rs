@@ -144,27 +144,21 @@ async fn channel_listener(
 ) -> anyhow::Result<()> {
     trace!("looping `channel_listener`");
 
-    let previous_status = revolt_client.get_status().await?;
+    let first_status = revolt_client.get_status().await?;
     let mut previous_track: Option<TrackInfo> = None;
 
     while let Some(data) = rx.recv().await {
         match data {
-            ChannelData::Track(track) => {
+            ChannelData::Track(track) if track.is_some() => {
                 if previous_track == track {
                     debug!(
-                        "track `{track:?}` is the same `{previous_track:?}`, skipping status update"
+                        "current track `{track:?}` is the same as previous track `{previous_track:?}`, skipping status update"
                     );
                     continue;
                 }
 
                 let status = track.as_ref().map_or_else(
-                    || {
-                        if revolt_status.idle.is_none() {
-                            previous_status.clone()
-                        } else {
-                            revolt_status.idle.clone()
-                        }
-                    },
+                    || revolt_status.idle.clone(),
                     |track| {
                         Some(
                             revolt_status
@@ -181,12 +175,29 @@ async fn channel_listener(
                 })?;
                 previous_track = track;
             }
+            ChannelData::Track(track) if track.is_none() => {
+                if previous_track.is_none() {
+                    debug!("no track to update, skipping status update");
+                    continue;
+                }
+
+                debug!("no track to update, reverting to previous status");
+                revolt_client
+                    .set_status(first_status.clone())
+                    .await
+                    .map_err(|error| {
+                        tracing::error!("{error}");
+                        error
+                    })?;
+                previous_track = None;
+            }
+            ChannelData::Track(_) => unreachable!("unexpected `ChannelData::Track` variant"),
             ChannelData::Exit(graceful) => {
                 tracing::info!("stopping lure");
 
                 if graceful {
                     revolt_client
-                        .set_status(previous_status)
+                        .set_status(first_status)
                         .await
                         .map_err(|error| {
                             tracing::error!("{error}");
