@@ -142,6 +142,8 @@ async fn channel_listener(
     revolt_client: revolt::HttpClient,
     revolt_status: RevoltStatusOptions,
 ) -> anyhow::Result<()> {
+    use tokio::time;
+
     trace!("looping `channel_listener`");
 
     let first_status = revolt_client.get_status().await?;
@@ -169,11 +171,21 @@ async fn channel_listener(
                     },
                 );
 
-                revolt_client.set_status(status).await.map_err(|error| {
-                    tracing::error!("{error}");
-                    error
-                })?;
-                previous_track = track;
+                match revolt_client.set_status(status).await {
+                    Ok(_) => {
+                        previous_track = track;
+                    }
+                    Err(error) => match error {
+                        revolt::RevoltAPIError::RateLimitExceeded(_remaining) => {
+                            tracing::warn!("rate limit exceeded, skipping status update");
+                            continue;
+                        }
+                        _ => {
+                            tracing::error!("{error}");
+                            return Err(error.into());
+                        }
+                    },
+                }
             }
             ChannelData::Track(track) if track.is_none() => {
                 if previous_track.is_none() {
@@ -182,27 +194,45 @@ async fn channel_listener(
                 }
 
                 debug!("no track to update, reverting to previous status");
-                revolt_client
-                    .set_status(first_status.clone())
-                    .await
-                    .map_err(|error| {
-                        tracing::error!("{error}");
-                        error
-                    })?;
-                previous_track = None;
+                match revolt_client.set_status(first_status.clone()).await {
+                    Ok(_) => {
+                        previous_track = None;
+                    }
+                    Err(error) => match error {
+                        revolt::RevoltAPIError::RateLimitExceeded(_remaining) => {
+                            tracing::warn!("rate limit exceeded, skipping status update");
+                            continue;
+                        }
+                        _ => {
+                            return Err(error.into());
+                        }
+                    },
+                }
             }
             ChannelData::Track(_) => unreachable!("unexpected `ChannelData::Track` variant"),
             ChannelData::Exit(graceful) => {
                 tracing::info!("stopping lure");
 
                 if graceful {
-                    revolt_client
-                        .set_status(first_status)
-                        .await
-                        .map_err(|error| {
-                            tracing::error!("{error}");
-                            error
-                        })?;
+                    loop {
+                        match revolt_client.set_status(first_status.clone()).await {
+                            Ok(_) => break,
+                            Err(error) => match error {
+                                revolt::RevoltAPIError::RateLimitExceeded(remaining) => {
+                                    if remaining > 0 {
+                                        tracing::warn!("rate limit exceeded, waiting until the time limit is over to revert status...");
+                                        time::sleep(time::Duration::from_millis(
+                                            remaining.try_into()?,
+                                        ))
+                                        .await;
+                                    }
+                                }
+                                _ => {
+                                    return Err(error.into());
+                                }
+                            },
+                        }
+                    }
                 }
 
                 break;

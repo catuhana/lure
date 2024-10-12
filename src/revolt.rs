@@ -11,7 +11,19 @@ use rive_models::{
     data::EditUserData,
     user::{FieldsUser, User, UserStatus},
 };
-use tracing::trace;
+use tracing::{error, trace};
+
+#[derive(thiserror::Error, Debug)]
+pub enum RevoltAPIError {
+    #[error("Revolt API authentication failed. Please check your credentials.")]
+    AuthenticationFailed,
+    #[error("Revolt API rate limit exceeded.")]
+    RateLimitExceeded(u128),
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
+    #[error("Revolt API returned an unexpected error: {0}")]
+    Unknown(StatusCode),
+}
 
 pub struct HttpClient {
     client: reqwest::Client,
@@ -42,7 +54,7 @@ impl HttpClient {
         })
     }
 
-    pub async fn set_status(&self, status: Option<String>) -> anyhow::Result<()> {
+    pub async fn set_status(&self, status: Option<String>) -> Result<(), RevoltAPIError> {
         tracing::info!("updating Revolt status to {:?}", &status);
 
         let data = status.map_or_else(
@@ -59,24 +71,20 @@ impl HttpClient {
             },
         );
 
-        let response = self
-            .client
+        self.client
             .patch(format!("{}/users/@me", self.base_url))
             .json(&data)
             .send()
             .await?
-            .handle_user_friendly_error()
+            .handle_return_error()
             .await?;
-        if !response.status().is_success() {
-            anyhow::bail!("Failed to update the Revolt status: {}", response.status())
-        }
 
         tracing::debug!("updated Revolt status");
 
         Ok(())
     }
 
-    pub async fn get_status(&self) -> anyhow::Result<Option<String>> {
+    pub async fn get_status(&self) -> Result<Option<String>, RevoltAPIError> {
         trace!("fetching user data from Revolt API (get_status)...");
 
         let response = self
@@ -84,7 +92,7 @@ impl HttpClient {
             .get(format!("{}/users/@me", self.base_url))
             .send()
             .await?
-            .handle_user_friendly_error()
+            .handle_return_error()
             .await?;
 
         let user_data: User = response.json().await?;
@@ -92,22 +100,18 @@ impl HttpClient {
 
         trace!("successfully fetched the Revolt status");
 
-        Ok(status)
+        return Ok(status);
     }
 
-    pub async fn ping(&self) -> anyhow::Result<()> {
+    pub async fn ping(&self) -> Result<(), RevoltAPIError> {
         trace!("fetching user data from Revolt API (ping)...");
 
-        let response = self
-            .client
+        self.client
             .get(format!("{}/users/@me", self.base_url))
             .send()
             .await?
-            .handle_user_friendly_error()
+            .handle_return_error()
             .await?;
-        if !response.status().is_success() {
-            anyhow::bail!("Failed to ping the Revolt API: {}", response.status())
-        }
 
         trace!("successfully pinged the Revolt API");
 
@@ -115,21 +119,26 @@ impl HttpClient {
     }
 }
 
-trait ReqwestResponseExt: Sized {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>;
+trait ResponseExt: Sized {
+    async fn handle_return_error(self) -> Result<Self, RevoltAPIError>;
 }
 
-impl ReqwestResponseExt for reqwest::Response {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
+impl ResponseExt for reqwest::Response {
+    async fn handle_return_error(self) -> Result<Self, RevoltAPIError> {
         match self.status() {
             StatusCode::OK => Ok(self),
+            StatusCode::UNAUTHORIZED => Err(RevoltAPIError::AuthenticationFailed),
             StatusCode::TOO_MANY_REQUESTS => {
-                anyhow::bail!("Hit Revolt API rate limit. Please try again some time later.")
+                let retry_after = self
+                    .headers()
+                    .get("X-Ratelimit-Reset-After")
+                    .and_then(|value| value.to_str().ok())
+                    .and_then(|value| value.parse::<u128>().ok())
+                    .unwrap_or(0);
+
+                Err(RevoltAPIError::RateLimitExceeded(retry_after))
             }
-            StatusCode::UNAUTHORIZED => {
-                anyhow::bail!("Revolt API authentication failed. Please check your credentials. If you'd want to create a new, use `lure config revolt get-session-token` command.")
-            }
-            _ => anyhow::bail!("Unexpected error: {}", self.text().await?),
+            status => Err(RevoltAPIError::Unknown(status)),
         }
     }
 }
