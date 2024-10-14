@@ -24,7 +24,7 @@ impl StdWriter {
     }
 }
 
-impl<'a> std::io::Write for StdIOLock<'a> {
+impl std::io::Write for StdIOLock<'_> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         match self {
             Self::Stdout(stdout) => stdout.write(buf),

@@ -172,19 +172,18 @@ async fn channel_listener(
                 );
 
                 match revolt_client.set_status(status).await {
-                    Ok(_) => {
+                    Ok(()) => {
                         previous_track = track;
                     }
-                    Err(error) => match error {
-                        revolt::RevoltAPIError::RateLimitExceeded(_remaining) => {
-                            tracing::warn!("rate limit exceeded, skipping status update");
-                            continue;
-                        }
-                        _ => {
-                            tracing::error!("{error}");
+                    Err(error) => {
+                        if let revolt::RevoltAPIError::RateLimitExceeded(remaining) = error {
+                            tracing::warn!("rate limit exceeded, waiting until the time limit is over to update status...");
+                            time::sleep(time::Duration::from_millis(remaining.try_into()?)).await;
+                        } else {
+                            tracing::error!("error occurred while updating status: {:?}", error);
                             return Err(error.into());
                         }
-                    },
+                    }
                 }
             }
             ChannelData::Track(track) if track.is_none() => {
@@ -195,7 +194,7 @@ async fn channel_listener(
 
                 debug!("no track to update, reverting to previous status");
                 match revolt_client.set_status(first_status.clone()).await {
-                    Ok(_) => {
+                    Ok(()) => {
                         previous_track = None;
                     }
                     Err(error) => match error {
@@ -216,7 +215,7 @@ async fn channel_listener(
                 if graceful {
                     loop {
                         match revolt_client.set_status(first_status.clone()).await {
-                            Ok(_) => break,
+                            Ok(()) => break,
                             Err(error) => match error {
                                 revolt::RevoltAPIError::RateLimitExceeded(remaining) => {
                                     if remaining > 0 {

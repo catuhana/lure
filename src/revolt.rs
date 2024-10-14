@@ -100,7 +100,7 @@ impl HttpClient {
 
         trace!("successfully fetched the Revolt status");
 
-        return Ok(status);
+        Ok(status)
     }
 
     pub async fn ping(&self) -> Result<(), RevoltAPIError> {
