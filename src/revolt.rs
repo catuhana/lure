@@ -19,10 +19,10 @@ pub enum RevoltAPIError {
     AuthenticationFailed,
     #[error("Revolt API rate limit exceeded.")]
     RateLimitExceeded(u128),
-    #[error(transparent)]
-    RequestError(#[from] reqwest::Error),
     #[error("Revolt API returned an unexpected error: {0}")]
     Unknown(StatusCode),
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
 }
 
 pub struct HttpClient {
@@ -85,7 +85,7 @@ impl HttpClient {
     }
 
     pub async fn get_status(&self) -> Result<Option<String>, RevoltAPIError> {
-        trace!("fetching user data from Revolt API (get_status)...");
+        trace!("fetching user data from Revolt API (`get_status`)...");
 
         let response = self
             .client
@@ -104,7 +104,7 @@ impl HttpClient {
     }
 
     pub async fn ping(&self) -> Result<(), RevoltAPIError> {
-        trace!("fetching user data from Revolt API (ping)...");
+        trace!("fetching user data from Revolt API (`ping`)...");
 
         self.client
             .get(format!("{}/users/@me", self.base_url))
