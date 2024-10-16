@@ -16,29 +16,29 @@ pub struct Config {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum Services {
-    /// Last.fm service.
+    /// `Last.fm` service.
     #[cfg(feature = "services-lastfm")]
     LastFM,
-    /// Listenbrainz service.
+    /// `ListenBrainz` service.
     #[cfg(feature = "services-listenbrainz")]
-    Listenbrainz,
+    ListenBrainz,
 }
 
 #[derive(Deserialize, Debug, Default)]
 pub struct ServiceOptions {
-    /// Options for the Last.fm service.
+    /// Options for the `Last.fm` service.
     #[cfg(all(feature = "services-lastfm", not(feature = "services-listenbrainz")))]
     pub lastfm: LastFMServiceOptions,
-    /// Options for the Last.fm service.
+    /// Options for the `Last.fm` service.
     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
     pub lastfm: Option<LastFMServiceOptions>,
 
-    /// Options for the Listenbrainz service.
+    /// Options for the `ListenBrainz` service.
     #[cfg(all(feature = "services-listenbrainz", not(feature = "services-lastfm")))]
-    pub listenbrainz: ListenbrainzServiceOptions,
-    /// Options for the Listenbrainz service.
+    pub listenbrainz: ListenBrainzServiceOptions,
+    /// Options for the `ListenBrainz` service.
     #[cfg(all(feature = "services-listenbrainz", feature = "services-lastfm"))]
-    pub listenbrainz: Option<ListenbrainzServiceOptions>,
+    pub listenbrainz: Option<ListenBrainzServiceOptions>,
 }
 
 #[cfg(any(feature = "services-lastfm", feature = "services-listenbrainz"))]
@@ -88,9 +88,9 @@ impl Default for RevoltStatusOptions {
 #[cfg(feature = "services-lastfm")]
 #[derive(Deserialize, Debug)]
 pub struct LastFMServiceOptions {
-    /// Last.fm username to check for listening activity.
+    /// `Last.fm` username to check for listening activity.
     pub username: String,
-    /// Last.fm API key to use for checking listening activity.
+    /// `Last.fm` API key to use for checking listening activity.
     pub api_key: String,
     /// Interval in seconds to check for listening activity.
     #[serde(default = "default_check_interval")]
@@ -110,7 +110,7 @@ impl Default for LastFMServiceOptions {
 
 #[cfg(feature = "services-listenbrainz")]
 #[derive(Deserialize, Debug)]
-pub struct ListenbrainzServiceOptions {
+pub struct ListenBrainzServiceOptions {
     /// `ListenBrainz` username to check for listening activity.
     pub username: String,
     /// `ListenBrainz` API URL to use for checking listening activity.
@@ -122,7 +122,7 @@ pub struct ListenbrainzServiceOptions {
 }
 
 #[cfg(feature = "services-listenbrainz")]
-impl Default for ListenbrainzServiceOptions {
+impl Default for ListenBrainzServiceOptions {
     fn default() -> Self {
         Self {
             username: String::default(),

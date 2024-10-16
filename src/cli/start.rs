@@ -88,13 +88,13 @@ impl Command for CommandArguments {
                     channel_listener(rx, revolt_client, config.revolt.status).await?;
                 }
                 #[cfg(feature = "services-listenbrainz")]
-                config::Services::Listenbrainz => {
+                config::Services::ListenBrainz => {
                     #[cfg(all(feature = "services-lastfm", feature = "services-listenbrainz"))]
                     if config.services.listenbrainz.is_none() {
-                        anyhow::bail!("Listenbrainz is enabled, but no configuration is provided.")
+                        anyhow::bail!("ListenBrainz is enabled, but no configuration is provided.")
                     }
 
-                    let mut service = crate::services::listenbrainz::Listenbrainz {
+                    let mut service = crate::services::listenbrainz::ListenBrainz {
                         #[cfg(all(
                             feature = "services-listenbrainz",
                             not(feature = "services-lastfm")
