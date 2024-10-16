@@ -22,7 +22,7 @@ pub enum RevoltAPIError {
     #[error("Revolt API returned an unexpected error: {0}")]
     Unknown(StatusCode),
     #[error(transparent)]
-    RequestError(#[from] reqwest::Error),
+    Other(#[from] anyhow::Error),
 }
 
 pub struct HttpClient {
@@ -54,7 +54,7 @@ impl HttpClient {
         })
     }
 
-    pub async fn set_status(&self, status: Option<String>) -> Result<(), RevoltAPIError> {
+    pub async fn set_status(&self, status: Option<String>) -> anyhow::Result<(), RevoltAPIError> {
         tracing::info!("updating Revolt status to {:?}", &status);
 
         let data = status.map_or_else(
@@ -84,7 +84,7 @@ impl HttpClient {
         Ok(())
     }
 
-    pub async fn get_status(&self) -> Result<Option<String>, RevoltAPIError> {
+    pub async fn get_status(&self) -> anyhow::Result<Option<String>, RevoltAPIError> {
         trace!("fetching user data from Revolt API (`get_status`)...");
 
         let response = self
@@ -103,7 +103,7 @@ impl HttpClient {
         Ok(status)
     }
 
-    pub async fn ping(&self) -> Result<(), RevoltAPIError> {
+    pub async fn ping(&self) -> anyhow::Result<(), RevoltAPIError> {
         trace!("fetching user data from Revolt API (`ping`)...");
 
         self.client
@@ -119,12 +119,18 @@ impl HttpClient {
     }
 }
 
+impl From<reqwest::Error> for RevoltAPIError {
+    fn from(error: reqwest::Error) -> Self {
+        RevoltAPIError::Other(error.into())
+    }
+}
+
 trait ResponseExt: Sized {
-    async fn handle_return_error(self) -> Result<Self, RevoltAPIError>;
+    async fn handle_return_error(self) -> anyhow::Result<Self, RevoltAPIError>;
 }
 
 impl ResponseExt for reqwest::Response {
-    async fn handle_return_error(self) -> Result<Self, RevoltAPIError> {
+    async fn handle_return_error(self) -> anyhow::Result<Self, RevoltAPIError> {
         match self.status() {
             StatusCode::OK => Ok(self),
             StatusCode::UNAUTHORIZED => Err(RevoltAPIError::AuthenticationFailed),
