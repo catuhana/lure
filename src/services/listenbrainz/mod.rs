@@ -1,7 +1,6 @@
 #![cfg(feature = "services-listenbrainz")]
 
 use reqwest::StatusCode;
-use serde::Deserialize;
 use tokio::{
     sync::mpsc,
     time::{interval, Duration},
@@ -27,23 +26,32 @@ impl ListenBrainz {
             self.options.api_url, &self.options.username
         );
 
-        let listens: models::user::playing_now::Data = self
+        match self
             .http_client
             .get(url)
             .send()
             .await?
             .handle_user_friendly_error()
-            .await?
-            .json()
-            .await?;
+            .await
+        {
+            Ok(response) => {
+                let listens: models::user::playing_now::Data = response.json().await?;
 
-        if let Some(track) = listens.payload.listens.first() {
-            if track.playing_now {
-                return Ok(Some(TrackInfo {
-                    artist: track.track_metadata.artist_name.clone(),
-                    name: track.track_metadata.track_name.clone(),
-                }));
+                if let Some(track) = listens.payload.listens.first() {
+                    if track.playing_now {
+                        return Ok(Some(TrackInfo {
+                            artist: track.track_metadata.artist_name.clone(),
+                            name: track.track_metadata.track_name.clone(),
+                        }));
+                    }
+                }
             }
+            Err(error) => match error {
+                LastFMError::APIError(LastFMAPIError::NotFound()) => {
+                    error!("User not found: {error}");
+                }
+                _ => return Err(error.into()),
+            },
         }
 
         Ok(None)
@@ -84,27 +92,41 @@ impl ServiceProvider for ListenBrainz {
     }
 }
 
-#[derive(Deserialize)]
-struct ListenBrainzError {
-    error: String,
+#[derive(thiserror::Error, Debug)]
+enum LastFMError {
+    #[error(transparent)]
+    APIError(#[from] LastFMAPIError),
+    #[error("Received an unexpected response from the ListenBrainz API: {0}")]
+    UnexpectedAPIError(String),
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }
 
-trait ReqwestResponseExt: Sized {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self>;
+#[derive(thiserror::Error, Debug)]
+enum LastFMAPIError {
+    #[error("User not found.")]
+    NotFound(),
 }
 
-impl ReqwestResponseExt for reqwest::Response {
-    async fn handle_user_friendly_error(self) -> anyhow::Result<Self> {
+impl From<reqwest::Error> for LastFMError {
+    fn from(error: reqwest::Error) -> Self {
+        Self::Other(error.into())
+    }
+}
+
+trait ResponseExt: Sized {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self, LastFMError>;
+}
+
+impl ResponseExt for reqwest::Response {
+    async fn handle_user_friendly_error(self) -> anyhow::Result<Self, LastFMError> {
         match self.status() {
             StatusCode::OK => Ok(self),
-            StatusCode::NOT_FOUND => {
-                let error: ListenBrainzError = self.json().await?;
-                anyhow::bail!("{}", error.error);
-            }
-            _ => anyhow::bail!(
-                "Received an unexpected response from the ListenBrainz API: {}",
-                self.text().await?
-            ),
+            StatusCode::NOT_FOUND => Err(LastFMAPIError::NotFound().into()),
+            _ => Err(LastFMError::UnexpectedAPIError(format!(
+                "Unexpected HTTP status: {}",
+                self.status()
+            ))),
         }
     }
 }
