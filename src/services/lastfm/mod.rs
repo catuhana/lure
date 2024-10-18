@@ -152,7 +152,7 @@ enum LastFMAPIError {
 
 impl From<reqwest::Error> for LastFMError {
     fn from(error: reqwest::Error) -> Self {
-        LastFMError::Other(error.into())
+        Self::Other(error.into())
     }
 }
 

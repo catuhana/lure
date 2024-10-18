@@ -121,7 +121,7 @@ impl HttpClient {
 
 impl From<reqwest::Error> for RevoltAPIError {
     fn from(error: reqwest::Error) -> Self {
-        RevoltAPIError::Other(error.into())
+        Self::Other(error.into())
     }
 }
 
