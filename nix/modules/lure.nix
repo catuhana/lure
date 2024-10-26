@@ -11,45 +11,6 @@ let
     else
       value;
 
-  commonServiceOptions = { name, ... }: {
-    options = {
-      username = mkOption {
-        type = types.str;
-        description = "Username to check for listening activity.";
-      };
-      check_interval = mkOption {
-        type = types.int;
-        default = 16;
-        description = "Interval in seconds to check for listening activity.";
-      };
-    };
-  };
-
-  lastfmOptions = { ... }: {
-    options = {
-      api_key = mkOption {
-        type = types.nullOr (types.either types.str types.path);
-        default = null;
-        description = "Last.fm API key or path to file containing the key.";
-      };
-      api_key_file = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Path to file containing the Last.fm API key.";
-      };
-    };
-  };
-
-  listenbrainzOptions = { ... }: {
-    options = {
-      api_url = mkOption {
-        type = types.str;
-        default = "https://api.listenbrainz.org";
-        description = "ListenBrainz API URL.";
-      };
-    };
-  };
-
 in {
   options.services.lure = {
     enable = mkEnableOption "lure music status service";
@@ -61,38 +22,62 @@ in {
       example = "lastfm";
     };
 
-    #package = mkOption {
-    #  type = types.package;
-    #  default = pkgs.lure;
-    #  defaultText = literalExpression "pkgs.lure";
-    #  description = "The lure package to use.";
-    #};
+    package = mkOption {
+      type = types.package;
+      default = pkgs.lure;
+      defaultText = literalExpression "pkgs.lure";
+      description = "The lure package to use.";
+    };
 
     services = {
       lastfm = mkOption {
-        type = commonServiceOptions // {
-          api_key = mkOption {
-            type = types.nullOr (types.either types.str types.path);
-            default = null;
-            description = "Last.fm API key or path to file containing the key.";
-          };
-          api_key_file = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = "Path to file containing the Last.fm API key.";
+        type = types.submodule {
+          options = {
+            username = mkOption {
+              type = types.str;
+              description = "Username to check for listening activity.";
+            };
+            check_interval = mkOption {
+              type = types.int;
+              default = 16;
+              description =
+                "Interval in seconds to check for listening activity.";
+            };
+            api_key = mkOption {
+              type = types.nullOr (types.either types.str types.path);
+              default = null;
+              description =
+                "Last.fm API key or path to file containing the key.";
+            };
+            api_key_file = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = "Path to file containing the Last.fm API key.";
+            };
           };
         };
         description = "Last.fm service configuration.";
       };
 
       listenbrainz = mkOption {
-        type = commonServiceOptions // {
-          api_url = mkOption {
-            type = types.str;
-            default = "https://api.listenbrainz.org";
-            description = "ListenBrainz API URL.";
+        type = types.submodule {
+          options = {
+            username = mkOption {
+              type = types.str;
+              description = "Username to check for listening activity.";
+            };
+            check_interval = mkOption {
+              type = types.int;
+              default = 16;
+              description =
+                "Interval in seconds to check for listening activity.";
+            };
+            api_url = mkOption {
+              type = types.str;
+              default = "https://api.listenbrainz.org";
+              description = "ListenBrainz API URL.";
+            };
           };
-
         };
         description = "ListenBrainz service configuration.";
       };
