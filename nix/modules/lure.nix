@@ -152,7 +152,7 @@ in {
       wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/lure";
+        ExecStart = "/bin/lure";
         Restart = "always";
         RestartSec = "10";
         DynamicUser = true;
@@ -161,7 +161,7 @@ in {
             ++ optional (cfg.services.lastfm.api_key_file != null)
             "lastfm-api-key:${cfg.services.lastfm.api_key_file}"
             ++ optional (cfg.revolt.session_token_file != null)
-            "revolt-token:${cfg.revolt.session_token_file}";
+            "revolt-session-token:${cfg.revolt.session_token_file}";
         in credentials;
       };
 
@@ -193,7 +193,7 @@ in {
         LURE_REVOLT__SESSION_TOKEN = mkIf (cfg.revolt.session_token != null)
           (readSecretOrValue cfg.revolt.session_token);
         LURE_REVOLT__SESSION_TOKEN_FILE =
-          mkIf (cfg.revolt.session_token_file != null) "%d/revolt-token";
+          mkIf (cfg.revolt.session_token_file != null) "%d/revolt-session-token";
       };
     };
   };
