@@ -161,9 +161,9 @@ in {
         Restart = "always";
         RestartSec = "10";
         #DynamicUser = true;
-        StandardError=journal
-        StandardOutput=journal
-        StandardInput=null
+        StandardError = "journal";
+        StandardOutput = "journal";
+        StandardInput = "null";
         LoadCredential = let
           credentials = [ ] ++ optional (cfg.services.lastfm != null
             && cfg.services.lastfm.api_key_file != null)
