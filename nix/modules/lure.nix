@@ -22,13 +22,6 @@ in {
       example = "lastfm";
     };
 
-    package = mkOption {
-      type = types.package;
-      default = pkgs.lure;
-      defaultText = literalExpression "pkgs.lure";
-      description = "The lure package to use.";
-    };
-
     services = {
       lastfm = mkOption {
         type = types.submodule {
