@@ -198,6 +198,7 @@ in {
         };
       in {
         LURE_ENABLE = cfg.activeService;
+        LURE_LOG = "trace";
 
         # Revolt configuration
         LURE_REVOLT__STATUS__TEMPLATE = cfg.revolt.status.template;
