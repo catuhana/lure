@@ -11,7 +11,7 @@ let
     else
       value;
 
-  serviceOptions = { name, ... }: {
+  commonServiceOptions = { name, ... }: {
     options = {
       username = mkOption {
         type = types.str;
@@ -70,17 +70,30 @@ in {
 
     services = {
       lastfm = mkOption {
-        type = types.submodule ({ ... }:
-          mkMerge [ (serviceOptions { name = "lastfm"; }) lastfmOptions ]);
+        type = commonServiceOptions // {
+          api_key = mkOption {
+            type = types.nullOr (types.either types.str types.path);
+            default = null;
+            description = "Last.fm API key or path to file containing the key.";
+          };
+          api_key_file = mkOption {
+            type = types.nullOr types.path;
+            default = null;
+            description = "Path to file containing the Last.fm API key.";
+          };
+        };
         description = "Last.fm service configuration.";
       };
 
       listenbrainz = mkOption {
-        type = types.submodule ({ ... }:
-          mkMerge [
-            (serviceOptions { name = "listenbrainz"; })
-            listenbrainzOptions
-          ]);
+        type = commonServiceOptions // {
+          api_url = mkOption {
+            type = types.str;
+            default = "https://api.listenbrainz.org";
+            description = "ListenBrainz API URL.";
+          };
+
+        };
         description = "ListenBrainz service configuration.";
       };
     };
