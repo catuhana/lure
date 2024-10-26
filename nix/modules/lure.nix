@@ -160,13 +160,16 @@ in {
         ExecStart = "/bin/lure start";
         Restart = "always";
         RestartSec = "10";
-        DynamicUser = true;
+        #DynamicUser = true;
+        StandardError=journal
+        StandardOutput=journal
+        StandardInput=null
         LoadCredential = let
           credentials = [ ] ++ optional (cfg.services.lastfm != null
             && cfg.services.lastfm.api_key_file != null)
             "lastfm-api-key:${cfg.services.lastfm.api_key_file}"
             ++ optional (cfg.revolt.session_token_file != null)
-            "revolt-token:${cfg.revolt.session_token_file}";
+            "revolt-session-token:${cfg.revolt.session_token_file}";
         in credentials;
       };
 
@@ -205,7 +208,7 @@ in {
           (readSecretOrValue cfg.revolt.session_token);
         LURE_REVOLT__SESSION_TOKEN_FILE =
           optionalString (cfg.revolt.session_token_file != null)
-          "%d/revolt-token";
+          "%d/revolt-session-token";
       } // lastfmEnv // listenbrainzEnv;
     };
   };
