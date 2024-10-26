@@ -70,12 +70,17 @@ in {
 
     services = {
       lastfm = mkOption {
-        type = types.submodule (serviceOptions // lastfmOptions);
+        type = types.submodule ({ ... }:
+          mkMerge [ (serviceOptions { name = "lastfm"; }) lastfmOptions ]);
         description = "Last.fm service configuration.";
       };
 
       listenbrainz = mkOption {
-        type = types.submodule (serviceOptions // listenbrainzOptions);
+        type = types.submodule ({ ... }:
+          mkMerge [
+            (serviceOptions { name = "listenbrainz"; })
+            listenbrainzOptions
+          ]);
         description = "ListenBrainz service configuration.";
       };
     };
