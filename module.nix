@@ -173,7 +173,7 @@ in
 
         PrivateTmp = true;
         PrivateDevices = true;
-        PrivateNetwork = true;
+        # PrivateNetwork = true;
         PrivateIPC = true;
         PrivateUsers = true;
         PrivateMounts = true;
@@ -187,6 +187,14 @@ in
         ProtectKernelModules = true;
         ProtectKernelLogs = true;
         ProtectControlGroups = true;
+
+        # SystemCallArchitectures = "native";
+        # MemoryDenyWriteExecute = true;
+        # RestrictNamespaces = true;
+        # LockPersonality = true;
+        # RestrictRealtime = true;
+        # DeviceAllow = "";
+        # SystemCallFilter = "@network-io";
       };
 
       environment = mkMerge [
