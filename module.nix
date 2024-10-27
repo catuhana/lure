@@ -4,6 +4,7 @@ self:
 , config
 , ...
 }:
+with lib;
 let
   lure = self.packages.${pkgs.system}.default;
 
@@ -11,22 +12,21 @@ let
 
   supportedServices = [ "lastfm" "listenbrainz" ];
 
-  commonServiceOptions = with lib;
-    service: {
-      username = mkOption {
-        type = types.str;
-        description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
-      };
-
-      check_interval = mkOption {
-        type = types.int;
-        description = "Interval in seconds to check for listening activity.";
-        default = 16;
-      };
+  commonServiceOptions = service: {
+    username = mkOption {
+      type = types.str;
+      description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
     };
+
+    check_interval = mkOption {
+      type = types.int;
+      description = "Interval in seconds to check for listening activity.";
+      default = 16;
+    };
+  };
 in
 {
-  options.services.lure = with lib; {
+  options.services.lure = {
     enable = mkEnableOption "Enable lure service.";
 
     package = mkOption {
@@ -128,7 +128,7 @@ in
     };
   };
 
-  config = with lib; mkIf (cfg.enable && cfg.useService != null) {
+  config = mkIf (cfg.enable && cfg.useService != null) {
     assertions = [
       {
         assertion = cfg.useService == "lastfm" -> cfg.services.lastfm != null;
@@ -138,13 +138,9 @@ in
         assertion = cfg.useService == "listenbrainz" -> cfg.services.listenbrainz != null;
         message = "'services.listenbrainz' options must be provided when using ListenBrainz service.";
       }
-      {
-        assertion = any (service: cfg.useService == service) supportedServices;
-        message = "'useService' must be either 'lastfm' or 'listenbrainz', got '${cfg.useService}'";
-      }
     ];
 
-    warnings = with lib; [ ]
+    warnings = [ ]
       ++ optional (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
       ++ optional (isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
 
@@ -164,14 +160,14 @@ in
         RestartSec = "5s";
         LoadCredential =
           let
-            credentials = with lib; [ ]
+            credentials = [ ]
               ++ optional (isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.services.lastfm.api_key}"
               ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
       };
 
-      environment = with lib; mkMerge [
+      environment = mkMerge [
         {
           LURE_ENABLE = cfg.useService;
 
