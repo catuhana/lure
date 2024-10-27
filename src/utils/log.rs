@@ -64,8 +64,7 @@ pub fn set_up() -> anyhow::Result<()> {
             .with(EnvFilter::try_from_env("LURE_LOG").unwrap_or_else(|_| {
                 EnvFilter::new(format!("{}=info", std::env!("CARGO_PKG_NAME")))
             }))
-            .with(fmt::Layer::new().with_writer(std_writer))
-            .with(tracing_journald::Layer::new()?);
+            .with(fmt::Layer::new().with_writer(std_writer));
 
     tracing::subscriber::set_global_default(collector)?;
 
