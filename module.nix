@@ -170,7 +170,23 @@ in
 
         # Hardening
         DynamicUser = true;
+
+        PrivateTmp = true;
+        PrivateDevices = true;
+        PrivateNetwork = true;
+        PrivateIPC = true;
+        PrivateUsers = true;
+        PrivateMounts = true;
+
+        ProtectProc = "noaccess";
         ProtectSystem = true;
+        ProtectHome = true;
+        ProtectHostName = true;
+        ProtectClock = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
       };
 
       environment = mkMerge [
