@@ -25,11 +25,11 @@
           packages.default =
             let
               cargoTOML = lib.importTOML ./Cargo.toml;
-              toolchain = pkgs.rust-bin.stable.latest.minimal;
+              rustToolchain = pkgs.rust-bin.stable.latest.minimal;
             in
             (pkgs.makeRustPlatform {
-              cargo = toolchain;
-              rustc = toolchain;
+              cargo = rustToolchain;
+              rustc = rustToolchain;
             }).buildRustPackage {
               pname = cargoTOML.package.name;
               version = cargoTOML.package.version;
