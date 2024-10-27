@@ -54,36 +54,36 @@ in
 
     services = {
       lastfm = mkOption {
-        type = types.nullOr (types.submodule (
-          commonServiceOptions "lastfm" // {
+        type = types.nullOr (types.submodule {
+          options = commonServiceOptions "lastfm" // {
             api_key = {
               type = with types; nullOr (either str path);
               description = ''
                 The API key to use for the Last.fm API.
 
                 WARNING: Since this key basically gives full access to the API
-                with YOUR account, it is recommended to use a path to a file that
+                over YOUR account, it is recommended to use a path to a file that
                 contains the key, instead of entering the key as a string, so it's
                 stored securely.
               '';
               default = null;
             };
-          }
-        ));
+          };
+        });
         default = null;
         description = "Options for the Last.fm service.";
       };
 
       listenbrainz = mkOption {
-        type = types.nullOr (types.submodule (
-          commonServiceOptions "listenbrainz" // {
+        type = types.nullOr (types.submodule {
+          options = commonServiceOptions "listenbrainz" // {
             api_url = mkOption {
               type = types.str;
               description = "The API URL of the ListenBrainz instance.";
               default = "https://api.listenbrainz.org";
             };
-          }
-        ));
+          };
+        });
         default = null;
         description = "Options for the ListenBrainz service.";
       };
