@@ -178,7 +178,7 @@ in
         (optionalAttrs (cfg.log != null) {
           LURE_LOG = "${cfg.log}";
         })
-        (optionalAttrs (cfg.useService == "lastfm") mkMerge [
+        (optionalAttrs (cfg.useService == "lastfm") (mkMerge [
           {
             LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
             LURE_SERVICES__LASTFM__CHECK_INTERVAL = toString cfg.services.lastfm.check_interval;
@@ -189,7 +189,7 @@ in
           (optionalAttrs (isPath cfg.services.lastfm.api_key) {
             LURE_SERVICES__LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
           })
-        ])
+        ]))
         (optionalAttrs (cfg.useService == "listenbrainz") {
           LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.listenbrainz.username;
           LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.listenbrainz.api_url;
