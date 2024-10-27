@@ -133,17 +133,26 @@ in
           credentials;
       };
 
-      environment = {
-        LURE_ENABLE = cfg.useService;
+      environment = with lib; mkMerge [
+        {
+          LURE_ENABLE = cfg.useService;
 
-        LURE_LOG = lib.optionalString (cfg.log != null) cfg.log;
-
-        LURE_REVOLT__STATUS__TEMPLATE = cfg.revolt.status.template;
-        LURE_REVOLT__STATUS__IDLE = lib.optionalString (cfg.revolt.status.idle != null) cfg.revolt.status.idle;
-        LURE_REVOLT__API_URL = cfg.revolt.api_url;
-        LURE_REVOLT__SESSION_TOKEN = lib.optionalString (lib.isString cfg.revolt.session_token) cfg.revolt.session_token;
-        LURE_REVOLT__SESSION_TOKEN_FILE = lib.optionalString (lib.isPath cfg.revolt.session_token) "%d/revolt-session-token";
-      };
+          LURE_REVOLT__STATUS__TEMPLATE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.template;
+          LURE_REVOLT__API_URL = cfg.revolt.api_url;
+        }
+        (optionalAttrs (cfg.log != null) {
+          LURE_LOG = cfg.log;
+        })
+        (optionalAttrs (cfg.revolt.status_idle != null) {
+          LURE_REVOLT__STATUS__IDLE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.idle;
+        })
+        (optionalAttrs (isString cfg.revolt.session_token) {
+          LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;
+        })
+        (optionalAttrs (isPath cfg.revolt.session_token) {
+          LURE_REVOLT__SESSION_TOKEN_FILE = "%d/revolt-session-token";
+        })
+      ];
     };
   };
 }
