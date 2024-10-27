@@ -137,19 +137,13 @@ in
       environment = {
         LURE_ENABLE = cfg.useService;
 
-        inherit (if (lib.isPath cfg.revolt.session_token) then {
-          LURE_REVOLT__SESSION_TOKEN_FILE = "%d/revolt-session-token";
-        } else {
-          LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;
-        });
+        LURE_LOG = lib.optionalString (cfg.log != null) cfg.log;
 
         LURE_REVOLT__STATUS__TEMPLATE = cfg.revolt.status.template;
-
+        LURE_REVOLT__STATUS__IDLE = lib.optionalString (cfg.revolt.status.idle != null) cfg.revolt.status.idle;
         LURE_REVOLT__API_URL = cfg.revolt.api_url;
-      } // lib.optionalAttrs (cfg.log != null) {
-        LURE_LOG = cfg.log;
-      } // lib.optionalAttrs (cfg.revolt.status.idle != null) {
-        LURE_REVOLT__STATUS__IDLE = cfg.revolt.status.idle;
+        LURE_REVOLT__SESSION_TOKEN = lib.optionalString (lib.isString cfg.revolt.session_token) cfg.revolt.session_token;
+        LURE_REVOLT__SESSION_TOKEN_FILE = lib.optionalString (lib.isPath cfg.revolt.session_token) "%d/revolt-session-token";
       };
     };
   };
