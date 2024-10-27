@@ -13,11 +13,6 @@ let
 
   commonServiceOptions = with lib;
     service: {
-      _module.check = lib.mkMerge [
-        (assertMsg (elem service supportedServices)
-          "Service must be either 'lastfm' or 'listenbrainz', got '${service}'")
-      ];
-
       username = mkOption {
         type = types.str;
         description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
