@@ -51,7 +51,7 @@ in
       lastfm = mkOption {
         type = types.nullOr (types.submodule {
           options = commonServiceOptions "lastfm" // {
-            api_key = {
+            api_key = mkOption {
               type = with types; either str path;
               description = ''
                 The API key to use for the Last.fm API.
