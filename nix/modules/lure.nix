@@ -13,10 +13,8 @@ let
 
   commonServiceOptions = with lib;
     service: {
-      _module.check = mkMerge [
-        (assertMsg (elem service supportedServices)
-          "Service must be either 'lastfm' or 'listenbrainz', got '${service}'")
-      ];
+      _module.check = assertMsg (elem service supportedServices)
+        "Service must be either 'lastfm' or 'listenbrainz', got '${service}'";
 
       username = mkOption {
         type = types.str;
@@ -57,7 +55,7 @@ in
         type = types.nullOr (types.submodule {
           options = commonServiceOptions "lastfm" // {
             api_key = {
-              type = with types; nullOr (either str path);
+              type = with types; either str path;
               description = ''
                 The API key to use for the Last.fm API.
 
@@ -66,7 +64,6 @@ in
                 contains the key, instead of entering the key as a string, so it's
                 stored securely.
               '';
-              default = null;
             };
           };
         });
