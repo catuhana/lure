@@ -143,7 +143,7 @@ in
         (optionalAttrs (cfg.log != null) {
           LURE_LOG = cfg.log;
         })
-        (optionalAttrs (cfg.revolt.status_idle != null) {
+        (optionalAttrs (cfg.revolt.status.idle != null) {
           LURE_REVOLT__STATUS__IDLE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.idle;
         })
         (optionalAttrs (isString cfg.revolt.session_token) {
