@@ -199,7 +199,7 @@ in
           "AF_UNIX"
         ];
         LockPersonality = true;
-        DeviceAllow = [ "char-tty rw" ];
+        DeviceAllow = [ "char-tty rw" "char-input rw" ];
         DevicePolicy = "strict";
         SystemCallFilter = [ "@system-service" "~@privileged" ];
         ProcSubset = "pid";
