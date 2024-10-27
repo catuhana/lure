@@ -47,7 +47,7 @@
           packages.default = lurePackage;
         };
 
-      flake.nixosModules.default = import ./nix/modules/lure.nix self.packages.${nixpkgs.system}.default;
+      flake.nixosModules.default = import ./nix/modules/lure.nix self.packages.${system}.default;
     };
 }
 
