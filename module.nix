@@ -170,6 +170,7 @@ in
 
         # Hardening
         DynamicUser = true;
+        ProtectSystem = true;
       };
 
       environment = mkMerge [
