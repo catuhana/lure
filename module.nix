@@ -179,7 +179,7 @@ in
         PrivateMounts = true;
 
         ProtectProc = "noaccess";
-        ProtectSystem = true;
+        ProtectSystem = "strict";
         ProtectHome = true;
         ProtectHostName = true;
         ProtectClock = true;
@@ -191,11 +191,18 @@ in
         SystemCallArchitectures = "native";
         MemoryDenyWriteExecute = true;
         RestrictNamespaces = true;
-        LockPersonality = true;
         RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+        LockPersonality = true;
         DeviceAllow = [ "" ];
         DevicePolicy = "strict";
-        SystemCallFilter = [ "@system-service" "~@resources" "~@privileged" ];
+        SystemCallFilter = [ "@system-service" "~@privileged" ];
+        ProcSubset = "pid";
       };
 
       environment = mkMerge [
