@@ -52,6 +52,6 @@
             };
         };
 
-      flake.nixosModules.default = import ./modules.nix self;
+      flake.nixosModules.default = import ./module.nix self;
     };
 }
