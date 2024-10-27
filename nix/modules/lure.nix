@@ -1,216 +1,135 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
+{ lib
+, pkgs
+, config
+  # Inputs
+, lurePackage
+, ...
+}:
 let
   cfg = config.services.lure;
 
   readSecretOrValue = value:
-    if (isPath value || (isString value && hasPrefix "/" value)) then
-      "$(cat ${value})"
+    if (lib.isPath value) then
+      lib.readFile value
     else
       value;
 
-  # Common options that both services share
-  commonServiceOptions = {
-    username = mkOption {
-      type = types.str;
-      description = "Username to check for listening activity.";
-    };
-    check_interval = mkOption {
-      type = types.int;
-      default = 16;
-      description = "Interval in seconds to check for listening activity.";
-    };
-  };
+  supportedServices = [ "lastfm" "listenbrainz" ];
 
-  # Create conditional options based on active service
-  serviceOptions = {
-    lastfm = types.submodule {
-      options = commonServiceOptions // {
-        api_key = mkOption {
-          type = types.nullOr (types.either types.str types.path);
-          default = null;
-          description = "Last.fm API key or path to file containing the key.";
-        };
-        api_key_file = mkOption {
-          type = types.nullOr types.path;
-          default = null;
-          description = "Path to file containing the Last.fm API key.";
-        };
+  commonServiceOptions = with lib;
+    service: {
+      _module.check = mkMerge [
+        (assertMsg (elem service supportedServices)
+          "Service must be either 'lastfm' or 'listenbrainz', got '${service}'")
+      ];
+
+      username = mkOption {
+        type = types.str;
+        description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
+      };
+
+      check_interval = mkOption {
+        type = types.int;
+        default = 16;
+        description = "Interval in seconds to check for listening activity.";
       };
     };
+in
+{
+  options.services.lure = with lib; {
+    enable = mkEnableOption "Enable lure service.";
 
-    listenbrainz = types.submodule {
-      options = commonServiceOptions // {
-        api_url = mkOption {
-          type = types.str;
-          default = "https://api.listenbrainz.org";
-          description = "ListenBrainz API URL.";
-        };
-      };
-    };
-  };
-
-in {
-  options.services.lure = {
-    enable = mkEnableOption "lure music status service";
-
-    activeService = mkOption {
-      type = types.enum [ "lastfm" "listenbrainz" ];
-      description =
-        "Which service to enable for checking your listening status.";
-      example = "lastfm";
+    package = mkOption {
+      type = types.package;
+      description = "The lure package to use.";
+      default = lurePackage;
     };
 
-    services = mkOption {
-      type = types.submodule {
-        options = {
-          lastfm = mkOption {
-            type = serviceOptions.lastfm;
-            description = "Last.fm service configuration.";
-            default = null;
-          };
-          listenbrainz = mkOption {
-            type = serviceOptions.listenbrainz;
-            description = "ListenBrainz service configuration.";
-            default = null;
-          };
-        };
-      };
-      description = "Service-specific configurations.";
+    log = mkOption {
+      type = types.nullOr (types.str);
+      description = "`[EnvFilter](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)` compatible filter for log messages.";
+      default = null;
     };
+
+    useService = mkOption {
+      type = types.nullOr (types.enum supportedServices);
+      description = "Which service to enable for checking your listening status.";
+      default = null;
+    };
+
+    # services = {
+    # };
 
     revolt = {
       status = {
         template = mkOption {
           type = types.str;
+          description = ''
+            The status template that will be used.
+
+            The following placeholders can be used:
+            - %NAME%: The name of the song.
+            - %ARTIST%: The artist of the song.
+          '';
           default = "🎵 Listening to %NAME% by %ARTIST%";
-          description =
-            "Status template with placeholders for song information.";
         };
 
         idle = mkOption {
           type = types.nullOr types.str;
+          description = ''
+            The idle status.
+            
+            If this option is not set, the status will be returned to
+            the previous status when not listening to anything.
+          '';
           default = null;
-          description = "Idle status message when not listening to music.";
         };
       };
 
       api_url = mkOption {
         type = types.str;
+        description = "The API URL of the instance.";
         default = "https://api.revolt.chat";
-        description = "Revolt API URL.";
       };
 
       session_token = mkOption {
-        type = types.nullOr (types.either types.str types.path);
-        default = null;
-        description = "Revolt session token or direct value.";
-      };
+        type = with types; either str path;
+        description = ''
+          The `X-Session-Token` to use for the API.
 
-      session_token_file = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Path to file containing the Revolt session token.";
+          WARNING: Since this token basically gives full access to your account,
+          it is recommended to use a path to a file that contains the token,
+          instead of entering the token as a string, so it's stored securely.
+        '';
       };
     };
   };
 
-  config = mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = cfg.activeService == "lastfm" -> cfg.services.lastfm
-          != null;
-        message = "Last.fm service is active but configuration is missing.";
-      }
-      {
-        assertion = cfg.activeService == "listenbrainz"
-          -> cfg.services.listenbrainz != null;
-        message =
-          "ListenBrainz service is active but configuration is missing.";
-      }
-      {
-        assertion = cfg.services.lastfm != null -> (cfg.services.lastfm.api_key
-          != null || cfg.services.lastfm.api_key_file != null);
-        message =
-          "Last.fm service configuration requires either api_key or api_key_file to be set.";
-      }
-      {
-        assertion = cfg.services.lastfm != null -> !(cfg.services.lastfm.api_key
-          != null && cfg.services.lastfm.api_key_file != null);
-        message =
-          "Cannot specify both api_key and api_key_file for Last.fm configuration.";
-      }
-      {
-        assertion = !(cfg.revolt.session_token != null
-          && cfg.revolt.session_token_file != null);
-        message =
-          "Cannot specify both session_token and session_token_file for Revolt configuration.";
-      }
+  config = with lib; mkIf (cfg.enable && cfg.useService != null) {
+    warnings = [
+      (mkIf (isString cfg.revolt.session_token) "Revolt session token is specified as a string, PLEASE consider using a path to a file instead.")
     ];
 
     systemd.services.lure = {
-      description = "Lure music status service";
+      description = "Lure service"; # TODO: Fix this
+
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
+      startLimitIntervalSec = 10;
+      startLimitBurst = 5;
+
       serviceConfig = {
-        ExecStart = "/bin/lure start";
-        Restart = "always";
-        RestartSec = "10";
-        #DynamicUser = true;
-        StandardError = "journal";
-        StandardOutput = "journal";
-        StandardInput = "null";
-        LoadCredential = let
-          credentials = [ ] ++ optional (cfg.services.lastfm != null
-            && cfg.services.lastfm.api_key_file != null)
-            "lastfm-api-key:${cfg.services.lastfm.api_key_file}"
-            ++ optional (cfg.revolt.session_token_file != null)
-            "revolt-session-token:${cfg.revolt.session_token_file}";
-        in credentials;
+        ExecStart = "${cfg.package}/bin/lure start";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        # LoadCredential = 
       };
 
-      environment = let
-        # Last.fm environment variables
-        lastfmEnv = optionalAttrs (cfg.services.lastfm != null) {
-          LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
-          LURE_SERVICES__LASTFM__CHECK_INTERVAL =
-            toString cfg.services.lastfm.check_interval;
-          LURE_SERVICES__LASTFM__API_KEY =
-            optionalString (cfg.services.lastfm.api_key != null)
-            (readSecretOrValue cfg.services.lastfm.api_key);
-          LURE_SERVICES__LASTFM__API_KEY_FILE =
-            optionalString (cfg.services.lastfm.api_key_file != null)
-            "%d/lastfm-api-key";
-        };
-
-        # ListenBrainz environment variables
-        listenbrainzEnv = optionalAttrs (cfg.services.listenbrainz != null) {
-          LURE_SERVICES__LISTENBRAINZ__USERNAME =
-            cfg.services.listenbrainz.username;
-          LURE_SERVICES__LISTENBRAINZ__API_URL =
-            cfg.services.listenbrainz.api_url;
-          LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL =
-            toString cfg.services.listenbrainz.check_interval;
-        };
-      in {
-        LURE_ENABLE = cfg.activeService;
-        LURE_LOG = "trace";
-
-        # Revolt configuration
-        LURE_REVOLT__STATUS__TEMPLATE = cfg.revolt.status.template;
-        LURE_REVOLT__STATUS__IDLE = cfg.revolt.status.idle;
-        LURE_REVOLT__API_URL = cfg.revolt.api_url;
-        LURE_REVOLT__SESSION_TOKEN =
-          optionalString (cfg.revolt.session_token != null)
-          (readSecretOrValue cfg.revolt.session_token);
-        LURE_REVOLT__SESSION_TOKEN_FILE =
-          optionalString (cfg.revolt.session_token_file != null)
-          "%d/revolt-session-token";
-      } // lastfmEnv // listenbrainzEnv;
+      environment = { } // lib.optionalAttrs (!lib.isNull cfg.log) {
+        RUST_LOG = cfg.log;
+      };
     };
   };
 }
