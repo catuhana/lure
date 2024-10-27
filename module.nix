@@ -188,13 +188,13 @@ in
         ProtectKernelLogs = true;
         ProtectControlGroups = true;
 
-        # SystemCallArchitectures = "native";
-        # MemoryDenyWriteExecute = true;
-        # RestrictNamespaces = true;
-        # LockPersonality = true;
-        # RestrictRealtime = true;
-        # DeviceAllow = "";
-        # SystemCallFilter = "@network-io";
+        SystemCallArchitectures = "native";
+        MemoryDenyWriteExecute = true;
+        RestrictNamespaces = true;
+        LockPersonality = true;
+        RestrictRealtime = true;
+        DeviceAllow = "";
+        SystemCallFilter = "@network-io";
       };
 
       environment = mkMerge [
