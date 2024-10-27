@@ -132,17 +132,21 @@ in
     assertions = [
       {
         assertion = cfg.useService == "lastfm" -> cfg.services.lastfm != null;
-        message = "`services.lastfm` options must be provided when using LastFM service.";
+        message = "'services.lastfm' options must be provided when using LastFM service.";
       }
       {
         assertion = cfg.useService == "listenbrainz" -> cfg.services.listenbrainz != null;
-        message = "`services.listenbrainz` options must be provided when using ListenBrainz service.";
+        message = "'services.listenbrainz' options must be provided when using ListenBrainz service.";
+      }
+      {
+        assertion = any (service: cfg.useService == service) supportedServices;
+        message = "'useService' must be either 'lastfm' or 'listenbrainz', got '${cfg.useService}'";
       }
     ];
 
-    warnings = [
-      (mkIf (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.")
-    ];
+    warnings = [ ]
+      ++ lib.optional (lib.isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
+      ++ lib.optional (lib.isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
 
     systemd.services.lure = {
       description = "Lure service";
