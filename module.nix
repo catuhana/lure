@@ -180,9 +180,6 @@ in
           LURE_REVOLT__STATUS__TEMPLATE = escapePercentLiteral cfg.revolt.status.template;
           LURE_REVOLT__API_URL = cfg.revolt.api_url;
         }
-        (optionalAttrs (cfg.log != null) {
-          LURE_LOG = "${cfg.log}";
-        })
         (optionalAttrs (cfg.useService == "lastfm") (mkMerge [
           {
             LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
