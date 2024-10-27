@@ -14,8 +14,6 @@ let
   supportedServices = [ "lastfm" "listenbrainz" ];
 
   commonServiceOptions = service: {
-    assert builtins.elem service supportedServices;
-
     username = mkOption {
       type = types.str;
       description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
