@@ -179,20 +179,20 @@ in
         })
         (optionalAttrs (cfg.useService == "lastfm") mkMerge [
           {
-            LURE_LASTFM__USERNAME = cfg.services.lastfm.username;
-            LURE_LASTFM__CHECK_INTERVAL = toString cfg.services.lastfm.check_interval;
+            LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
+            LURE_SERVICES__LASTFM__CHECK_INTERVAL = toString cfg.services.lastfm.check_interval;
           }
           (optionalAttrs (isString cfg.services.lastfm.api_key) {
-            LURE_LASTFM__API_KEY = cfg.services.lastfm.api_key;
+            LURE_SERVICES__LASTFM__API_KEY = cfg.services.lastfm.api_key;
           })
           (optionalAttrs (isPath cfg.services.lastfm.api_key) {
-            LURE_LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
+            LURE_SERVICES__LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
           })
         ])
         (optionalAttrs (cfg.useService == "listenbrainz") {
-          LURE_LISTENBRAINZ__USERNAME = cfg.listenbrainz.username;
-          LURE_LISTENBRAINZ__CHECK_INTERVAL = toString cfg.listenbrainz.check_interval;
-          LURE_LISTENBRAINZ__API_URL = cfg.listenbrainz.api_url;
+          LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.listenbrainz.username;
+          LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.listenbrainz.api_url;
+          LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.listenbrainz.check_interval;
         })
         (optionalAttrs (cfg.revolt.status.idle != null) {
           LURE_REVOLT__STATUS__IDLE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.idle;
