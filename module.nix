@@ -167,42 +167,6 @@ in
               ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
-
-        # Hardening
-        DynamicUser = true;
-
-        PrivateTmp = true;
-        PrivateDevices = true;
-        # PrivateNetwork = true;
-        PrivateIPC = true;
-        PrivateUsers = true;
-        PrivateMounts = true;
-
-        ProtectProc = "noaccess";
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectHostName = true;
-        ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-
-        SystemCallArchitectures = "native";
-        MemoryDenyWriteExecute = true;
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX"
-        ];
-        LockPersonality = true;
-        DeviceAllow = [ "char-tty rw" "char-input rw" ];
-        DevicePolicy = "strict";
-        SystemCallFilter = [ "@system-service" "~@privileged" ];
-        ProcSubset = "pid";
       };
 
       environment = mkMerge [
