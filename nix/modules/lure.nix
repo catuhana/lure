@@ -1,11 +1,12 @@
+{ self }:
 { lib
 , pkgs
 , config
-  # Inputs
-, lurePackage
 , ...
 }:
 let
+  lure = self.packages.${pkgs.system}.default;
+
   cfg = config.services.lure;
 
   readSecretOrValue = value:
@@ -42,7 +43,7 @@ in
     package = mkOption {
       type = types.package;
       description = "The lure package to use.";
-      default = lurePackage;
+      default = lure;
     };
 
     log = mkOption {
