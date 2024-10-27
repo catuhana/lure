@@ -151,13 +151,13 @@ in
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      startLimitIntervalSec = 10;
-      startLimitBurst = 5;
+      startLimitIntervalSec = "infinity"; # Limit the total number of start attemts.
+      startLimitBurst = 3;
 
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/lure start";
         Restart = "on-failure";
-        RestartSec = "5s";
+        RestartSec = "1m";
         LoadCredential =
           let
             credentials = [ ]
