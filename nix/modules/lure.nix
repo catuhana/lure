@@ -161,8 +161,8 @@ in
         LoadCredential =
           let
             credentials = [ ]
-              ++ lib.optional (lib.isPath cfg.lastfm.api_key) "lastfm-api-key:${cfg.lastfm.api_key}"
-              ++ lib.optional (lib.isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
+              ++ lib.optional (lib.isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.lastfm.api_key}"
+              ++ lib.optional (lib.isPath cfg.services.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
       };
