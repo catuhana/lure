@@ -193,8 +193,9 @@ in
         RestrictNamespaces = true;
         LockPersonality = true;
         RestrictRealtime = true;
-        DeviceAllow = "";
-        SystemCallFilter = "@network-io";
+        DeviceAllow = [ "" ];
+        DevicePolicy = "strict";
+        SystemCallFilter = [ "@system-service" "~@resources" "~@privileged" ];
       };
 
       environment = mkMerge [
