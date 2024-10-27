@@ -128,7 +128,7 @@ in
         # LoadCredential = 
       };
 
-      environment = { } // lib.optionalAttrs (!lib.isNull cfg.log) {
+      environment = { } // lib.optionalAttrs (cfg.log != null) {
         RUST_LOG = cfg.log;
       };
     };
