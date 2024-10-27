@@ -137,11 +137,11 @@ in
   config = with lib; mkIf (cfg.enable && cfg.useService != null) {
     assertions = [
       {
-        assertion = cfg.useService == "lastfm" && cfg.services.lastfm == null;
+        assertion = cfg.useService == "lastfm" -> cfg.services.lastfm != null;
         message = "`services.lastfm` options must be provided when using LastFM service.";
       }
       {
-        assertion = cfg.useService == "listenbrainz" && cfg.services.listenbrainz == null;
+        assertion = cfg.useService == "listenbrainz" -> cfg.services.listenbrainz != null;
         message = "`services.listenbrainz` options must be provided when using ListenBrainz service.";
       }
     ];
