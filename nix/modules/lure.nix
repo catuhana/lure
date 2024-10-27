@@ -127,11 +127,10 @@ in
         RestartSec = "5s";
         LoadCredential =
           let
-            credentials = [
-              (lib.isPath cfg.revolt.session_token && "revolt-session-token:${cfg.revolt.session_token}")
-            ];
+            credentials = [ ]
+              ++ lib.optional (lib.isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
-          builtins.filter (credential: credential != null) credentials;
+          credentials;
       };
 
       environment = {
