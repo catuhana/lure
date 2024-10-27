@@ -144,9 +144,9 @@ in
       }
     ];
 
-    warnings = [ ]
-      ++ lib.optional (lib.isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
-      ++ lib.optional (lib.isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
+    warnings = with lib; [ ]
+      ++ optional (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
+      ++ optional (isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
 
     systemd.services.lure = {
       description = "Lure service";
@@ -164,9 +164,9 @@ in
         RestartSec = "5s";
         LoadCredential =
           let
-            credentials = [ ]
-              ++ lib.optional (lib.isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.services.lastfm.api_key}"
-              ++ lib.optional (lib.isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
+            credentials = with lib; [ ]
+              ++ optional (isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.services.lastfm.api_key}"
+              ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
       };
