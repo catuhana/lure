@@ -49,6 +49,6 @@
             };
         };
 
-      flake.nixosModules.default = import ./nix/modules/lure.nix self;
+      flake.nixosModules.default = import ./modules.nix self;
     };
 }
