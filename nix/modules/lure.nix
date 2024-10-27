@@ -112,7 +112,7 @@ in
     ];
 
     systemd.services.lure = {
-      description = "Lure service"; # TODO: Fix this
+      description = "Lure service";
 
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
@@ -125,11 +125,31 @@ in
         ExecStart = "${cfg.package}/bin/lure start";
         Restart = "on-failure";
         RestartSec = "5s";
-        # LoadCredential = 
+        LoadCredential =
+          let
+            credentials = [
+              (lib.isPath cfg.revolt.session_token && "revolt-session-token:${cfg.revolt.session_token}")
+            ];
+          in
+          builtins.filter (credential: credential != null) credentials;
       };
 
-      environment = { } // lib.optionalAttrs (cfg.log != null) {
-        RUST_LOG = cfg.log;
+      environment = {
+        LURE_ENABLE = cfg.useService;
+
+        inherit (if (lib.isPath cfg.revolt.session_token) then {
+          LURE_REVOLT__SESSION_TOKEN_FILE = "%d/revolt-session-token";
+        } else {
+          LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;
+        });
+
+        LURE_REVOLT__STATUS__TEMPLATE = cfg.revolt.status.template;
+
+        LURE_REVOLT__API_URL = cfg.revolt.api_url;
+      } // lib.optionalAttrs (cfg.log != null) {
+        LURE_LOG = cfg.log;
+      } // lib.optionalAttrs (cfg.revolt.status.idle != null) {
+        LURE_REVOLT__STATUS__IDLE = cfg.revolt.status.idle;
       };
     };
   };
