@@ -7,12 +7,15 @@ self:
 with lib;
 let
   lure = self.packages.${pkgs.system}.default;
-
   cfg = config.services.lure;
+
+  escapePercentLiteral = str: replaceStrings [ "%" ] [ "%%" ] str;
 
   supportedServices = [ "lastfm" "listenbrainz" ];
 
   commonServiceOptions = service: {
+    assert builtins.elem service supportedServices;
+
     username = mkOption {
       type = types.str;
       description = "${if service == "lastfm" then "Last.fm" else "ListenBrainz"} username to check for listening activity.";
@@ -171,7 +174,7 @@ in
         {
           LURE_ENABLE = cfg.useService;
 
-          LURE_REVOLT__STATUS__TEMPLATE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.template;
+          LURE_REVOLT__STATUS__TEMPLATE = escapePercentLiteral cfg.revolt.status.template;
           LURE_REVOLT__API_URL = cfg.revolt.api_url;
         }
         (optionalAttrs (cfg.log != null) {
@@ -195,7 +198,7 @@ in
           LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.listenbrainz.check_interval;
         })
         (optionalAttrs (cfg.revolt.status.idle != null) {
-          LURE_REVOLT__STATUS__IDLE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.idle;
+          LURE_REVOLT__STATUS__IDLE = escapePercentLiteral cfg.revolt.status.idle;
         })
         (optionalAttrs (isString cfg.revolt.session_token) {
           LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;

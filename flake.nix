@@ -31,8 +31,9 @@
               cargo = rustToolchain;
               rustc = rustToolchain;
             }).buildRustPackage {
+              inherit (cargoTOML.package) version;
+
               pname = cargoTOML.package.name;
-              version = cargoTOML.package.version;
 
               src = ./.;
               cargoLock.lockFile = ./Cargo.lock;
@@ -42,9 +43,11 @@
               nativeBuildInputs = with pkgs; [ pkg-config ];
 
               meta = {
-                description = "Display your currently playing track from Last.fm, ListenBrainz, and other services in your Revolt status.";
-                homepage = "https://github.com/catuhana/lure";
-                license = lib.licenses.mpl20;
+                inherit (cargoTOML.package) description license;
+
+                homepage = cargoTOML.package.repository;
+
+                platforms = lib.platforms.unix;
               };
             };
         };
