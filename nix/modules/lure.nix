@@ -13,8 +13,10 @@ let
 
   commonServiceOptions = with lib;
     service: {
-      _module.check = assertMsg (elem service supportedServices)
-        "Service must be either 'lastfm' or 'listenbrainz', got '${service}'";
+      _module.check = lib.mkMerge [
+        (assertMsg (elem service supportedServices)
+          "Service must be either 'lastfm' or 'listenbrainz', got '${service}'")
+      ];
 
       username = mkOption {
         type = types.str;
