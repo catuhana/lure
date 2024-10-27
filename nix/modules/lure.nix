@@ -175,7 +175,7 @@ in
           LURE_REVOLT__API_URL = cfg.revolt.api_url;
         }
         (optionalAttrs (cfg.log != null) {
-          LURE_LOG = cfg.log;
+          LURE_LOG = "${cfg.log}";
         })
         (optionalAttrs (cfg.useService == "lastfm") mkMerge [
           {
