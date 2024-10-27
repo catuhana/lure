@@ -36,10 +36,11 @@ in
       default = lure;
     };
 
-    log = mkOption {
-      type = types.nullOr (types.str);
-      description = "`[EnvFilter](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)` compatible filter for log messages.";
-      default = null;
+    environment = mkOption {
+      type = types.attrsOf types.str;
+      description = "Environment variables to set for the service.";
+      example = { "LURE_LOG" = "trace"; };
+      default = { };
     };
 
     useService = mkOption {
@@ -166,9 +167,13 @@ in
               ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
+
+        # Hardening
+        DynamicUser = true;
       };
 
       environment = mkMerge [
+        (cfg.environment)
         {
           LURE_ENABLE = cfg.useService;
 
