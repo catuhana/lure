@@ -9,12 +9,6 @@ let
 
   cfg = config.services.lure;
 
-  readSecretOrValue = value:
-    if (lib.isPath value) then
-      lib.readFile value
-    else
-      value;
-
   supportedServices = [ "lastfm" "listenbrainz" ];
 
   commonServiceOptions = with lib;
@@ -31,8 +25,8 @@ let
 
       check_interval = mkOption {
         type = types.int;
-        default = 16;
         description = "Interval in seconds to check for listening activity.";
+        default = 16;
       };
     };
 in
@@ -58,8 +52,38 @@ in
       default = null;
     };
 
-    # services = {
-    # };
+    services = {
+      lastfm = mkOption {
+        type = types.nullOr (types.submodule commonServiceOptions "lastfm" // {
+          api_key = {
+            type = with types; nullOr (either str path);
+            description = ''
+              The API key to use for the Last.fm API.
+
+              WARNING: Since this key basically gives full access to the API
+              with YOUR account, it is recommended to use a path to a file that
+              contains the key, instead of entering the key as a string, so it's
+              stored securely.
+            '';
+            default = null;
+          };
+        });
+        default = null;
+        description = "Options for the Last.fm service.";
+      };
+
+      listenbrainz = mkOption {
+        type = types.nullOr (types.submodule commonServiceOptions "listenbrainz" // {
+          api_url = mkOption {
+            type = types.str;
+            description = "The API URL of the ListenBrainz instance.";
+            default = "https://api.listenbrainz.org";
+          };
+        });
+        default = null;
+        description = "Options for the ListenBrainz service.";
+      };
+    };
 
     revolt = {
       status = {
@@ -107,8 +131,19 @@ in
   };
 
   config = with lib; mkIf (cfg.enable && cfg.useService != null) {
+    assertions = [
+      {
+        assertion = cfg.useService == "lastfm" && cfg.lastfm == null;
+        message = "`services.lastfm` options must be provided when using LastFM service.";
+      }
+      {
+        assertion = cfg.useService == "listenbrainz" && cfg.listenbrainz == null;
+        message = "`services.listenbrainz` options must be provided when using ListenBrainz service.";
+      }
+    ];
+
     warnings = [
-      (mkIf (isString cfg.revolt.session_token) "Revolt session token is specified as a string, PLEASE consider using a path to a file instead.")
+      (mkIf (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.")
     ];
 
     systemd.services.lure = {
@@ -128,6 +163,7 @@ in
         LoadCredential =
           let
             credentials = [ ]
+              ++ lib.optional (lib.isPath cfg.lastfm.api_key) "lastfm-api-key:${cfg.lastfm.api_key}"
               ++ lib.optional (lib.isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
           in
           credentials;
@@ -142,6 +178,23 @@ in
         }
         (optionalAttrs (cfg.log != null) {
           LURE_LOG = cfg.log;
+        })
+        (optionalAttrs (cfg.useService == "lastfm") mkMerge [
+          {
+            LURE_LASTFM__USERNAME = cfg.lastfm.username;
+            LURE_LASTFM__CHECK_INTERVAL = toString cfg.lastfm.check_interval;
+          }
+          (optionalAttrs (isString cfg.lastfm.api_key) {
+            LURE_LASTFM__API_KEY = cfg.lastfm.api_key;
+          })
+          (optionalAttrs (isPath cfg.lastfm.api_key) {
+            LURE_LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
+          })
+        ])
+        (optionalAttrs (cfg.useService == "listenbrainz") {
+          LURE_LISTENBRAINZ__USERNAME = cfg.listenbrainz.username;
+          LURE_LISTENBRAINZ__CHECK_INTERVAL = toString cfg.listenbrainz.check_interval;
+          LURE_LISTENBRAINZ__API_URL = cfg.listenbrainz.api_url;
         })
         (optionalAttrs (cfg.revolt.status.idle != null) {
           LURE_REVOLT__STATUS__IDLE = builtins.replaceStrings [ "%" ] [ "%%" ] cfg.revolt.status.idle;
