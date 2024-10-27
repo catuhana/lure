@@ -191,9 +191,9 @@ in
           })
         ]))
         (optionalAttrs (cfg.useService == "listenbrainz") {
-          LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.listenbrainz.username;
-          LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.listenbrainz.api_url;
-          LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.listenbrainz.check_interval;
+          LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.services.listenbrainz.username;
+          LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.services.listenbrainz.api_url;
+          LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.services.listenbrainz.check_interval;
         })
         (optionalAttrs (cfg.revolt.status.idle != null) {
           LURE_REVOLT__STATUS__IDLE = escapePercentLiteral cfg.revolt.status.idle;
