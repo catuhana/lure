@@ -130,80 +130,85 @@ in
     };
   };
 
-  config = mkIf (cfg.enable && cfg.useService != null) {
-    assertions = [
-      {
-        assertion = cfg.useService == "lastfm" -> cfg.services.lastfm != null;
-        message = "'services.lastfm' options must be provided when using LastFM service.";
-      }
-      {
-        assertion = cfg.useService == "listenbrainz" -> cfg.services.listenbrainz != null;
-        message = "'services.listenbrainz' options must be provided when using ListenBrainz service.";
-      }
-    ];
-
-    warnings = [ ]
-      ++ optional (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
-      ++ optional (isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
-
-    systemd.services.lure = {
-      description = "Lure service";
-
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      startLimitIntervalSec = 60;
-      startLimitBurst = 3;
-
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/lure start";
-        Restart = "on-failure";
-        RestartSec = "15s";
-        LoadCredential =
-          let
-            credentials = [ ]
-              ++ optional (isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.services.lastfm.api_key}"
-              ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
-          in
-          credentials;
-      };
-
-      environment = mkMerge [
-        (cfg.environment)
+  config =
+    let
+      lastfmServiceEnabled = cfg.useService == "lastfm" && cfg.services.lastfm != null;
+      listenbrainzServiceEnabled = cfg.useService == "listenbrainz" && cfg.services.listenbrainz != null;
+    in
+    mkIf (cfg.enable && cfg.useService != null) {
+      assertions = [
         {
-          LURE_ENABLE = cfg.useService;
-
-          LURE_REVOLT__STATUS__TEMPLATE = escapePercentLiteral cfg.revolt.status.template;
-          LURE_REVOLT__API_URL = cfg.revolt.api_url;
+          assertion = lastfmServiceEnabled;
+          message = "'services.lastfm' options must be provided when using LastFM service.";
         }
-        (optionalAttrs (cfg.useService == "lastfm") (mkMerge [
-          {
-            LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
-            LURE_SERVICES__LASTFM__CHECK_INTERVAL = toString cfg.services.lastfm.check_interval;
-          }
-          (optionalAttrs (isString cfg.services.lastfm.api_key) {
-            LURE_SERVICES__LASTFM__API_KEY = cfg.services.lastfm.api_key;
-          })
-          (optionalAttrs (isPath cfg.services.lastfm.api_key) {
-            LURE_SERVICES__LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
-          })
-        ]))
-        (optionalAttrs (cfg.useService == "listenbrainz") {
-          LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.services.listenbrainz.username;
-          LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.services.listenbrainz.api_url;
-          LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.services.listenbrainz.check_interval;
-        })
-        (optionalAttrs (cfg.revolt.status.idle != null) {
-          LURE_REVOLT__STATUS__IDLE = escapePercentLiteral cfg.revolt.status.idle;
-        })
-        (optionalAttrs (isString cfg.revolt.session_token) {
-          LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;
-        })
-        (optionalAttrs (isPath cfg.revolt.session_token) {
-          LURE_REVOLT__SESSION_TOKEN_FILE = "%d/revolt-session-token";
-        })
+        {
+          assertion = listenbrainzServiceEnabled;
+          message = "'services.listenbrainz' options must be provided when using ListenBrainz service.";
+        }
       ];
+
+      warnings = [ ]
+        ++ optional (isString cfg.revolt.session_token) "'revolt.session_token' is specified as a string, PLEASE consider using a path to a file instead for the sake of security."
+        ++ optional (lastfmServiceEnabled && isString cfg.services.lastfm.api_key) "'services.lastfm.api_key' is specified as a string, PLEASE consider using a path to a file instead for the sake of security.";
+
+      systemd.services.lure = {
+        description = "Lure service";
+
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        wantedBy = [ "multi-user.target" ];
+
+        startLimitIntervalSec = 60;
+        startLimitBurst = 3;
+
+        serviceConfig = {
+          ExecStart = "${cfg.package}/bin/lure start";
+          Restart = "on-failure";
+          RestartSec = "15s";
+          LoadCredential =
+            let
+              credentials = [ ]
+                ++ optional (lastfmServiceEnabled && isPath cfg.services.lastfm.api_key) "lastfm-api-key:${cfg.services.lastfm.api_key}"
+                ++ optional (isPath cfg.revolt.session_token) "revolt-session-token:${cfg.revolt.session_token}";
+            in
+            credentials;
+        };
+
+        environment = mkMerge [
+          (cfg.environment)
+          {
+            LURE_ENABLE = cfg.useService;
+
+            LURE_REVOLT__STATUS__TEMPLATE = escapePercentLiteral cfg.revolt.status.template;
+            LURE_REVOLT__API_URL = cfg.revolt.api_url;
+          }
+          (optionalAttrs lastfmServiceEnabled (mkMerge [
+            {
+              LURE_SERVICES__LASTFM__USERNAME = cfg.services.lastfm.username;
+              LURE_SERVICES__LASTFM__CHECK_INTERVAL = toString cfg.services.lastfm.check_interval;
+            }
+            (optionalAttrs (isString cfg.services.lastfm.api_key) {
+              LURE_SERVICES__LASTFM__API_KEY = cfg.services.lastfm.api_key;
+            })
+            (optionalAttrs (isPath cfg.services.lastfm.api_key) {
+              LURE_SERVICES__LASTFM__API_KEY_FILE = "%d/lastfm-api-key";
+            })
+          ]))
+          (optionalAttrs listenbrainzServiceEnabled {
+            LURE_SERVICES__LISTENBRAINZ__USERNAME = cfg.services.listenbrainz.username;
+            LURE_SERVICES__LISTENBRAINZ__API_URL = cfg.services.listenbrainz.api_url;
+            LURE_SERVICES__LISTENBRAINZ__CHECK_INTERVAL = toString cfg.services.listenbrainz.check_interval;
+          })
+          (optionalAttrs (cfg.revolt.status.idle != null) {
+            LURE_REVOLT__STATUS__IDLE = escapePercentLiteral cfg.revolt.status.idle;
+          })
+          (optionalAttrs (isString cfg.revolt.session_token) {
+            LURE_REVOLT__SESSION_TOKEN = cfg.revolt.session_token;
+          })
+          (optionalAttrs (isPath cfg.revolt.session_token) {
+            LURE_REVOLT__SESSION_TOKEN_FILE = "%d/revolt-session-token";
+          })
+        ];
+      };
     };
-  };
 }
