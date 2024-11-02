@@ -1,10 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    ":label(dependencies)",
-    ":maintainLockFilesWeekly",
-    ":automergeMinor",
-    "config:base"
-  ],
-  "bumpVersion": "patch"
+  "extends": ["github>catuhana/.config:renovate"]
 }
