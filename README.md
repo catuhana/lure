@@ -44,6 +44,34 @@ Or using a container management tool:
 docker/podman run -v $(pwd)/config.yaml:/app/config.yaml:ro lure:latest
 ```
 
+Or on NixOS:
+
+```diff
+{
+  inputs = {
++    lure = {
++      url = "github:catuhana/lure";
++      inputs.nixpkgs.follows = "nixpkgs";
++    };
+  };
+
+  modules = [
++    lure.nixosModules.default
++    {
++      # Check `module.nix` file for all available options.
++      services.lure = {
++        enable = true;
++        useService = "listenbrainz";
++
++        services.listenbrainz.username = "<username>";
++
++        revolt.session_token = ./<path>;
++      };
++    }
+  ];
+}
+```
+
 > [!TIP]
 > By default, lure logs useful information to the console. If you'd want to see other log levels, use the `LURE_LOG` environment variable. Check [`EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) documentation from [`tracing-subscriber`](https://docs.rs/tracing-subscriber) for more information.
 >
@@ -66,7 +94,7 @@ lure config generate >config.yaml # creates a file
 
 ### Container Management Tools
 
-If you're using any container management tools, you can either mount the host configuration file to the container or use environment variables. The volume for the app and its configuration file is `/app`. Refer to the [run section](#run) for example.
+If you're using any container management tools, you can either mount the host configuration file to the container or use environment variables. The volume for the app and its configuration file is `/app`. Refer to the [run section](#running) for example.
 
 ### Services (Features)
 
