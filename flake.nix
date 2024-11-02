@@ -4,14 +4,17 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-
+    gitignore = {
+      url = "github:hercules-ci/gitignore.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, rust-overlay, ... }: flake-parts.lib.mkFlake { inherit inputs; }
+  outputs = inputs@{ self, nixpkgs, flake-parts, gitignore, rust-overlay, ... }: flake-parts.lib.mkFlake { inherit inputs; }
     {
       systems = nixpkgs.lib.systems.flakeExposed;
 
@@ -26,6 +29,7 @@
             let
               cargoTOML = lib.importTOML ./Cargo.toml;
               rustToolchain = pkgs.rust-bin.stable.latest.minimal;
+              inherit (gitignore.lib) gitignoreSource;
             in
             (pkgs.makeRustPlatform {
               cargo = rustToolchain;
@@ -35,7 +39,7 @@
 
               pname = cargoTOML.package.name;
 
-              src = ./.;
+              src = gitignoreSource ./.;
               cargoLock.lockFile = ./Cargo.lock;
 
               buildInputs = with pkgs; [ openssl ] ++ lib.optional stdenv.isDarwin
