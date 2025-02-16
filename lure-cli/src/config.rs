@@ -74,19 +74,16 @@ impl Command for Subcommands {
     async fn run(&self) -> Result<(), Self::Error> {
         match self {
             Self::Generate => {
-                Self::generate();
+                Self::generate_config_sample();
                 Ok(())
             }
-            Self::Revolt(subcommand) => match subcommand.run().await {
-                Ok(result) => Ok(result),
-                Err(error) => Err(error.into()),
-            },
+            Self::Revolt(subcommand) => subcommand.run().await.map_err(Into::into),
         }
     }
 }
 
 impl Subcommands {
-    pub fn generate() {
+    pub fn generate_config_sample() {
         print!("{}", lure_resources::CONFIG_SAMPLE_FILE);
     }
 }

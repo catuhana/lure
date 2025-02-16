@@ -23,7 +23,7 @@ impl Command for Arguments {
             Figment,
         };
         use figment_file_provider_adapter::FileAdapter;
-        use futures::StreamExt as _;
+        use futures::{FutureExt as _, TryStreamExt as _};
         use lure_service_common::TrackInfo;
         use tokio::time::sleep;
 
@@ -69,68 +69,79 @@ impl Command for Arguments {
         let first_status = revolt_client.get_status_text().await?;
         let mut previous_track: Option<TrackInfo> = None;
 
-        // TODO: Support graceful shutdown (Ctrl+C).
-        while let Some(item) = service.next().await {
-            match item {
-                Ok(Some(track)) => {
-                    if previous_track
-                        .as_ref()
-                        .is_some_and(|previous_track| previous_track == &track)
-                    {
-                        continue;
-                    }
+        let mut ctrl_c = Box::pin(tokio::signal::ctrl_c().fuse());
 
-                    let status = config
-                        .revolt
-                        .status
-                        .template
-                        .replace("%ARTIST%", &track.artist)
-                        .replace("%NAME%", &track.title);
+        loop {
+            tokio::select! {
+                _ = &mut ctrl_c => {
+                    println!("Received Ctrl+C, exiting...");
+                    revolt_client.set_status_text(first_status.clone()).await?;
 
-                    match revolt_client.set_status_text(Some(status)).await {
-                        Ok(()) => previous_track = Some(track),
-                        Err(error) => match error {
-                            revolt_api::Error::ApiError(
-                                revolt_api::APIError::RateLimitExceeded(remaining),
-                            ) => sleep(Duration::from_millis(remaining)).await,
-                            _ => return Err(error.into()),
-                        },
-                    };
-                }
-                Ok(None) => {
-                    if previous_track.is_none() {
-                        continue;
-                    }
-
-                    match revolt_client.set_status_text(first_status.clone()).await {
-                        Ok(()) => previous_track = None,
-                        Err(error) => match error {
-                            revolt_api::Error::ApiError(
-                                revolt_api::APIError::RateLimitExceeded(remaining),
-                            ) => sleep(Duration::from_millis(remaining)).await,
-                            _ => return Err(error.into()),
-                        },
-                    }
-                }
-                Err(error) => {
-                    #[cfg(feature = "service-lastfm")]
-                    if let Some(lastfm_error) =
-                        error.downcast_ref::<lure_service_lastfm::ServiceError>()
-                    {
-                        eprintln!("LastFM error: {lastfm_error}");
-                        continue;
-                    }
-
-                    #[cfg(feature = "service-listenbrainz")]
-                    if let Some(listenbrainz_error) =
-                        error.downcast_ref::<lure_service_listenbrainz::ServiceError>()
-                    {
-                        eprintln!("ListenBrainz error: {listenbrainz_error}");
-                        continue;
-                    }
-
-                    eprintln!("Unknown catastrophic error: {error}");
                     break;
+                },
+                item = service.try_next() => {
+                    match item {
+                        Ok(Some(Some(track))) => {
+                            if previous_track
+                            .as_ref()
+                            .is_some_and(|previous_track| previous_track == &track)
+                        {
+                            continue;
+                        }
+
+                        let status = config
+                            .revolt
+                            .status
+                            .template
+                            .replace("%ARTIST%", &track.artist)
+                            .replace("%NAME%", &track.title);
+
+                        match revolt_client.set_status_text(Some(status)).await {
+                            Ok(()) => previous_track = Some(track),
+                            Err(error) => match error {
+                                revolt_api::Error::ApiError(
+                                    revolt_api::APIError::RateLimitExceeded(remaining),
+                                ) => sleep(Duration::from_millis(remaining)).await,
+                                _ => return Err(error.into()),
+                            },
+                        };
+                        }
+                        Ok(Some(None)) | Ok(None) => {
+                            if previous_track.is_none() {
+                                continue;
+                            }
+
+                            match revolt_client.set_status_text(first_status.clone()).await {
+                                Ok(()) => previous_track = None,
+                                Err(error) => match error {
+                                    revolt_api::Error::ApiError(
+                                        revolt_api::APIError::RateLimitExceeded(remaining),
+                                    ) => sleep(Duration::from_millis(remaining)).await,
+                                    _ => return Err(error.into()),
+                                },
+                            }
+                        }
+                        Err(error) => {
+                            #[cfg(feature = "service-lastfm")]
+                            if let Some(lastfm_error) =
+                                error.downcast_ref::<lure_service_lastfm::ServiceError>()
+                            {
+                                eprintln!("LastFM error: {lastfm_error}");
+                                continue;
+                            }
+
+                            #[cfg(feature = "service-listenbrainz")]
+                            if let Some(listenbrainz_error) =
+                                error.downcast_ref::<lure_service_listenbrainz::ServiceError>()
+                            {
+                                eprintln!("ListenBrainz error: {listenbrainz_error}");
+                                continue;
+                            }
+
+                            eprintln!("Unknown catastrophic error: {error}");
+                            break;
+                        }
+                    }
                 }
             }
         }
