@@ -113,21 +113,56 @@ impl Command for Arguments {
                                 }
                             }
                         }
+                        // TODO: Replace the (e)println! with a logger.
                         Err(error) => {
                             #[cfg(feature = "service-lastfm")]
                             if let Some(lastfm_error) =
                                 error.downcast_ref::<lure_service_lastfm::ServiceError>()
                             {
-                                eprintln!("LastFM error: {lastfm_error}");
-                                continue;
+                                match lastfm_error {
+                                    lure_service_lastfm::ServiceError::CustomError(api_error) => {
+                                        match api_error {
+                                            lure_service_lastfm::APIError::AuthenticationFailed
+                                            | lure_service_lastfm::APIError::InvalidAPIKey
+                                            | lure_service_lastfm::APIError::SuspendedAPIKey => {
+                                                eprintln!("Fatal LastFM error: {lastfm_error}");
+                                                break;
+                                            }
+                                            _ => {
+                                                eprintln!("Non-fatal LastFM error: {lastfm_error}");
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    _ => {
+                                        eprintln!("Non-fatal error on LastFM service: {lastfm_error}");
+                                        continue;
+                                    }
+                                }
                             }
 
                             #[cfg(feature = "service-listenbrainz")]
                             if let Some(listenbrainz_error) =
                                 error.downcast_ref::<lure_service_listenbrainz::ServiceError>()
                             {
-                                eprintln!("ListenBrainz error: {listenbrainz_error}");
-                                continue;
+                                match listenbrainz_error {
+                                    lure_service_listenbrainz::ServiceError::CustomError(api_error) => {
+                                        match api_error {
+                                            lure_service_listenbrainz::APIError::NotFound => {
+                                                eprintln!("Fatal ListenBrainz error: {listenbrainz_error}");
+                                                break;
+                                            }
+                                            _ => {
+                                                eprintln!("Non-fatal ListenBrainz error: {listenbrainz_error}");
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    _ => {
+                                        eprintln!("Non-fatal error on ListenBrainz service: {listenbrainz_error}");
+                                        continue;
+                                    }
+                                }
                             }
 
                             eprintln!("Unknown catastrophic error: {error}");
