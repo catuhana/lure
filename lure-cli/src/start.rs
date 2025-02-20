@@ -120,24 +120,18 @@ impl Command for Arguments {
                             if let Some(lastfm_error) =
                                 error.downcast_ref::<lure_service_lastfm::ServiceError>()
                             {
-                                match lastfm_error {
-                                    lure_service_lastfm::ServiceError::CustomError(api_error) => {
-                                        match api_error {
-                                            lure_service_lastfm::APIError::AuthenticationFailed
-                                            | lure_service_lastfm::APIError::InvalidAPIKey
-                                            | lure_service_lastfm::APIError::SuspendedAPIKey => {
-                                                eprintln!("Fatal LastFM error: {lastfm_error}");
-                                                break;
-                                            }
-                                            _ => {
-                                                eprintln!("Non-fatal LastFM error: {lastfm_error}");
-                                                continue;
-                                            }
+                                if let lure_service_lastfm::ServiceError::CustomError(api_error) = lastfm_error {
+                                    match api_error {
+                                        lure_service_lastfm::APIError::AuthenticationFailed
+                                        | lure_service_lastfm::APIError::InvalidAPIKey
+                                        | lure_service_lastfm::APIError::SuspendedAPIKey => {
+                                            eprintln!("Fatal LastFM error: {lastfm_error}");
+                                            break;
                                         }
-                                    }
-                                    _ => {
-                                        eprintln!("Non-fatal error on LastFM service: {lastfm_error}");
-                                        continue;
+                                        _ => {
+                                            eprintln!("Non-fatal LastFM error: {lastfm_error}");
+                                            continue;
+                                        }
                                     }
                                 }
                             }
@@ -146,21 +140,12 @@ impl Command for Arguments {
                             if let Some(listenbrainz_error) =
                                 error.downcast_ref::<lure_service_listenbrainz::ServiceError>()
                             {
-                                match listenbrainz_error {
-                                    lure_service_listenbrainz::ServiceError::CustomError(api_error) => {
-                                        match api_error {
-                                            lure_service_listenbrainz::APIError::NotFound => {
-                                                eprintln!("Fatal ListenBrainz error: {listenbrainz_error}");
-                                                break;
-                                            }
-                                            _ => {
-                                                eprintln!("Non-fatal ListenBrainz error: {listenbrainz_error}");
-                                                continue;
-                                            }
-                                        }
-                                    }
-                                    _ => {
-                                        eprintln!("Non-fatal error on ListenBrainz service: {listenbrainz_error}");
+                                if let lure_service_listenbrainz::ServiceError::CustomError(api_error) = listenbrainz_error {
+                                    if matches!(api_error, lure_service_listenbrainz::APIError::NotFound) {
+                                        eprintln!("Fatal ListenBrainz error: {listenbrainz_error}");
+                                        break;
+                                    } else {
+                                        eprintln!("Non-fatal ListenBrainz error: {listenbrainz_error}");
                                         continue;
                                     }
                                 }
