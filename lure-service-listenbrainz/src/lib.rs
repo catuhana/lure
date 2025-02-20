@@ -4,7 +4,7 @@ use core::{task::Poll, time::Duration};
 use futures::Stream;
 use lure_service_common::{PlaybackStatus, Service as _, ServiceCustomError, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
-use tokio::time::{interval, Interval};
+use tokio::time::{Interval, interval};
 
 pub type ServiceError = lure_service_common::ServiceError<APIError>;
 

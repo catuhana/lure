@@ -31,6 +31,6 @@ pub enum ServiceError<T: ServiceCustomError> {
 
 impl<T: ServiceCustomError> From<T> for ServiceError<T> {
     fn from(error: T) -> Self {
-        ServiceError::CustomError(error)
+        Self::CustomError(error)
     }
 }

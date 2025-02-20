@@ -21,8 +21,8 @@ repository = "https://github.com/catuhana/lure"
 authors = ["tuhana <tuhana.cat+git@gmail.com>"]
 license = "MPL-2.0"
 version = "1.0.0"
-edition = "2021"
-rust-version = "1.84"
+edition = "2024"
+rust-version = "1.85"
 
 [profile.release]
 opt-level = "z"
@@ -34,12 +34,12 @@ unused_trait_names = "warn"
 std_instead_of_core = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.95"
+anyhow = "1.0.96"
 async-trait = "0.1.86"
 futures = "0.3.31"
 reqwest = "0.12.12"
 secrecy = "0.10.3"
-serde = "1.0.217"
+serde = "1.0.218"
 serde_yml = "0.0.12"
 thiserror = "2.0.11"
 tokio = "1.43.0"

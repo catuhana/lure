@@ -19,8 +19,8 @@ impl Command for Arguments {
         use std::path::Path;
 
         use figment::{
-            providers::{Env, Format as _, Yaml},
             Figment,
+            providers::{Env, Format as _, Yaml},
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
@@ -57,7 +57,7 @@ impl Command for Arguments {
             _ => {
                 return Err(ArgumentsError::MoreThanOneServiceEnabled(
                     enabled_services.join(", "),
-                ))
+                ));
             }
         };
 
@@ -114,6 +114,7 @@ impl Command for Arguments {
                             }
                         }
                         // TODO: Replace the (e)println! with a logger.
+                        // TODO: Create a custom error handler functions for each service.
                         Err(error) => {
                             #[cfg(feature = "service-lastfm")]
                             if let Some(lastfm_error) =
@@ -206,6 +207,8 @@ pub enum ArgumentsError {
 #[cfg(not(any(feature = "service-lastfm", feature = "service-listenbrainz")))]
 #[derive(Debug, thiserror::Error)]
 pub enum ArgumentsError {
-    #[error("None of the service features are enabled. At least one service feature must be enabled to use this command.")]
+    #[error(
+        "None of the service features are enabled. At least one service feature must be enabled to use this command."
+    )]
     NoServiceFeaturesEnabled,
 }

@@ -1,12 +1,12 @@
 use core::{future::Future, str::FromStr as _};
 
 use reqwest::{
-    header::{HeaderMap, HeaderName, HeaderValue},
     StatusCode,
+    header::{HeaderMap, HeaderName, HeaderValue},
 };
 use revolt_models::{
-    schemas::user::{DataEditUser, FieldsUser, User, UserStatus},
     Authentication,
+    schemas::user::{DataEditUser, FieldsUser, User, UserStatus},
 };
 
 pub struct Client {
