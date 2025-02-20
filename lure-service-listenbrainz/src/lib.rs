@@ -2,7 +2,7 @@ use core::future::Future;
 use core::{task::Poll, time::Duration};
 
 use futures::Stream;
-use lure_service_common::{Service as _, ServiceCustomError};
+use lure_service_common::{PlaybackStatus, Service as _, ServiceCustomError, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
 use tokio::time::{interval, Interval};
 
@@ -28,9 +28,7 @@ impl Service {
 
 #[async_trait::async_trait]
 impl lure_service_common::Service for Service {
-    async fn get_current_playing_track(
-        &self,
-    ) -> Result<Option<lure_service_common::TrackInfo>, anyhow::Error> {
+    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, anyhow::Error> {
         let url = format!(
             "{}/1/user/{}/playing-now",
             self.options.api_url, &self.options.username
@@ -50,7 +48,7 @@ impl lure_service_common::Service for Service {
 
                 if let Some(track) = recent_tracks.payload.listens.first_mut() {
                     if track.playing_now {
-                        return Ok(Some(lure_service_common::TrackInfo {
+                        return Ok(PlaybackStatus::Playing(TrackInfo {
                             artist: core::mem::take(&mut track.track_metadata.artist_name),
                             title: core::mem::take(&mut track.track_metadata.track_name),
                         }));
@@ -60,12 +58,12 @@ impl lure_service_common::Service for Service {
             Err(error) => return Err(error.into()),
         }
 
-        Ok(None)
+        Ok(PlaybackStatus::NotPlaying)
     }
 }
 
 impl Stream for Service {
-    type Item = Result<Option<lure_service_common::TrackInfo>, anyhow::Error>;
+    type Item = Result<PlaybackStatus, anyhow::Error>;
 
     fn poll_next(
         mut self: core::pin::Pin<&mut Self>,

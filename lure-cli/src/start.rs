@@ -24,7 +24,7 @@ impl Command for Arguments {
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
-        use lure_service_common::TrackInfo;
+        use lure_service_common::{PlaybackStatus, TrackInfo};
         use tokio::time::sleep;
 
         let config_path = self
@@ -81,44 +81,36 @@ impl Command for Arguments {
                 },
                 item = service.try_next() => {
                     match item {
-                        Ok(Some(Some(track))) => {
-                            if previous_track
-                            .as_ref()
-                            .is_some_and(|previous_track| previous_track == &track)
-                        {
-                            continue;
-                        }
-
-                        let status = config
-                            .revolt
-                            .status
-                            .template
-                            .replace("%ARTIST%", &track.artist)
-                            .replace("%NAME%", &track.title);
-
-                        match revolt_client.set_status_text(Some(status)).await {
-                            Ok(()) => previous_track = Some(track),
-                            Err(error) => match error {
-                                revolt_api::Error::ApiError(
-                                    revolt_api::APIError::RateLimitExceeded(remaining),
-                                ) => sleep(Duration::from_millis(remaining)).await,
-                                _ => return Err(error.into()),
-                            },
-                        };
-                        }
-                        Ok(Some(None)) | Ok(None) => {
-                            if previous_track.is_none() {
+                        Ok(None) => break,
+                        Ok(Some(status)) => match status {
+                            PlaybackStatus::Playing(track) if previous_track.as_ref().is_some_and(|prev| prev == &track) => {
                                 continue;
                             }
+                            PlaybackStatus::Playing(track) => {
+                                let status = config
+                                    .revolt
+                                    .status
+                                    .template
+                                    .replace("%ARTIST%", &track.artist)
+                                    .replace("%NAME%", &track.title);
 
-                            match revolt_client.set_status_text(first_status.clone()).await {
-                                Ok(()) => previous_track = None,
-                                Err(error) => match error {
-                                    revolt_api::Error::ApiError(
-                                        revolt_api::APIError::RateLimitExceeded(remaining),
-                                    ) => sleep(Duration::from_millis(remaining)).await,
-                                    _ => return Err(error.into()),
-                                },
+                                match revolt_client.set_status_text(Some(status)).await {
+                                    Ok(()) => previous_track = Some(track),
+                                    Err(revolt_api::Error::ApiError(
+                                        revolt_api::APIError::RateLimitExceeded(remaining)
+                                    )) => sleep(Duration::from_millis(remaining)).await,
+                                    Err(error) => return Err(error.into()),
+                                }
+                            }
+                            PlaybackStatus::NotPlaying if previous_track.is_none() => continue,
+                            PlaybackStatus::NotPlaying => {
+                                match revolt_client.set_status_text(first_status.clone()).await {
+                                    Ok(()) => previous_track = None,
+                                    Err(revolt_api::Error::ApiError(
+                                        revolt_api::APIError::RateLimitExceeded(remaining)
+                                    )) => sleep(Duration::from_millis(remaining)).await,
+                                    Err(error) => return Err(error.into()),
+                                }
                             }
                         }
                         Err(error) => {

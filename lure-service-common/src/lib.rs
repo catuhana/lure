@@ -6,9 +6,15 @@ pub struct TrackInfo {
     pub title: String,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum PlaybackStatus {
+    Playing(TrackInfo),
+    NotPlaying,
+}
+
 #[async_trait::async_trait]
-pub trait Service: Stream<Item = Result<Option<TrackInfo>, anyhow::Error>> + Send + Sync {
-    async fn get_current_playing_track(&self) -> Result<Option<TrackInfo>, anyhow::Error>;
+pub trait Service: Stream<Item = Result<PlaybackStatus, anyhow::Error>> + Send + Sync {
+    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, anyhow::Error>;
 }
 
 pub trait ServiceCustomError: core::error::Error + Send + Sync + 'static {}
