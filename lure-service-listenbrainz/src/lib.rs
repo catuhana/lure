@@ -86,7 +86,17 @@ pub enum APIError {
     Unexpected(String),
 }
 
-impl ServiceCustomError for APIError {}
+impl ServiceCustomError for APIError {
+    fn handle_error(&self) -> lure_service_common::ErrorSeverity {
+        if matches!(self, Self::NotFound) {
+            eprintln!("Fatal ListenBrainz error: {self}");
+            lure_service_common::ErrorSeverity::Fatal
+        } else {
+            eprintln!("Non-fatal ListenBrainz error: {self}");
+            lure_service_common::ErrorSeverity::Graceful
+        }
+    }
+}
 
 pub trait HandleServiceAPIError: Sized {
     type Error: core::error::Error;

@@ -36,11 +36,11 @@ mod tests {
 
     #[test]
     fn test_options_minimal() {
-        let yaml = r#"
+        let yaml = r"
             session_token: meow
-        "#;
+        ";
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert_eq!(options.api_url, "https://api.revolt.chat");
         assert_eq!(options.session_token, "meow");
@@ -61,7 +61,7 @@ mod tests {
                 idle: Not listening to anything!
         "#;
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert_eq!(options.api_url, "https://api.kittenvolt.cat");
         assert_eq!(options.session_token, "mrrp");

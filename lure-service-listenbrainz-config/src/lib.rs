@@ -31,12 +31,12 @@ mod tests {
 
     #[test]
     fn test_options_minimal() {
-        let yaml = r#"
+        let yaml = r"
             enable: true
             username: kitty
-        "#;
+        ";
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert!(options.enable);
 
@@ -47,13 +47,13 @@ mod tests {
 
     #[test]
     fn test_options_full() {
-        let yaml = r#"
+        let yaml = r"
             username: kitten
             api_url: https://api.kittenbrainz.cat
             check_interval: 24
-        "#;
+        ";
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert!(!options.enable);
 

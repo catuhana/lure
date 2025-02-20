@@ -108,7 +108,20 @@ pub enum APIError {
     Unexpected(String),
 }
 
-impl ServiceCustomError for APIError {}
+impl ServiceCustomError for APIError {
+    fn handle_error(&self) -> lure_service_common::ErrorSeverity {
+        match self {
+            Self::AuthenticationFailed | Self::InvalidAPIKey | Self::SuspendedAPIKey => {
+                eprintln!("Fatal LastFM error: {self}");
+                lure_service_common::ErrorSeverity::Fatal
+            }
+            _ => {
+                eprintln!("Non-fatal LastFM error: {self}");
+                lure_service_common::ErrorSeverity::Graceful
+            }
+        }
+    }
+}
 
 // TODO: Find a way to deduplicate this. Almost
 // same code is used in many places.

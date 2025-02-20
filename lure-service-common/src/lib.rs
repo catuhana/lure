@@ -12,12 +12,19 @@ pub enum PlaybackStatus {
     NotPlaying,
 }
 
+pub enum ErrorSeverity {
+    Graceful,
+    Fatal,
+}
+
 #[async_trait::async_trait]
 pub trait Service: Stream<Item = Result<PlaybackStatus, anyhow::Error>> + Send + Sync {
     async fn get_current_playing_track(&self) -> Result<PlaybackStatus, anyhow::Error>;
 }
 
-pub trait ServiceCustomError: core::error::Error + Send + Sync + 'static {}
+pub trait ServiceCustomError: core::error::Error + Send + Sync + 'static {
+    fn handle_error(&self) -> ErrorSeverity;
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum ServiceError<T: ServiceCustomError> {

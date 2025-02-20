@@ -24,19 +24,19 @@ const fn default_check_interval() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use secrecy::ExposeSecret;
+    use secrecy::ExposeSecret as _;
 
     use super::*;
 
     #[test]
     fn test_options_minimal() {
-        let yaml = r#"
+        let yaml = r"
             enable: true
             username: kitty
             api_key: hellokitty
-        "#;
+        ";
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert!(options.enable);
 
@@ -47,13 +47,13 @@ mod tests {
 
     #[test]
     fn test_options_full() {
-        let yaml = r#"
+        let yaml = r"
             username: kitten
             api_key: hellokitten
             check_interval: 24
-        "#;
+        ";
 
-        let options: Options = serde_yml::from_str(&yaml).unwrap();
+        let options: Options = serde_yml::from_str(yaml).unwrap();
 
         assert!(!options.enable);
 
