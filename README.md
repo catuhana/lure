@@ -3,7 +3,7 @@
 ## TODO
 
 - [ ] Add `tracing` logging
-- [ ] Create Containerfile
+- [x] Create ~~Docker~~Containerfile
 - [ ] Create Nix flake
 - [ ] Create systemd service file (and distribution packaging files?)
 

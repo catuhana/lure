@@ -114,8 +114,6 @@ impl Command for Arguments {
                                 }
                             }
                         }
-                        // TODO: Replace the (e)println! with a logger.
-                        // TODO: Create a custom error handler functions for each service.
                         Err(error) => {
                             #[cfg(feature = "service-lastfm")]
                             if let Some(lure_service_lastfm::ServiceError::CustomError(api_error)) =
