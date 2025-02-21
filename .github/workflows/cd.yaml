@@ -67,16 +67,13 @@ jobs:
         with:
           subject-name: lure-${{ runner.os }}
           subject-path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
-
-  # TODO: Enable this after having done
-  # Containerfile.
-  # push-container-image:
-  #   name: Push Container Image
-  #   uses: ./.github/workflows/docker-push.yaml
-  #   permissions:
-  #     attestations: write
-  #     contents: read
-  #     id-token: write
-  #     packages: write
-  #   with:
-  #     image-name: lure
+  push-container-image:
+    name: Push Container Image
+    uses: ./.github/workflows/docker-push.yaml
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      image-name: lure

@@ -54,7 +54,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          file: Containerfile
           tags: ${{ steps.container-metadata.outputs.tags }}
           labels: ${{ steps.container-metadata.outputs.labels }}
           cache-from: type=gha
