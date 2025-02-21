@@ -6,8 +6,6 @@ use lure_service_common::{PlaybackStatus, Service as _, ServiceCustomError, Trac
 use reqwest::{ClientBuilder, StatusCode};
 use tokio::time::{Interval, interval};
 
-pub type ServiceError = lure_service_common::ServiceError<APIError>;
-
 pub struct Service {
     http_client: reqwest::Client,
     interval: Interval,
@@ -85,6 +83,8 @@ pub enum APIError {
     #[error("Unexpected API error: {0}")]
     Unexpected(String),
 }
+
+pub type ServiceError = lure_service_common::ServiceError<APIError>;
 
 impl ServiceCustomError for APIError {
     fn handle_error(&self) -> lure_service_common::ErrorSeverity {
