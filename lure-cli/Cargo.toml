@@ -23,8 +23,8 @@ revolt-models = { path = "../revolt-models", optional = true }
 
 anyhow.workspace = true
 async-trait.workspace = true
-clap = { version = "4.5.30", features = ["derive"] }
-demand = "1.6.3"
+clap = { version = "4.5.31", features = ["derive"] }
+demand = "1.6.4"
 figment = { version = "0.10.19", features = ["env", "yaml"], optional = true }
 figment_file_provider_adapter = { version = "0.1.1", optional = true }
 futures.workspace = true
