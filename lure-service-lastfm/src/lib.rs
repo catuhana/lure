@@ -1,15 +1,14 @@
 use core::future::Future;
-use core::{task::Poll, time::Duration};
+use core::time::Duration;
 
-use futures::Stream;
-use lure_service_common::{PlaybackStatus, Service as _, ServiceCustomError, TrackInfo};
+use lure_service_common::{
+    HTTPPlaybackAdapter, PlaybackService, PlaybackStatus, ServiceCustomError, TrackInfo,
+};
 use reqwest::{ClientBuilder, StatusCode, Url};
 use secrecy::ExposeSecret as _;
-use tokio::time::{Interval, interval};
 
 pub struct Service {
     http_client: reqwest::Client,
-    interval: Interval,
     options: lure_service_lastfm_config::Options,
 }
 
@@ -17,15 +16,20 @@ impl Service {
     pub fn try_new(options: lure_service_lastfm_config::Options) -> Result<Self, ServiceError> {
         Ok(Self {
             http_client: ClientBuilder::new().build()?,
-            interval: interval(Duration::from_secs(options.check_interval)),
             options,
         })
+    }
+
+    pub fn into_playback_service(self) -> impl PlaybackService {
+        HTTPPlaybackAdapter(self)
     }
 }
 
 #[async_trait::async_trait]
-impl lure_service_common::Service for Service {
-    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, anyhow::Error> {
+impl lure_service_common::HTTPPlaybackService for Service {
+    type Error = ServiceError;
+
+    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error> {
         let url = Url::parse_with_params(
             "https://ws.audioscrobbler.com/2.0/",
             &[
@@ -68,21 +72,9 @@ impl lure_service_common::Service for Service {
 
         Ok(PlaybackStatus::NotPlaying)
     }
-}
 
-impl Stream for Service {
-    type Item = Result<PlaybackStatus, anyhow::Error>;
-
-    fn poll_next(
-        mut self: core::pin::Pin<&mut Self>,
-        cx: &mut core::task::Context<'_>,
-    ) -> core::task::Poll<Option<Self::Item>> {
-        match self.interval.poll_tick(cx) {
-            Poll::Ready(_) => Poll::Ready(Some(futures::executor::block_on(
-                self.get_current_playing_track(),
-            ))),
-            Poll::Pending => Poll::Pending,
-        }
+    fn polling_interval(&self) -> Duration {
+        Duration::from_secs(self.options.check_interval)
     }
 }
 

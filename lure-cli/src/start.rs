@@ -16,7 +16,7 @@ impl Command for Arguments {
     async fn run(&self) -> Result<(), Self::Error> {
         const SECURE_CONFIG_KEYS: &[&str; 2] = &["session_token", "api_key"];
 
-        use core::{pin::Pin, time::Duration};
+        use core::time::Duration;
         use std::path::Path;
 
         use figment::{
@@ -25,7 +25,7 @@ impl Command for Arguments {
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
-        use lure_service_common::{PlaybackStatus, TrackInfo};
+        use lure_service_common::{PlaybackService, PlaybackStatus, TrackInfo};
         use tokio::time::sleep;
 
         let config_path = self
@@ -42,17 +42,21 @@ impl Command for Arguments {
 
         // TODO: Find a better way to do this.
         let enabled_services = config.enabled_services();
-        let mut service: Pin<Box<dyn lure_service_common::Service>> = match enabled_services.len() {
+        let mut service_stream = match enabled_services.len() {
             0 => return Err(ArgumentsError::NoServicesEnabled),
             1 => match enabled_services.first() {
                 #[cfg(feature = "service-lastfm")]
-                Some(&"LastFM") => Box::pin(lure_service_lastfm::Service::try_new(
-                    config.service.lastfm.unwrap(),
-                )?),
+                Some(&"LastFM") => {
+                    lure_service_lastfm::Service::try_new(config.service.lastfm.unwrap())?
+                        .into_playback_service()
+                        .into_stream()
+                }
                 #[cfg(feature = "service-listenbrainz")]
-                Some(&"ListenBrainz") => Box::pin(lure_service_listenbrainz::Service::try_new(
+                Some(&"ListenBrainz") => lure_service_listenbrainz::Service::try_new(
                     config.service.listenbrainz.unwrap(),
-                )?),
+                )?
+                .into_playback_service()
+                .into_stream(),
                 Some(_) | None => unreachable!(),
             },
             _ => {
@@ -76,13 +80,11 @@ impl Command for Arguments {
             tokio::select! {
                 _ = &mut ctrl_c => {
                     println!("Received Ctrl+C, exiting...");
-                    revolt_client.set_status_text(first_status.clone()).await?;
-
                     break;
                 },
-                item = service.try_next() => {
+                item = service_stream.try_next() => {
                     match item {
-                        Ok(None) => break,
+                        Ok(None) => unreachable!(),
                         Ok(Some(status)) => match status {
                             PlaybackStatus::Playing(track) if previous_track.as_ref().is_some_and(|prev| prev == &track) => {
                                 continue;
@@ -142,6 +144,8 @@ impl Command for Arguments {
                 }
             }
         }
+
+        revolt_client.set_status_text(first_status.clone()).await?;
 
         Ok(())
     }

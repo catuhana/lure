@@ -16,3 +16,5 @@ async-trait.workspace = true
 futures.workspace = true
 reqwest.workspace = true
 thiserror.workspace = true
+tokio = { workspace = true, features = ["time"] }
+tokio-stream = "0.1.17"
