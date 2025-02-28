@@ -53,10 +53,10 @@ where
         let service = Arc::new(self.0);
 
         let stream = tokio_stream::StreamExt::throttle(
-            stream::iter(std::iter::repeat(())),
+            stream::iter(core::iter::repeat(())),
             polling_interval,
         )
-        .then(move |_| {
+        .then(move |()| {
             let service = Arc::clone(&service);
             Box::pin(async move {
                 match service.get_current_playing_track().await {

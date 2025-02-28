@@ -20,6 +20,7 @@ impl Service {
         })
     }
 
+    #[must_use]
     pub fn into_playback_service(self) -> impl PlaybackService {
         HTTPPlaybackAdapter(self)
     }
@@ -67,7 +68,7 @@ impl lure_service_common::HTTPPlaybackService for Service {
                     }
                 }
             }
-            Err(error) => return Err(error.into()),
+            Err(error) => return Err(error),
         }
 
         Ok(PlaybackStatus::NotPlaying)

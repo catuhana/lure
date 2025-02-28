@@ -25,7 +25,7 @@ impl Command for Arguments {
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
-        use lure_service_common::{PlaybackService, PlaybackStatus, TrackInfo};
+        use lure_service_common::{PlaybackService as _, PlaybackStatus, TrackInfo};
         use tokio::time::sleep;
 
         let config_path = self
