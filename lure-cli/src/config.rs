@@ -1,9 +1,9 @@
 use std::sync::LazyLock;
 
 use demand::Input;
+use lure_revolt_models::{paths::auth::session::login, schemas};
 use regex::Regex;
 use reqwest::{Client as ReqwestClient, StatusCode};
-use revolt_models::{paths::auth::session::login, schemas};
 
 use crate::Command;
 
@@ -95,7 +95,9 @@ impl RevoltSubcommands {
         }
     }
 
-    pub async fn get_session_token(revolt_api_url: &str) -> Result<(), RevoltSubcommandsError> {
+    pub async fn get_session_token(
+        lure_revolt_api_url: &str,
+    ) -> Result<(), RevoltSubcommandsError> {
         let client = ReqwestClient::new();
 
         let email = match Input::new("E-mail:")
@@ -145,7 +147,7 @@ impl RevoltSubcommands {
         };
 
         match client
-            .post(format!("{revolt_api_url}/auth/session/login"))
+            .post(format!("{lure_revolt_api_url}/auth/session/login"))
             .json(&login::RequestBody::Login {
                 email,
                 password,
@@ -162,7 +164,7 @@ impl RevoltSubcommands {
             login::ResponseBody::MFA {
                 ticket,
                 allowed_methods,
-            } => Self::on_login_mfa(ticket, &allowed_methods, &client, revolt_api_url).await?,
+            } => Self::on_login_mfa(ticket, &allowed_methods, &client, lure_revolt_api_url).await?,
             login::ResponseBody::Disabled => Self::on_login_disabled(),
         }
 
@@ -177,11 +179,13 @@ impl RevoltSubcommands {
         ticket: String,
         allowed_methods: &[schemas::mfa::Method],
         client: &ReqwestClient,
-        revolt_api_url: &str,
+        lure_revolt_api_url: &str,
     ) -> Result<(), RevoltSubcommandsError> {
         let mfa_prompt = if allowed_methods.len() > 1 {
-            Input::new("Enter 2FA authentication or recovery code:").validation(|value| {
-                if REVOLT_RECOVERY_REGEX.is_match(value) || REVOLT_TOTP_REGEX.is_match(value) {
+            Input::new("enter 2FA authentication or recovery code:").validation(|value| {
+                if REVOLT_RECOVERY_REGEX.is_match(value) {
+                    return Ok(());
+                } else if REVOLT_TOTP_REGEX.is_match(value) {
                     return Ok(());
                 }
 
@@ -219,7 +223,7 @@ impl RevoltSubcommands {
         };
 
         match client
-            .post(format!("{revolt_api_url}/auth/session/login"))
+            .post(format!("{lure_revolt_api_url}/auth/session/login"))
             .json(&login::RequestBody::MFA {
                 mfa_ticket: ticket,
                 mfa_response: Some(mfa_data),
@@ -233,7 +237,9 @@ impl RevoltSubcommands {
             .await?
         {
             login::ResponseBody::Success { token, name: _ } => Self::on_login_success(&token),
-            _ => unreachable!(),
+            _ => {
+                unreachable!()
+            }
         }
 
         Ok(())
@@ -304,10 +310,13 @@ trait HandleServiceAPIError: Sized {
 
 impl HandleServiceAPIError for reqwest::Response {
     async fn handle_user_friendly_error(self) -> Result<Self, RevoltSubcommandsError> {
-        match self.status() {
+        let status = self.status();
+
+        match status {
             StatusCode::OK | StatusCode::NO_CONTENT => Ok(self),
             StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
                 let error = self.json::<schemas::AuthifierError>().await?;
+
                 Err(ExpectedAuthError::from(error).into())
             }
             error => Err(RevoltSubcommandsError::UnexpectedAuthStatusCode(error)),

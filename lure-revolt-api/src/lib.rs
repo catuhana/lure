@@ -4,7 +4,7 @@ use reqwest::{
     StatusCode,
     header::{HeaderMap, HeaderName, HeaderValue},
 };
-use revolt_models::{
+use lure_revolt_models::{
     Authentication,
     schemas::user::{DataEditUser, FieldsUser, User, UserStatus},
 };

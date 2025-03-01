@@ -14,12 +14,12 @@ workspace = true
 lure-config = { path = "../lure-config", optional = true }
 lure-resources = { path = "../lure-resources" }
 lure-service-common = { path = "../lure-service-common", optional = true }
-lure-service-lastfm = { path = "../lure-service-lastfm", optional = true }
-lure-service-lastfm-config = { path = "../lure-service-lastfm-config", optional = true }
-lure-service-listenbrainz = { path = "../lure-service-listenbrainz", optional = true }
-lure-service-listenbrainz-config = { path = "../lure-service-listenbrainz-config", optional = true }
-revolt-api = { path = "../revolt-api", optional = true }
-revolt-models = { path = "../revolt-models" }
+lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
+lure-lastfm-service-config = { path = "../lure-lastfm-service-config", optional = true }
+lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
+lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config", optional = true }
+lure-revolt-api = { path = "../lure-revolt-api", optional = true }
+lure-revolt-models = { path = "../lure-revolt-models" }
 
 anyhow.workspace = true
 async-trait.workspace = true
@@ -39,9 +39,9 @@ service-lastfm = [
   "dep:lure-config",
   "lure-config?/service-lastfm",
   "dep:lure-service-common",
-  "dep:lure-service-lastfm",
-  "dep:lure-service-lastfm-config",
-  "dep:revolt-api",
+  "dep:lure-lastfm-service",
+  "dep:lure-lastfm-service-config",
+  "dep:lure-revolt-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]
@@ -49,9 +49,9 @@ service-listenbrainz = [
   "dep:lure-config",
   "lure-config?/service-listenbrainz",
   "dep:lure-service-common",
-  "dep:lure-service-listenbrainz",
-  "dep:lure-service-listenbrainz-config",
-  "dep:revolt-api",
+  "dep:lure-listenbrainz-service",
+  "dep:lure-listenbrainz-service-config",
+  "dep:lure-revolt-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]

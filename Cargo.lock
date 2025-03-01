@@ -137,9 +137,9 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bitflags"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f68f53c83ab957f72c32642f3868eec03eb974d1fb82e453128456482613d36"
+checksum = "5c8214115b7bf84099f1309324e63141d4c5d7cc26862f97a0a857dbefe165bd"
 
 [[package]]
 name = "bumpalo"
@@ -161,9 +161,9 @@ checksum = "f61dac84819c6588b558454b194026eb1f09c293b9036ae9b159e74e73ab6cf9"
 
 [[package]]
 name = "cc"
-version = "1.2.15"
+version = "1.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c736e259eea577f443d5c86c304f9f4ae0295c43f3ba05c21f1d66b5f06001af"
+checksum = "be714c154be609ec7f5dad223a33bf1482fff90472de28f7362806e6d4832b8c"
 dependencies = [
  "shlex",
 ]
@@ -833,13 +833,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lastfm-models"
-version = "1.0.0"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.170"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -860,13 +853,6 @@ name = "linux-raw-sys"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
-
-[[package]]
-name = "listenbrainz-models"
-version = "1.0.0"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "litemap"
@@ -892,16 +878,16 @@ dependencies = [
  "figment_file_provider_adapter",
  "futures",
  "lure-config",
+ "lure-lastfm-service",
+ "lure-lastfm-service-config",
+ "lure-listenbrainz-service",
+ "lure-listenbrainz-service-config",
  "lure-resources",
+ "lure-revolt-api",
+ "lure-revolt-models",
  "lure-service-common",
- "lure-service-lastfm",
- "lure-service-lastfm-config",
- "lure-service-listenbrainz",
- "lure-service-listenbrainz-config",
  "regex",
  "reqwest",
- "revolt-api",
- "revolt-models",
  "thiserror",
  "tokio",
 ]
@@ -910,8 +896,71 @@ dependencies = [
 name = "lure-config"
 version = "1.0.0"
 dependencies = [
- "lure-service-lastfm-config",
- "lure-service-listenbrainz-config",
+ "lure-lastfm-service-config",
+ "lure-listenbrainz-service-config",
+ "serde",
+ "serde_yml",
+]
+
+[[package]]
+name = "lure-lastfm-models"
+version = "1.0.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "lure-lastfm-service"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "lure-lastfm-models",
+ "lure-lastfm-service-config",
+ "lure-service-common",
+ "reqwest",
+ "secrecy",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "lure-lastfm-service-config"
+version = "1.0.0"
+dependencies = [
+ "secrecy",
+ "serde",
+ "serde_yml",
+]
+
+[[package]]
+name = "lure-listenbrainz-models"
+version = "1.0.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "lure-listenbrainz-service"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "lure-listenbrainz-models",
+ "lure-listenbrainz-service-config",
+ "lure-service-common",
+ "reqwest",
+ "secrecy",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "lure-listenbrainz-service-config"
+version = "1.0.0"
+dependencies = [
  "serde",
  "serde_yml",
 ]
@@ -919,6 +968,22 @@ dependencies = [
 [[package]]
 name = "lure-resources"
 version = "1.0.0"
+
+[[package]]
+name = "lure-revolt-api"
+version = "1.0.0"
+dependencies = [
+ "lure-revolt-models",
+ "reqwest",
+ "thiserror",
+]
+
+[[package]]
+name = "lure-revolt-models"
+version = "1.0.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "lure-service-common"
@@ -931,55 +996,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-stream",
-]
-
-[[package]]
-name = "lure-service-lastfm"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "lastfm-models",
- "lure-service-common",
- "lure-service-lastfm-config",
- "reqwest",
- "secrecy",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "lure-service-lastfm-config"
-version = "1.0.0"
-dependencies = [
- "secrecy",
- "serde",
- "serde_yml",
-]
-
-[[package]]
-name = "lure-service-listenbrainz"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "listenbrainz-models",
- "lure-service-common",
- "lure-service-listenbrainz-config",
- "reqwest",
- "secrecy",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "lure-service-listenbrainz-config"
-version = "1.0.0"
-dependencies = [
- "serde",
- "serde_yml",
 ]
 
 [[package]]
@@ -1239,22 +1255,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "windows-registry",
-]
-
-[[package]]
-name = "revolt-api"
-version = "1.0.0"
-dependencies = [
- "reqwest",
- "revolt-models",
- "thiserror",
-]
-
-[[package]]
-name = "revolt-models"
-version = "1.0.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -1678,9 +1678,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-rustls"
-version = "0.26.1"
+version = "0.26.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f6d0975eaace0cf0fcadee4e4aaa5da15b5c079146f2cffb67c113be122bf37"
+checksum = "8e727b36a1a0e8b74c376ac2211e40c2c8af09fb4013c60d910495810f008e9b"
 dependencies = [
  "rustls",
  "tokio",

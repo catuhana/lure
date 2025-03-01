@@ -2,7 +2,7 @@
 pub struct Options {
     #[serde(default = "default_revolt_status")]
     pub status: StatusOptions,
-    #[serde(default = "default_revolt_api_url")]
+    #[serde(default = "default_lure_revolt_api_url")]
     pub api_url: String,
     pub session_token: String,
 }
@@ -26,7 +26,7 @@ fn default_revolt_status_template() -> String {
     String::from("🎵 Listening to %NAME% by %ARTIST%")
 }
 
-fn default_revolt_api_url() -> String {
+fn default_lure_revolt_api_url() -> String {
     String::from("https://api.revolt.chat")
 }
 

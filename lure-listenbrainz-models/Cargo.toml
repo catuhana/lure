@@ -1,5 +1,5 @@
 [package]
-name = "lastfm-models"
+name = "lure-listenbrainz-models"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true

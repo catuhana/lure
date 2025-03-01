@@ -1,5 +1,5 @@
 [package]
-name = "listenbrainz-models"
+name = "lure-lastfm-service-config"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -11,4 +11,8 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
+secrecy = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+serde_yml.workspace = true

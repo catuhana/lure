@@ -1,5 +1,5 @@
 [package]
-name = "lure-service-lastfm"
+name = "lure-listenbrainz-service"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -11,9 +11,9 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
-lastfm-models = { path = "../lastfm-models" }
+lure-listenbrainz-models = { path = "../lure-listenbrainz-models" }
 lure-service-common = { path = "../lure-service-common" }
-lure-service-lastfm-config = { path = "../lure-service-lastfm-config" }
+lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config" }
 
 anyhow.workspace = true
 async-trait.workspace = true

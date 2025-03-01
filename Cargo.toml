@@ -1,17 +1,17 @@
 [workspace]
 members = [
-  "lastfm-models",
-  "listenbrainz-models",
   "lure-cli",
   "lure-config",
+  "lure-lastfm-models",
+  "lure-lastfm-service",
+  "lure-lastfm-service-config",
+  "lure-listenbrainz-models",
+  "lure-listenbrainz-service",
+  "lure-listenbrainz-service-config",
   "lure-resources",
+  "lure-revolt-api",
+  "lure-revolt-models",
   "lure-service-common",
-  "lure-service-lastfm",
-  "lure-service-lastfm-config",
-  "lure-service-listenbrainz",
-  "lure-service-listenbrainz-config",
-  "revolt-api",
-  "revolt-models",
 ]
 resolver = "3"
 
@@ -42,5 +42,6 @@ serde = "1.0.218"
 serde_yml = "0.0.12"
 thiserror = "2.0.11"
 tracing = "0.1.41"
+tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 tokio = "1.43.0"

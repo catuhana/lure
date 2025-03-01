@@ -1,5 +1,5 @@
 [package]
-name = "lure-service-listenbrainz-config"
+name = "lure-lastfm-models"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -12,6 +12,3 @@ workspace = true
 
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
-
-[dev-dependencies]
-serde_yml.workspace = true

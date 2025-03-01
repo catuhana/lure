@@ -48,12 +48,12 @@ impl Command for Arguments {
             1 => match enabled_services.first() {
                 #[cfg(feature = "service-lastfm")]
                 Some(&"LastFM") => {
-                    lure_service_lastfm::Service::try_new(config.service.lastfm.unwrap())?
+                    lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())?
                         .into_playback_service()
                         .into_stream()
                 }
                 #[cfg(feature = "service-listenbrainz")]
-                Some(&"ListenBrainz") => lure_service_listenbrainz::Service::try_new(
+                Some(&"ListenBrainz") => lure_listenbrainz_service::Service::try_new(
                     config.service.listenbrainz.unwrap(),
                 )?
                 .into_playback_service()
@@ -67,9 +67,9 @@ impl Command for Arguments {
             }
         };
 
-        let revolt_client = revolt_api::Client::try_new(
+        let revolt_client = lure_revolt_api::Client::try_new(
             config.revolt.api_url,
-            &revolt_models::Authentication::SessionToken(config.revolt.session_token),
+            &lure_revolt_models::Authentication::SessionToken(config.revolt.session_token),
         )?;
 
         let first_status = revolt_client.get_status_text().await?;
@@ -100,8 +100,8 @@ impl Command for Arguments {
 
                                 match revolt_client.set_status_text(Some(status)).await {
                                     Ok(()) => previous_track = Some(track),
-                                    Err(revolt_api::Error::ApiError(
-                                        revolt_api::APIError::RateLimitExceeded(remaining)
+                                    Err(lure_revolt_api::Error::ApiError(
+                                        lure_revolt_api::APIError::RateLimitExceeded(remaining)
                                     )) => sleep(Duration::from_millis(remaining)).await,
                                     Err(error) => return Err(error.into()),
                                 }
@@ -110,8 +110,8 @@ impl Command for Arguments {
                             PlaybackStatus::NotPlaying => {
                                 match revolt_client.set_status_text(first_status.clone()).await {
                                     Ok(()) => previous_track = None,
-                                    Err(revolt_api::Error::ApiError(
-                                        revolt_api::APIError::RateLimitExceeded(remaining)
+                                    Err(lure_revolt_api::Error::ApiError(
+                                        lure_revolt_api::APIError::RateLimitExceeded(remaining)
                                     )) => sleep(Duration::from_millis(remaining)).await,
                                     Err(error) => return Err(error.into()),
                                 }
@@ -119,8 +119,8 @@ impl Command for Arguments {
                         }
                         Err(error) => {
                             #[cfg(feature = "service-lastfm")]
-                            if let Some(lure_service_lastfm::ServiceError::CustomError(api_error)) =
-                                error.downcast_ref::<lure_service_lastfm::ServiceError>()
+                            if let Some(lure_lastfm_service::ServiceError::CustomError(api_error)) =
+                                error.downcast_ref::<lure_lastfm_service::ServiceError>()
                             {
                                 match api_error.handle_error() {
                                     lure_service_common::ErrorSeverity::Graceful => continue,
@@ -129,8 +129,8 @@ impl Command for Arguments {
                             }
 
                             #[cfg(feature = "service-listenbrainz")]
-                            if let Some(lure_service_listenbrainz::ServiceError::CustomError(api_error)) =
-                                error.downcast_ref::<lure_service_listenbrainz::ServiceError>()
+                            if let Some(lure_listenbrainz_service::ServiceError::CustomError(api_error)) =
+                                error.downcast_ref::<lure_listenbrainz_service::ServiceError>()
                             {
                                 match api_error.handle_error() {
                                     lure_service_common::ErrorSeverity::Graceful => continue,
@@ -166,12 +166,12 @@ pub enum ArgumentsError {
     NoServicesEnabled,
     #[cfg(feature = "service-lastfm")]
     #[error(transparent)]
-    LastFM(#[from] lure_service_lastfm::ServiceError),
+    LastFM(#[from] lure_lastfm_service::ServiceError),
     #[cfg(feature = "service-listenbrainz")]
     #[error(transparent)]
-    ListenBrainz(#[from] lure_service_listenbrainz::ServiceError),
+    ListenBrainz(#[from] lure_listenbrainz_service::ServiceError),
     #[error(transparent)]
-    RevoltApi(#[from] revolt_api::Error),
+    RevoltApi(#[from] lure_revolt_api::Error),
     #[error(transparent)]
     Figment(#[from] figment::Error),
     #[error(transparent)]

@@ -1,5 +1,5 @@
 [package]
-name = "revolt-models"
+name = "lure-revolt-api"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -11,4 +11,7 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
-serde = { workspace = true, features = ["derive"] }
+lure-revolt-models = { path = "../lure-revolt-models" }
+
+reqwest = { workspace = true, features = ["json"] }
+thiserror.workspace = true

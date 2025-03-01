@@ -6,12 +6,12 @@ use reqwest::{ClientBuilder, StatusCode};
 
 pub struct Service {
     http_client: reqwest::Client,
-    options: lure_service_listenbrainz_config::Options,
+    options: lure_listenbrainz_service_config::Options,
 }
 
 impl Service {
     pub fn try_new(
-        options: lure_service_listenbrainz_config::Options,
+        options: lure_listenbrainz_service_config::Options,
     ) -> Result<Self, ServiceError> {
         Ok(Self {
             http_client: ClientBuilder::new().build()?,
@@ -44,7 +44,7 @@ impl lure_service_common::HTTPPlaybackService for Service {
             .await
         {
             Ok(response) => {
-                let mut recent_tracks: listenbrainz_models::user::playing_now::Data =
+                let mut recent_tracks: lure_listenbrainz_models::user::playing_now::Data =
                     response.json().await?;
 
                 if let Some(track) = recent_tracks.payload.listens.first_mut() {

@@ -11,8 +11,8 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
-lure-service-lastfm-config = { path = "../lure-service-lastfm-config", optional = true }
-lure-service-listenbrainz-config = { path = "../lure-service-listenbrainz-config", optional = true }
+lure-lastfm-service-config = { path = "../lure-lastfm-service-config", optional = true }
+lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config", optional = true }
 
 serde = { workspace = true, features = ["derive"] }
 
@@ -20,5 +20,5 @@ serde = { workspace = true, features = ["derive"] }
 serde_yml.workspace = true
 
 [features]
-service-lastfm = ["dep:lure-service-lastfm-config"]
-service-listenbrainz = ["dep:lure-service-listenbrainz-config"]
+service-lastfm = ["dep:lure-lastfm-service-config"]
+service-listenbrainz = ["dep:lure-listenbrainz-service-config"]
