@@ -19,7 +19,7 @@ lure-service-lastfm-config = { path = "../lure-service-lastfm-config", optional 
 lure-service-listenbrainz = { path = "../lure-service-listenbrainz", optional = true }
 lure-service-listenbrainz-config = { path = "../lure-service-listenbrainz-config", optional = true }
 revolt-api = { path = "../revolt-api", optional = true }
-revolt-models = { path = "../revolt-models", optional = true }
+revolt-models = { path = "../revolt-models" }
 
 anyhow.workspace = true
 async-trait.workspace = true
@@ -31,9 +31,10 @@ futures.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 regex = "1.11.1"
 thiserror.workspace = true
-tokio = { workspace = true, features = ["signal"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 
 [features]
+default = ["service-lastfm", "service-listenbrainz"]
 service-lastfm = [
   "dep:lure-config",
   "lure-config?/service-lastfm",
@@ -41,7 +42,6 @@ service-lastfm = [
   "dep:lure-service-lastfm",
   "dep:lure-service-lastfm-config",
   "dep:revolt-api",
-  "dep:revolt-models",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]
@@ -52,7 +52,6 @@ service-listenbrainz = [
   "dep:lure-service-listenbrainz",
   "dep:lure-service-listenbrainz-config",
   "dep:revolt-api",
-  "dep:revolt-models",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]

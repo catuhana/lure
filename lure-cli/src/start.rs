@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use crate::Command;
-use lure_service_common::ServiceCustomError as _;
 
 #[derive(Debug, clap::Args)]
 pub struct Arguments {
@@ -25,7 +24,9 @@ impl Command for Arguments {
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
-        use lure_service_common::{PlaybackService as _, PlaybackStatus, TrackInfo};
+        use lure_service_common::{
+            PlaybackService as _, PlaybackStatus, ServiceCustomError as _, TrackInfo,
+        };
         use tokio::time::sleep;
 
         let config_path = self

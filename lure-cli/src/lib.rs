@@ -1,6 +1,3 @@
-// TODO: Maybe move this crate to `lure` directly
-// instead?
-
 use core::future::Future;
 
 pub mod config;

@@ -881,15 +881,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
 
 [[package]]
-name = "lure"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "lure-cli",
- "tokio",
-]
-
-[[package]]
 name = "lure-cli"
 version = "1.0.0"
 dependencies = [
