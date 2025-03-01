@@ -13,5 +13,5 @@ workspace = true
 [dependencies]
 revolt-models = { path = "../revolt-models" }
 
-reqwest.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 thiserror.workspace = true
