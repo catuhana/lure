@@ -116,18 +116,12 @@ impl ServiceCustomError for APIError {
     }
 }
 
-// TODO: Find a way to deduplicate this. Almost
-// same code is used in many places.
 pub trait HandleServiceAPIError: Sized {
-    type Error: core::error::Error;
-
-    fn handle_user_friendly_error(self) -> impl Future<Output = Result<Self, Self::Error>>;
+    fn handle_user_friendly_error(self) -> impl Future<Output = Result<Self, ServiceError>>;
 }
 
 impl HandleServiceAPIError for reqwest::Response {
-    type Error = ServiceError;
-
-    async fn handle_user_friendly_error(self) -> Result<Self, Self::Error> {
+    async fn handle_user_friendly_error(self) -> Result<Self, ServiceError> {
         match self.status() {
             StatusCode::OK => Ok(self),
             StatusCode::FORBIDDEN => {

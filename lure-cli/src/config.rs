@@ -298,11 +298,11 @@ impl From<schemas::AuthifierError> for ExpectedAuthError {
     }
 }
 
-trait ReqwestResponseExt: Sized {
+trait HandleServiceAPIError: Sized {
     async fn handle_user_friendly_error(self) -> Result<Self, RevoltSubcommandsError>;
 }
 
-impl ReqwestResponseExt for reqwest::Response {
+impl HandleServiceAPIError for reqwest::Response {
     async fn handle_user_friendly_error(self) -> Result<Self, RevoltSubcommandsError> {
         match self.status() {
             StatusCode::OK | StatusCode::NO_CONTENT => Ok(self),
