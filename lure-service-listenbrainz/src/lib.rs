@@ -1,5 +1,3 @@
-// TODO!: Port to WebSocket
-
 use core::future::Future;
 use core::time::Duration;
 
