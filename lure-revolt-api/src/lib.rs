@@ -1,12 +1,12 @@
 use core::{future::Future, str::FromStr as _};
 
-use reqwest::{
-    StatusCode,
-    header::{HeaderMap, HeaderName, HeaderValue},
-};
 use lure_revolt_models::{
     Authentication,
     schemas::user::{DataEditUser, FieldsUser, User, UserStatus},
+};
+use reqwest::{
+    StatusCode,
+    header::{HeaderMap, HeaderName, HeaderValue},
 };
 
 pub struct Client {
