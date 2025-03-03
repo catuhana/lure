@@ -23,13 +23,13 @@ jobs:
       CARGO_TERM_COLOR: always
       CARGO_TERM_VERBOSE: true
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - uses: ./.github/actions/check-rust-input-parameters
         with:
           runs-on: ${{ inputs.runs-on }}
           rust-toolchain: ${{ inputs.rust-toolchain }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Setup or update Rust toolchain
         run: rustup toolchain install ${{ inputs.rust-toolchain }} --profile default

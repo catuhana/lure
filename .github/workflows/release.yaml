@@ -14,6 +14,8 @@ jobs:
       github.event.pull_request.base.ref == github.base_ref &&
       startsWith(github.event.pull_request.head.ref, 'release/v') &&
       startsWith(github.event.pull_request.title, 'Bump version to')
+    steps:
+      - run: echo ::set-output name=result::success
   build-and-upload-artifact:
     name: Build and Upload Artifact
     uses: ./.github/workflows/build-code.yaml
