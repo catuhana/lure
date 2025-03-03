@@ -35,5 +35,9 @@ jobs:
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml
+    if: |
+      github.event_name != 'workflow_run' ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success')
     with:
       image-name: lure
