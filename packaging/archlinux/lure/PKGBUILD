@@ -1,0 +1,38 @@
+# shellcheck disable=SC2034,SC2148,SC2154
+# Maintainer: tuhana <tuhana.cat+arch@gmail.com>
+
+pkgname=lure
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Display your currently playing Last.fm, ListenBrainz (and others) track in your Revolt status!"
+arch=(x86_64 arm aarch64)
+url="https://github.com/catuhana/lure"
+license=(MPL-2.0)
+depends=(gcc-libs glibc)
+makedepends=(cargo git)
+provides=("$pkgname=${pkgver}")
+source=("$pkgname::git+$url#tag=v$pkgver")
+b2sums=('f87015f0dd365fa5d99a4732693e1bdd1d2cb400974357911722e14d49216f7800826b6d012deb367022b2efbf83a817496f21bea5debe1053cd18392a98136c')
+
+prepare() {
+  export RUSTUP_TOOLCHAIN=stable
+
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+
+  cargo build --frozen --release
+}
+
+check() {
+  export RUSTUP_TOOLCHAIN=stable
+
+  cargo test --frozen
+}
+
+package() {
+  install -Dm0755 "target/release/$pkgname-cli" "$pkgdir/usr/bin/lure"
+}

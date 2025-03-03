@@ -1,4 +1,8 @@
 target/
 
+packaging/archlinux/*/*
+!packaging/archlinux/*/PKGBUILD
+!packaging/archlinux/*/.SRCINFO
+
 .env
 config.yaml
