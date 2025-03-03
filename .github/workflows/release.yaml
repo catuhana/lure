@@ -88,11 +88,8 @@ jobs:
               name: "lure-release-${{ runner.os }}${{ runner.os == 'Windows' && '.exe' || '' }}",
               data: asset
             });
-
-  # TODO: Enable this after having done
-  # Containerfile.
-  # push-container-image:
-  #   name: Push Container Image
-  #   uses: ./.github/workflows/docker-push.yaml
-  #   with:
-  #     image-name: lure
+  push-container-image:
+    name: Push Container Image
+    uses: ./.github/workflows/docker-push.yaml
+    with:
+      image-name: lure
