@@ -24,7 +24,7 @@ impl Config {
         #[cfg(feature = "service-lastfm")]
         if let Some(lastfm) = &self.service.lastfm {
             if lastfm.enable {
-                services.push("LastFM");
+                services.push("Last.fm");
             }
         }
 

@@ -41,13 +41,12 @@ impl Command for Arguments {
             .merge(FileAdapter::wrap(Env::prefixed("LURE_").split("__")).only(SECURE_CONFIG_KEYS))
             .extract()?;
 
-        // TODO: Find a better way to do this.
         let enabled_services = config.enabled_services();
         let mut service_stream = match enabled_services.len() {
             0 => return Err(ArgumentsError::NoServicesEnabled),
             1 => match enabled_services.first() {
                 #[cfg(feature = "service-lastfm")]
-                Some(&"LastFM") => {
+                Some(&"Last.fm") => {
                     lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())?
                         .into_playback_service()
                         .into_stream()
