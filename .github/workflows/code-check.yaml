@@ -54,7 +54,7 @@ jobs:
       - name: Check Rust code format
         # prettier-ignore
         if: '!cancelled()'
-        run: cargo +${{ inputs.rust-toolchain }} hack --each-feature fmt --check
+        run: cargo +${{ inputs.rust-toolchain }} fmt --all --check
 
       - name: Check Rust code lint
         # prettier-ignore
