@@ -17,63 +17,23 @@ on:
         required: true
         type: string
 
-env:
-  CARGO_TERM_COLOR: always
-  CARGO_TERM_VERBOSE: true
-
 jobs:
-  upload-artifact:
-    name: Build and Upload Binary
-    runs-on: ${{ matrix.os }}
-    if: github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+  build-and-upload:
+    uses: ./.github/workflows/build-code.yaml
+    if: |
+      github.event_name != 'workflow_run' ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success')
     strategy:
       matrix:
         os:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-    permissions:
-      id-token: write
-      attestations: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set-up or update Rust toolchain
-        run: rustup toolchain install stable --profile default
-
-      - name: Set-up Rust cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-            target/
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build project
-        run: cargo build --release
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: lure-${{ runner.os }}
-          path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: lure-${{ runner.os }}
-          subject-path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
+    with:
+      runs-on: ${{ matrix.os }}
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml
-    permissions:
-      attestations: write
-      contents: read
-      id-token: write
-      packages: write
     with:
       image-name: lure

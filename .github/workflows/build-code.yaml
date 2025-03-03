@@ -1,0 +1,62 @@
+name: Build Code
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Runs on
+        type: string
+        required: true
+      rust-toolchain:
+        description: Rust toolchain
+        default: stable
+        type: string
+
+jobs:
+  build:
+    name: Build Code and Upload Artifact
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      id-token: write
+      attestations: write
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TERM_VERBOSE: true
+    steps:
+      - uses: ./.github/actions/check-rust-input-parameters
+        with:
+          runs-on: ${{ inputs.runs-on }}
+          rust-toolchain: ${{ inputs.rust-toolchain }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup or update Rust toolchain
+        run: rustup toolchain install ${{ inputs.rust-toolchain }} --profile default
+
+      - name: Set-up Rust cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target/
+          key: ${{ runner.os }}-cargo-${{ inputs.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build project
+        run: cargo build --release
+
+      - name: Upload artifact
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
+          path: target/release/lure-cli${{ runner.os == 'Windows' && '.exe' || '' }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
+          subject-digest: ${{ steps.upload-artifact.outputs.artifact-digest }}

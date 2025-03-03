@@ -4,19 +4,19 @@ on:
   workflow_call:
     inputs:
       image-name:
+        description: Container image name
         required: true
         type: string
-
-permissions:
-  attestations: write
-  contents: read
-  id-token: write
-  packages: write
 
 jobs:
   push-container-image:
     name: Push Container Image
     runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,6 +58,8 @@ jobs:
           labels: ${{ steps.container-metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            CARGO_TERM_VERBOSE=true
 
       - name: Generate container image attestation
         uses: actions/attest-build-provenance@v2

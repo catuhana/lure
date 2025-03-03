@@ -1,0 +1,36 @@
+name: Check runs-on and Rust toolchain input parameters
+inputs:
+  runs-on:
+    description: The operating system to run the action on.
+    required: true
+    default: ubuntu-latest
+  rust-toolchain:
+    description: The Rust toolchain to use.
+    required: true
+    default: stable
+runs:
+  using: composite
+  steps:
+    - run: |
+        check_runs_on() {
+          local os_names="ubuntu|windows|macos"
+
+          if [[ ! "$1" =~ ^($os_names)(-[^-].*)$ ]]; then
+            echo "::error::Invalid runs-on parameter."
+            exit 1
+          fi
+        }
+
+        check_toolchain() {
+          local channels="nightly|beta|stable"
+          local date="[0-9]{4}-[0-9]{1,2}-[0-9]{2}"
+
+          if [[ ! "$1" =~ ^($channels)(-$date(-[^-].*)?)?$ ]]; then
+            echo "::error::Invalid Rust toolchain."
+            exit 1
+          fi
+        }
+
+        check_runs_on ${{ inputs.runs-on }}
+        check_toolchain ${{ inputs.rust-toolchain }}
+      shell: bash
