@@ -4,5 +4,7 @@ packaging/archlinux/*/*
 !packaging/archlinux/*/PKGBUILD
 !packaging/archlinux/*/.SRCINFO
 
+result
+
 .env
 config.yaml
