@@ -24,7 +24,7 @@ build() {
   export RUSTUP_TOOLCHAIN=stable
   export CARGO_TARGET_DIR=target
 
-  cargo build --frozen --release
+  cargo build --bin lure --frozen --release
 }
 
 check() {
@@ -34,5 +34,5 @@ check() {
 }
 
 package() {
-  install -Dm0755 "target/release/$pkgname-cli" "$pkgdir/usr/bin/lure"
+  install -Dm0755 "target/release/$pkgname" "$pkgdir/usr/bin/lure"
 }

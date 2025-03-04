@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "lure-cli",
+  "lure",
   "lure-config",
   "lure-lastfm-models",
   "lure-lastfm-service",
