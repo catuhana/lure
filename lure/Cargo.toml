@@ -1,5 +1,5 @@
 [package]
-name = "lure-cli"
+name = "lure"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true
