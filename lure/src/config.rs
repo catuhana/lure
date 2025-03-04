@@ -183,9 +183,7 @@ impl RevoltSubcommands {
     ) -> Result<(), RevoltSubcommandsError> {
         let mfa_prompt = if allowed_methods.len() > 1 {
             Input::new("enter 2FA authentication or recovery code:").validation(|value| {
-                if REVOLT_RECOVERY_REGEX.is_match(value) {
-                    return Ok(());
-                } else if REVOLT_TOTP_REGEX.is_match(value) {
+                if REVOLT_RECOVERY_REGEX.is_match(value) || REVOLT_TOTP_REGEX.is_match(value) {
                     return Ok(());
                 }
 
