@@ -1,6 +1,6 @@
 {
-  # FIXME: Fill here.
-  description = "";
+  description = "Display your currently playing Last.fm, ListenBrainz (and others) track in your Revolt status!";
+
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs/nixos-unstable;
 
@@ -51,7 +51,7 @@
           "lure-service-common"
         ];
 
-        craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable.latest.default);
+        craneLib = (crane.mkLib pkgs).overrideToolchain (pkg: pkg.rust-bin.stable.latest.default);
 
         src = craneLib.cleanCargoSource projectRoot;
 
@@ -66,6 +66,7 @@
               openssl
             ]
             ++ lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
+              libiconv
               CoreFoundation
               Security
             ]);
