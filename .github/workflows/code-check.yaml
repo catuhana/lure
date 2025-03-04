@@ -46,7 +46,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ inputs.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install cargo-hack
-        run: cargo install cargo-hack
+        run: which cargo-hack || cargo install cargo-hack
 
       - name: Check Rust code
         run: cargo +${{ inputs.rust-toolchain }} hack --each-feature check
