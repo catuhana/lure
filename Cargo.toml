@@ -33,14 +33,14 @@ unused_trait_names = "warn"
 std_instead_of_core = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.96"
-async-trait = "0.1.86"
+anyhow = "1.0.97"
+async-trait = "0.1.87"
 futures = "0.3.31"
 reqwest = "0.12.12"
 secrecy = "0.10.3"
 serde = "1.0.218"
 serde_yml = "0.0.12"
-thiserror = "2.0.11"
+thiserror = "2.0.12"
 tracing = "0.1.41"
 tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
