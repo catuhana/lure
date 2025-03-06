@@ -10,7 +10,7 @@ url="https://github.com/catuhana/lure"
 license=(MPL-2.0)
 depends=(gcc-libs glibc)
 makedepends=(cargo git)
-provides=("$pkgname=${pkgver}")
+provides=("${pkgname}=${pkgver}")
 source=("$pkgname::git+$url#tag=v$pkgver")
 b2sums=('f87015f0dd365fa5d99a4732693e1bdd1d2cb400974357911722e14d49216f7800826b6d012deb367022b2efbf83a817496f21bea5debe1053cd18392a98136c')
 
