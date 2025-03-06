@@ -53,10 +53,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
-          path: target/release/lure-cli${{ runner.os == 'Windows' && '.exe' || '' }}
+          path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
-          subject-digest: ${{ steps.upload-artifact.outputs.artifact-digest }}
+          subject-digest: sha256:${{ steps.upload-artifact.outputs.artifact-digest }}

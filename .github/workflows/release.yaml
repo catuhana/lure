@@ -40,7 +40,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: target/release/lure-cli*
+          path: target/release/lure*
 
       - name: Create release and upload assets
         env:
@@ -50,7 +50,7 @@ jobs:
           RELEASE_TAG=$(echo ${BRANCH_NAME#*/})
 
           gh release create "$RELEASE_TAG" --title "Release $RELEASE_TAG" --generate-notes
-          gh release upload "$RELEASE_TAG" target/release/lure-cli*
+          gh release upload "$RELEASE_TAG" target/release/lure*
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml

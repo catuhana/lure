@@ -22,8 +22,8 @@ jobs:
     uses: ./.github/workflows/build-code.yaml
     if: |
       github.event_name != 'workflow_run' ||
-      (github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success')
+        (github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success')
     strategy:
       matrix:
         os:
@@ -37,7 +37,7 @@ jobs:
     uses: ./.github/workflows/docker-push.yaml
     if: |
       github.event_name != 'workflow_run' ||
-      (github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success')
+        (github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success')
     with:
       image-name: lure
