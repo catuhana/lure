@@ -36,7 +36,7 @@ mod tests {
             api_key: hellokitty
         ";
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert!(options.enable);
 
@@ -53,7 +53,7 @@ mod tests {
             check_interval: 24
         ";
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert!(!options.enable);
 
@@ -65,12 +65,12 @@ mod tests {
     #[test]
     #[should_panic(expected = "missing field `username`")]
     fn test_missing_username() {
-        let _: Options = serde_yml::from_str("").unwrap();
+        let _: Options = serde_yaml::from_str("").unwrap();
     }
 
     #[test]
     #[should_panic(expected = "missing field `api_key`")]
     fn test_missing_api_key() {
-        let _: Options = serde_yml::from_str("username: cat").unwrap();
+        let _: Options = serde_yaml::from_str("username: cat").unwrap();
     }
 }

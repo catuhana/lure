@@ -40,7 +40,7 @@ mod tests {
             session_token: meow
         ";
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert_eq!(options.api_url, "https://api.revolt.chat");
         assert_eq!(options.session_token, "meow");
@@ -61,7 +61,7 @@ mod tests {
                 idle: Not listening to anything!
         "#;
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert_eq!(options.api_url, "https://api.kittenvolt.cat");
         assert_eq!(options.session_token, "mrrp");
@@ -75,6 +75,6 @@ mod tests {
     #[test]
     #[should_panic(expected = "missing field `session_token`")]
     fn test_missing_session_token() {
-        let _: Options = serde_yml::from_str("").unwrap();
+        let _: Options = serde_yaml::from_str("").unwrap();
     }
 }

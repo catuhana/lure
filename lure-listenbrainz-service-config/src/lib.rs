@@ -36,7 +36,7 @@ mod tests {
             username: kitty
         ";
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert!(options.enable);
 
@@ -53,7 +53,7 @@ mod tests {
             check_interval: 24
         ";
 
-        let options: Options = serde_yml::from_str(yaml).unwrap();
+        let options: Options = serde_yaml::from_str(yaml).unwrap();
 
         assert!(!options.enable);
 
@@ -65,6 +65,6 @@ mod tests {
     #[test]
     #[should_panic(expected = "missing field `username`")]
     fn test_missing_required_fields() {
-        let _: Options = serde_yml::from_str("").unwrap();
+        let _: Options = serde_yaml::from_str("").unwrap();
     }
 }

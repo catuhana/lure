@@ -17,7 +17,7 @@ lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config
 serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
-serde_yml.workspace = true
+serde_yaml.workspace = true
 
 [features]
 service-lastfm = ["dep:lure-lastfm-service-config"]

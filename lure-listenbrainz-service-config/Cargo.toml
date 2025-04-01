@@ -14,4 +14,4 @@ workspace = true
 serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
-serde_yml.workspace = true
+serde_yaml.workspace = true
