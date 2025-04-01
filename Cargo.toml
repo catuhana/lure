@@ -34,14 +34,14 @@ std_instead_of_core = "warn"
 
 [workspace.dependencies]
 anyhow = "1.0.97"
-async-trait = "0.1.87"
+async-trait = "0.1.88"
 futures = "0.3.31"
-reqwest = "0.12.12"
+reqwest = "0.12.15"
 secrecy = "0.10.3"
-serde = "1.0.218"
+serde = "1.0.219"
 serde_yml = "0.0.12"
 thiserror = "2.0.12"
 tracing = "0.1.41"
 tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-tokio = "1.43.0"
+tokio = "1.44.1"
