@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == github.base_ref &&
-      startsWith(github.event.pull_request.head.ref, 'release/v') &&
-      startsWith(github.event.pull_request.title, 'Bump version to')
+        github.event.pull_request.base.ref == github.base_ref &&
+        startsWith(github.event.pull_request.head.ref, 'release/v') &&
+        startsWith(github.event.pull_request.title, 'Bump version to')
     steps:
-      - run: echo "::set-output name=result::success"
+      - run: echo "Conditions met!"
   build-and-upload-artifact:
     name: Build and Upload Artifact
     uses: ./.github/workflows/build-code.yaml
@@ -30,7 +30,7 @@ jobs:
     with:
       runs-on: ${{ matrix.os }}
   create-release:
-    name: Create Release
+    name: Create Release on GitHub
     runs-on: ubuntu-latest
     needs: build-and-upload-artifact
     if: ${{ needs.build-and-upload-artifact.result == 'success' }}
@@ -45,9 +45,9 @@ jobs:
       - name: Create release and upload assets
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})
-          RELEASE_TAG=$(echo ${BRANCH_NAME#*/})
+          RELEASE_TAG=${BRANCH_NAME#*/}
 
           gh release create "$RELEASE_TAG" --title "Release $RELEASE_TAG" --generate-notes
           gh release upload "$RELEASE_TAG" target/release/lure*
