@@ -21,7 +21,7 @@ authors = ["tuhana <tuhana.cat+git@gmail.com>"]
 license = "MPL-2.0"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.87"
 
 [profile.release]
 opt-level = "z"
@@ -33,7 +33,7 @@ unused_trait_names = "warn"
 std_instead_of_core = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 async-trait = "0.1.88"
 futures = "0.3.31"
 reqwest = "0.12.15"
@@ -44,4 +44,4 @@ thiserror = "2.0.12"
 tracing = "0.1.41"
 tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-tokio = "1.44.1"
+tokio = "1.45.0"
