@@ -24,9 +24,7 @@ impl Command for Arguments {
         };
         use figment_file_provider_adapter::FileAdapter;
         use futures::{FutureExt as _, TryStreamExt as _};
-        use lure_service_common::{
-            PlaybackService as _, PlaybackStatus, ServiceCustomError as _, TrackInfo,
-        };
+        use lure_core::{PlaybackService as _, PlaybackStatus, ServiceCustomError as _, TrackInfo};
         use tokio::time::sleep;
 
         let config_path = self
@@ -122,8 +120,8 @@ impl Command for Arguments {
                                 error.downcast_ref::<lure_lastfm_service::ServiceError>()
                             {
                                 match api_error.handle_error() {
-                                    lure_service_common::ErrorSeverity::Graceful => continue,
-                                    lure_service_common::ErrorSeverity::Fatal => break,
+                                    lure_core::ErrorSeverity::Graceful => continue,
+                                    lure_core::ErrorSeverity::Fatal => break,
                                 }
                             }
 
@@ -132,8 +130,8 @@ impl Command for Arguments {
                                 error.downcast_ref::<lure_listenbrainz_service::ServiceError>()
                             {
                                 match api_error.handle_error() {
-                                    lure_service_common::ErrorSeverity::Graceful => continue,
-                                    lure_service_common::ErrorSeverity::Fatal => break,
+                                    lure_core::ErrorSeverity::Graceful => continue,
+                                    lure_core::ErrorSeverity::Fatal => break,
                                 }
                             }
 

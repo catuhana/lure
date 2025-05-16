@@ -1,7 +1,7 @@
 use core::future::Future;
 use core::time::Duration;
 
-use lure_service_common::{HTTPPlaybackAdapter, PlaybackStatus, ServiceCustomError, TrackInfo};
+use lure_core::{HTTPPlaybackAdapter, PlaybackStatus, ServiceCustomError, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
 
 pub struct Service {
@@ -20,13 +20,13 @@ impl Service {
     }
 
     #[must_use]
-    pub fn into_playback_service(self) -> impl lure_service_common::PlaybackService {
+    pub fn into_playback_service(self) -> impl lure_core::PlaybackService {
         HTTPPlaybackAdapter(self)
     }
 }
 
 #[async_trait::async_trait]
-impl lure_service_common::HTTPPlaybackService for Service {
+impl lure_core::HTTPPlaybackService for Service {
     type Error = ServiceError;
 
     async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error> {
@@ -75,16 +75,16 @@ pub enum APIError {
     Unexpected(String),
 }
 
-pub type ServiceError = lure_service_common::ServiceError<APIError>;
+pub type ServiceError = lure_core::ServiceError<APIError>;
 
 impl ServiceCustomError for APIError {
-    fn handle_error(&self) -> lure_service_common::ErrorSeverity {
+    fn handle_error(&self) -> lure_core::ErrorSeverity {
         if matches!(self, Self::NotFound) {
             eprintln!("Fatal ListenBrainz error: {self}");
-            lure_service_common::ErrorSeverity::Fatal
+            lure_core::ErrorSeverity::Fatal
         } else {
             eprintln!("Non-fatal ListenBrainz error: {self}");
-            lure_service_common::ErrorSeverity::Graceful
+            lure_core::ErrorSeverity::Graceful
         }
     }
 }

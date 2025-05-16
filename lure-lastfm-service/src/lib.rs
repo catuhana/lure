@@ -1,7 +1,7 @@
 use core::future::Future;
 use core::time::Duration;
 
-use lure_service_common::{
+use lure_core::{
     HTTPPlaybackAdapter, PlaybackService, PlaybackStatus, ServiceCustomError, TrackInfo,
 };
 use reqwest::{ClientBuilder, StatusCode, Url};
@@ -27,7 +27,7 @@ impl Service {
 }
 
 #[async_trait::async_trait]
-impl lure_service_common::HTTPPlaybackService for Service {
+impl lure_core::HTTPPlaybackService for Service {
     type Error = ServiceError;
 
     async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error> {
@@ -99,18 +99,18 @@ pub enum APIError {
     Unexpected(String),
 }
 
-pub type ServiceError = lure_service_common::ServiceError<APIError>;
+pub type ServiceError = lure_core::ServiceError<APIError>;
 
 impl ServiceCustomError for APIError {
-    fn handle_error(&self) -> lure_service_common::ErrorSeverity {
+    fn handle_error(&self) -> lure_core::ErrorSeverity {
         match self {
             Self::AuthenticationFailed | Self::InvalidAPIKey | Self::SuspendedAPIKey => {
                 eprintln!("Fatal LastFM error: {self}");
-                lure_service_common::ErrorSeverity::Fatal
+                lure_core::ErrorSeverity::Fatal
             }
             _ => {
                 eprintln!("Non-fatal LastFM error: {self}");
-                lure_service_common::ErrorSeverity::Graceful
+                lure_core::ErrorSeverity::Graceful
             }
         }
     }

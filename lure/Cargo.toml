@@ -13,7 +13,7 @@ workspace = true
 [dependencies]
 lure-config = { path = "../lure-config", optional = true }
 lure-resources = { path = "../lure-resources" }
-lure-service-common = { path = "../lure-service-common", optional = true }
+lure-core = { path = "../lure-core", optional = true }
 lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
 lure-lastfm-service-config = { path = "../lure-lastfm-service-config", optional = true }
 lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
@@ -38,7 +38,7 @@ default = ["service-lastfm", "service-listenbrainz"]
 service-lastfm = [
   "dep:lure-config",
   "lure-config?/service-lastfm",
-  "dep:lure-service-common",
+  "dep:lure-core",
   "dep:lure-lastfm-service",
   "dep:lure-lastfm-service-config",
   "dep:lure-revolt-api",
@@ -48,7 +48,7 @@ service-lastfm = [
 service-listenbrainz = [
   "dep:lure-config",
   "lure-config?/service-listenbrainz",
-  "dep:lure-service-common",
+  "dep:lure-core",
   "dep:lure-listenbrainz-service",
   "dep:lure-listenbrainz-service-config",
   "dep:lure-revolt-api",

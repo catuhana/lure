@@ -12,7 +12,7 @@ workspace = true
 
 [dependencies]
 lure-lastfm-models = { path = "../lure-lastfm-models" }
-lure-service-common = { path = "../lure-service-common" }
+lure-core = { path = "../lure-core" }
 lure-lastfm-service-config = { path = "../lure-lastfm-service-config" }
 
 anyhow.workspace = true

@@ -12,7 +12,7 @@ workspace = true
 
 [dependencies]
 lure-listenbrainz-models = { path = "../lure-listenbrainz-models" }
-lure-service-common = { path = "../lure-service-common" }
+lure-core = { path = "../lure-core" }
 lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config" }
 
 anyhow.workspace = true
