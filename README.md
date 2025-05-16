@@ -5,7 +5,7 @@
 - [ ] Add `tracing` logging
 - [x] Create ~~Docker~~Containerfile
 - [x] Create Nix flake
-- [x] ~~Create systemd service file~~ (and distribution packaging files?)
+- [x] ~~Create systemd service file (and distribution packaging files?)~~
 
 <!-- # lure
 
