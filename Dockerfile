@@ -29,4 +29,4 @@ COPY --from=server /usr/src/lure/target/release/lure /app
 
 VOLUME [ "/app" ]
 
-CMD ["./lure", "start"]
+CMD ["/app/lure", "start"]
