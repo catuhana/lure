@@ -16,5 +16,5 @@ async-trait.workspace = true
 futures.workspace = true
 reqwest.workspace = true
 thiserror.workspace = true
+futures-util = "0.3.31"
 tokio = { workspace = true, features = ["time"] }
-tokio-stream = "0.1.17"

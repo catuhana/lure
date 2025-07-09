@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use futures::{Stream, StreamExt as _};
-use tokio_stream::{self as stream};
+use futures::Stream;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TrackInfo {
@@ -52,19 +51,19 @@ where
         let polling_interval = self.0.polling_interval();
         let service = Arc::new(self.0);
 
-        let stream = tokio_stream::StreamExt::throttle(
-            stream::iter(core::iter::repeat(())),
-            polling_interval,
-        )
-        .then(move |()| {
-            let service = Arc::clone(&service);
-            Box::pin(async move {
-                match service.get_current_playing_track().await {
+        let stream = futures_util::stream::unfold(
+            (tokio::time::interval(polling_interval), service),
+            |(mut interval, service)| async move {
+                interval.tick().await;
+
+                let result = match service.get_current_playing_track().await {
                     Ok(status) => Ok(status),
                     Err(err) => Err(err.into()),
-                }
-            })
-        });
+                };
+
+                Some((result, (interval, service)))
+            },
+        );
 
         Box::new(Box::pin(stream))
     }
