@@ -11,7 +11,7 @@ pub struct Arguments {
 impl Command for Arguments {
     type Error = ArgumentsError;
 
-    #[cfg(any(feature = "service-lastfm", feature = "service-listenbrainz"))]
+    #[cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
     async fn run(&self) -> Result<(), Self::Error> {
         const SECURE_CONFIG_KEYS: &[&str; 2] = &["session_token", "api_key"];
 
@@ -43,13 +43,13 @@ impl Command for Arguments {
         let mut service_stream = match enabled_services.len() {
             0 => return Err(ArgumentsError::NoServicesEnabled),
             1 => match enabled_services.first() {
-                #[cfg(feature = "service-lastfm")]
+                #[cfg(feature = "lastfm-service")]
                 Some(&"Last.fm") => {
                     lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())?
                         .into_playback_service()
                         .into_stream()
                 }
-                #[cfg(feature = "service-listenbrainz")]
+                #[cfg(feature = "listenbrainz-service")]
                 Some(&"ListenBrainz") => lure_listenbrainz_service::Service::try_new(
                     config.service.listenbrainz.unwrap(),
                 )?
@@ -115,7 +115,7 @@ impl Command for Arguments {
                             }
                         }
                         Err(error) => {
-                            #[cfg(feature = "service-lastfm")]
+                            #[cfg(feature = "lastfm-service")]
                             if let Some(lure_lastfm_service::ServiceError::CustomError(api_error)) =
                                 error.downcast_ref::<lure_lastfm_service::ServiceError>()
                             {
@@ -125,7 +125,7 @@ impl Command for Arguments {
                                 }
                             }
 
-                            #[cfg(feature = "service-listenbrainz")]
+                            #[cfg(feature = "listenbrainz-service")]
                             if let Some(lure_listenbrainz_service::ServiceError::CustomError(api_error)) =
                                 error.downcast_ref::<lure_listenbrainz_service::ServiceError>()
                             {
@@ -148,23 +148,23 @@ impl Command for Arguments {
         Ok(())
     }
 
-    #[cfg(not(any(feature = "service-lastfm", feature = "service-listenbrainz")))]
+    #[cfg(not(any(feature = "lastfm-service", feature = "listenbrainz-service")))]
     async fn run(&self) -> Result<(), Self::Error> {
         Err(ArgumentsError::NoServiceFeaturesEnabled)
     }
 }
 
-#[cfg(any(feature = "service-lastfm", feature = "service-listenbrainz"))]
+#[cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
 #[derive(Debug, thiserror::Error)]
 pub enum ArgumentsError {
     #[error("More than one service ({0}) is enabled. Only one service can be enabled at a time.")]
     MoreThanOneServiceEnabled(String),
     #[error("None of the services are enabled. One service must be enabled.")]
     NoServicesEnabled,
-    #[cfg(feature = "service-lastfm")]
+    #[cfg(feature = "lastfm-service")]
     #[error(transparent)]
     LastFM(#[from] lure_lastfm_service::ServiceError),
-    #[cfg(feature = "service-listenbrainz")]
+    #[cfg(feature = "listenbrainz-service")]
     #[error(transparent)]
     ListenBrainz(#[from] lure_listenbrainz_service::ServiceError),
     #[error(transparent)]
@@ -175,7 +175,7 @@ pub enum ArgumentsError {
     Anyhow(#[from] anyhow::Error),
 }
 
-#[cfg(not(any(feature = "service-lastfm", feature = "service-listenbrainz")))]
+#[cfg(not(any(feature = "lastfm-service", feature = "listenbrainz-service")))]
 #[derive(Debug, thiserror::Error)]
 pub enum ArgumentsError {
     #[error(
