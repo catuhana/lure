@@ -55,17 +55,16 @@ impl lure_core::HTTPPlaybackService for Service {
                 let mut recent_tracks: lure_lastfm_models::user::get_recent_tracks::Data =
                     response.json().await?;
 
-                if let Some(track) = recent_tracks.recenttracks.track.first_mut() {
-                    if track
+                if let Some(track) = recent_tracks.recenttracks.track.first_mut()
+                    && track
                         .attr
                         .as_ref()
                         .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| *np))
-                    {
-                        return Ok(PlaybackStatus::Playing(TrackInfo {
-                            artist: core::mem::take(&mut track.artist.text),
-                            title: core::mem::take(&mut track.name),
-                        }));
-                    }
+                {
+                    return Ok(PlaybackStatus::Playing(TrackInfo {
+                        artist: core::mem::take(&mut track.artist.text),
+                        title: core::mem::take(&mut track.name),
+                    }));
                 }
             }
             Err(error) => return Err(error),

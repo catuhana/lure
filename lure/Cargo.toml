@@ -23,13 +23,13 @@ lure-revolt-models = { path = "../lure-revolt-models" }
 
 anyhow.workspace = true
 async-trait.workspace = true
-clap = { version = "4.5.40", features = ["derive"] }
-demand = "1.7.0"
+clap = { version = "4.5.48", features = ["derive"] }
+demand = "1.7.2"
 figment = { version = "0.10.19", features = ["env", "yaml"], optional = true }
 figment_file_provider_adapter = { version = "0.1.1", optional = true }
 futures.workspace = true
 reqwest = { workspace = true, features = ["json"] }
-regex = "1.11.1"
+regex = "1.11.3"
 thiserror.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 
