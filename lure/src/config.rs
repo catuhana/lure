@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use demand::Input;
-use lure_revolt_models::{paths::auth::session::login, schemas};
+use lure_stoat_models::{paths::auth::session::login, schemas};
 use regex_lite::Regex;
 use reqwest::{Client as ReqwestClient, StatusCode};
 
@@ -14,13 +14,13 @@ const SUCCESSFUL_LOGIN_RESPONSE_TEMPLATE: fn(&str) -> String = |session_token| {
 
 To complete setup:
 1. Open your configuration file
-2. Locate the `revolt: session_token:` line
+2. Locate the `stoat: session_token:` line
 3. Replace it with:
    session_token: "{session_token}"
 
-If you're connecting to a custom Revolt instance (using `api-url` flag), 
+If you're connecting to a custom Stoat instance (using `api-url` flag), 
 also update the following in your config:
-revolt: api_url: <instance-url>
+stoat: api_url: <instance-url>
 
 ⚠️ SECURITY WARNING
 Your session token grants complete access to your account.
@@ -31,7 +31,7 @@ environment variables respectively.
     )
 };
 
-static REVOLT_SESSION_FRIENDLY_NAME: LazyLock<String> = LazyLock::new(|| {
+static STOAT_SESSION_FRIENDLY_NAME: LazyLock<String> = LazyLock::new(|| {
     format!(
         "lure on {os}{repo}",
         os = std::env::consts::OS,
@@ -45,25 +45,25 @@ static REVOLT_SESSION_FRIENDLY_NAME: LazyLock<String> = LazyLock::new(|| {
 static EMAIL_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap());
 
-static REVOLT_RECOVERY_REGEX: LazyLock<Regex> =
+static STOAT_RECOVERY_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^([a-z0-9]{5}-[a-z0-9]{5})$").unwrap());
 
-static REVOLT_TOTP_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new("^[0-9]{6}$").unwrap());
+static STOAT_TOTP_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new("^[0-9]{6}$").unwrap());
 
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommands {
     /// Generate an example lure configuration file and print it.
     Generate,
-    /// Revolt commands for obtaining some configuration options.
+    /// Stoat commands for obtaining some configuration options.
     #[command(subcommand)]
-    Revolt(RevoltSubcommands),
+    Stoat(StoatSubcommands),
 }
 
 #[derive(Debug, clap::Subcommand)]
-pub enum RevoltSubcommands {
-    /// Login to Revolt to obtain a new session token.
+pub enum StoatSubcommands {
+    /// Login to Stoat to obtain a new session token.
     GetSessionToken {
-        #[arg(long, default_value = "https://api.revolt.chat")]
+        #[arg(long, default_value = "https://api.stoat.chat")]
         api_url: String,
     },
 }
@@ -77,7 +77,7 @@ impl Command for Subcommands {
                 Self::generate_config_sample();
                 Ok(())
             }
-            Self::Revolt(subcommand) => subcommand.run().await.map_err(Into::into),
+            Self::Stoat(subcommand) => subcommand.run().await.map_err(Into::into),
         }
     }
 }
@@ -88,16 +88,14 @@ impl Subcommands {
     }
 }
 
-impl RevoltSubcommands {
-    async fn run(&self) -> Result<(), RevoltSubcommandsError> {
+impl StoatSubcommands {
+    async fn run(&self) -> Result<(), StoatSubcommandsError> {
         match self {
             Self::GetSessionToken { api_url } => Self::get_session_token(api_url).await,
         }
     }
 
-    pub async fn get_session_token(
-        lure_revolt_api_url: &str,
-    ) -> Result<(), RevoltSubcommandsError> {
+    pub async fn get_session_token(lure_stoat_api_url: &str) -> Result<(), StoatSubcommandsError> {
         let client = ReqwestClient::new();
 
         let email = match Input::new("E-mail:")
@@ -147,11 +145,11 @@ impl RevoltSubcommands {
         };
 
         match client
-            .post(format!("{lure_revolt_api_url}/auth/session/login"))
+            .post(format!("{lure_stoat_api_url}/auth/session/login"))
             .json(&login::RequestBody::Login {
                 email,
                 password,
-                friendly_name: Some(REVOLT_SESSION_FRIENDLY_NAME.to_string()),
+                friendly_name: Some(STOAT_SESSION_FRIENDLY_NAME.to_string()),
             })
             .send()
             .await?
@@ -164,7 +162,7 @@ impl RevoltSubcommands {
             login::ResponseBody::MFA {
                 ticket,
                 allowed_methods,
-            } => Self::on_login_mfa(ticket, &allowed_methods, &client, lure_revolt_api_url).await?,
+            } => Self::on_login_mfa(ticket, &allowed_methods, &client, lure_stoat_api_url).await?,
             login::ResponseBody::Disabled => Self::on_login_disabled(),
         }
 
@@ -179,11 +177,11 @@ impl RevoltSubcommands {
         ticket: String,
         allowed_methods: &[schemas::mfa::Method],
         client: &ReqwestClient,
-        lure_revolt_api_url: &str,
-    ) -> Result<(), RevoltSubcommandsError> {
+        lure_stoat_api_url: &str,
+    ) -> Result<(), StoatSubcommandsError> {
         let mfa_prompt = if allowed_methods.len() > 1 {
             Input::new("enter 2FA authentication or recovery code:").validation(|value| {
-                if REVOLT_RECOVERY_REGEX.is_match(value) || REVOLT_TOTP_REGEX.is_match(value) {
+                if STOAT_RECOVERY_REGEX.is_match(value) || STOAT_TOTP_REGEX.is_match(value) {
                     return Ok(());
                 }
 
@@ -191,7 +189,7 @@ impl RevoltSubcommands {
             })
         } else {
             Input::new("Enter 2FA authentication code:").validation(|value| {
-                if REVOLT_TOTP_REGEX.is_match(value) {
+                if STOAT_TOTP_REGEX.is_match(value) {
                     return Ok(());
                 }
 
@@ -201,7 +199,7 @@ impl RevoltSubcommands {
 
         let mfa_data = match mfa_prompt.run() {
             Ok(mfa_code) => {
-                if REVOLT_TOTP_REGEX.is_match(&mfa_code) {
+                if STOAT_TOTP_REGEX.is_match(&mfa_code) {
                     schemas::mfa::Response::TotpCode {
                         totp_code: mfa_code,
                     }
@@ -221,11 +219,11 @@ impl RevoltSubcommands {
         };
 
         match client
-            .post(format!("{lure_revolt_api_url}/auth/session/login"))
+            .post(format!("{lure_stoat_api_url}/auth/session/login"))
             .json(&login::RequestBody::MFA {
                 mfa_ticket: ticket,
                 mfa_response: Some(mfa_data),
-                friendly_name: Some(REVOLT_SESSION_FRIENDLY_NAME.to_string()),
+                friendly_name: Some(STOAT_SESSION_FRIENDLY_NAME.to_string()),
             })
             .send()
             .await?
@@ -251,11 +249,11 @@ impl RevoltSubcommands {
 #[derive(Debug, thiserror::Error)]
 pub enum SubcommandError {
     #[error(transparent)]
-    RevoltSubcommands(#[from] RevoltSubcommandsError),
+    StoatSubcommands(#[from] StoatSubcommandsError),
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum RevoltSubcommandsError {
+pub enum StoatSubcommandsError {
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
@@ -303,11 +301,11 @@ impl From<schemas::AuthifierError> for ExpectedAuthError {
 }
 
 trait HandleServiceAPIError: Sized {
-    async fn handle_user_friendly_error(self) -> Result<Self, RevoltSubcommandsError>;
+    async fn handle_user_friendly_error(self) -> Result<Self, StoatSubcommandsError>;
 }
 
 impl HandleServiceAPIError for reqwest::Response {
-    async fn handle_user_friendly_error(self) -> Result<Self, RevoltSubcommandsError> {
+    async fn handle_user_friendly_error(self) -> Result<Self, StoatSubcommandsError> {
         let status = self.status();
 
         match status {
@@ -317,7 +315,7 @@ impl HandleServiceAPIError for reqwest::Response {
 
                 Err(ExpectedAuthError::from(error).into())
             }
-            error => Err(RevoltSubcommandsError::UnexpectedAuthStatusCode(error)),
+            error => Err(StoatSubcommandsError::UnexpectedAuthStatusCode(error)),
         }
     }
 }

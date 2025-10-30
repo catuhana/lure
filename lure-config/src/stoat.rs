@@ -1,33 +1,33 @@
 #[derive(Debug, serde::Deserialize)]
 pub struct Options {
-    #[serde(default = "default_revolt_status")]
+    #[serde(default = "default_stoat_status")]
     pub status: StatusOptions,
-    #[serde(default = "default_lure_revolt_api_url")]
+    #[serde(default = "default_lure_stoat_api_url")]
     pub api_url: String,
     pub session_token: String,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct StatusOptions {
-    #[serde(default = "default_revolt_status_template")]
+    #[serde(default = "default_stoat_status_template")]
     pub template: String,
     #[serde(default)]
     pub idle: Option<String>,
 }
 
-fn default_revolt_status() -> StatusOptions {
+fn default_stoat_status() -> StatusOptions {
     StatusOptions {
-        template: default_revolt_status_template(),
+        template: default_stoat_status_template(),
         idle: None,
     }
 }
 
-fn default_revolt_status_template() -> String {
+fn default_stoat_status_template() -> String {
     String::from("🎵 Listening to %NAME% by %ARTIST%")
 }
 
-fn default_lure_revolt_api_url() -> String {
-    String::from("https://api.revolt.chat")
+fn default_lure_stoat_api_url() -> String {
+    String::from("https://api.stoat.chat")
 }
 
 #[cfg(test)]
@@ -42,7 +42,7 @@ mod tests {
 
         let options: Options = serde_yaml::from_str(yaml).unwrap();
 
-        assert_eq!(options.api_url, "https://api.revolt.chat");
+        assert_eq!(options.api_url, "https://api.stoat.chat");
         assert_eq!(options.session_token, "meow");
         assert_eq!(
             options.status.template,

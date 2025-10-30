@@ -810,8 +810,8 @@ dependencies = [
  "lure-listenbrainz-service",
  "lure-listenbrainz-service-config",
  "lure-resources",
- "lure-revolt-api",
- "lure-revolt-models",
+ "lure-stoat-api",
+ "lure-stoat-models",
  "regex-lite",
  "reqwest",
  "thiserror",
@@ -909,16 +909,16 @@ name = "lure-resources"
 version = "1.0.0"
 
 [[package]]
-name = "lure-revolt-api"
+name = "lure-stoat-api"
 version = "1.0.0"
 dependencies = [
- "lure-revolt-models",
+ "lure-stoat-models",
  "reqwest",
  "thiserror",
 ]
 
 [[package]]
-name = "lure-revolt-models"
+name = "lure-stoat-models"
 version = "1.0.0"
 dependencies = [
  "serde",

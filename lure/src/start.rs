@@ -64,12 +64,12 @@ impl Command for Arguments {
             }
         };
 
-        let revolt_client = lure_revolt_api::Client::try_new(
-            config.revolt.api_url,
-            &lure_revolt_models::Authentication::SessionToken(config.revolt.session_token),
+        let stoat_client = lure_stoat_api::Client::try_new(
+            config.stoat.api_url,
+            &lure_stoat_models::Authentication::SessionToken(config.stoat.session_token),
         )?;
 
-        let first_status = revolt_client.get_status_text().await?;
+        let first_status = stoat_client.get_status_text().await?;
         let mut previous_track: Option<TrackInfo> = None;
 
         let mut ctrl_c = Box::pin(tokio::signal::ctrl_c().fuse());
@@ -89,26 +89,26 @@ impl Command for Arguments {
                             }
                             PlaybackStatus::Playing(track) => {
                                 let status = config
-                                    .revolt
+                                    .stoat
                                     .status
                                     .template
                                     .replace("%ARTIST%", &track.artist)
                                     .replace("%NAME%", &track.title);
 
-                                match revolt_client.set_status_text(Some(status)).await {
+                                match stoat_client.set_status_text(Some(status)).await {
                                     Ok(()) => previous_track = Some(track),
-                                    Err(lure_revolt_api::Error::ApiError(
-                                        lure_revolt_api::APIError::RateLimitExceeded(remaining)
+                                    Err(lure_stoat_api::Error::ApiError(
+                                        lure_stoat_api::APIError::RateLimitExceeded(remaining)
                                     )) => sleep(Duration::from_millis(remaining)).await,
                                     Err(error) => return Err(error.into()),
                                 }
                             }
                             PlaybackStatus::NotPlaying if previous_track.is_none() => continue,
                             PlaybackStatus::NotPlaying => {
-                                match revolt_client.set_status_text(first_status.clone()).await {
+                                match stoat_client.set_status_text(first_status.clone()).await {
                                     Ok(()) => previous_track = None,
-                                    Err(lure_revolt_api::Error::ApiError(
-                                        lure_revolt_api::APIError::RateLimitExceeded(remaining)
+                                    Err(lure_stoat_api::Error::ApiError(
+                                        lure_stoat_api::APIError::RateLimitExceeded(remaining)
                                     )) => sleep(Duration::from_millis(remaining)).await,
                                     Err(error) => return Err(error.into()),
                                 }
@@ -143,7 +143,7 @@ impl Command for Arguments {
             }
         }
 
-        revolt_client.set_status_text(first_status.clone()).await?;
+        stoat_client.set_status_text(first_status.clone()).await?;
 
         Ok(())
     }
@@ -168,7 +168,7 @@ pub enum ArgumentsError {
     #[error(transparent)]
     ListenBrainz(#[from] lure_listenbrainz_service::ServiceError),
     #[error(transparent)]
-    RevoltApi(#[from] lure_revolt_api::Error),
+    StoatApi(#[from] lure_stoat_api::Error),
     #[error(transparent)]
     Figment(#[from] figment::Error),
     #[error(transparent)]

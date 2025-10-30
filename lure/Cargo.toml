@@ -18,8 +18,8 @@ lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
 lure-lastfm-service-config = { path = "../lure-lastfm-service-config", optional = true }
 lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
 lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config", optional = true }
-lure-revolt-api = { path = "../lure-revolt-api", optional = true }
-lure-revolt-models = { path = "../lure-revolt-models" }
+lure-stoat-api = { path = "../lure-stoat-api", optional = true }
+lure-stoat-models = { path = "../lure-stoat-models" }
 
 anyhow.workspace = true
 async-trait.workspace = true
@@ -41,7 +41,7 @@ lastfm-service = [
   "dep:lure-core",
   "dep:lure-lastfm-service",
   "dep:lure-lastfm-service-config",
-  "dep:lure-revolt-api",
+  "dep:lure-stoat-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]
@@ -51,7 +51,7 @@ listenbrainz-service = [
   "dep:lure-core",
   "dep:lure-listenbrainz-service",
   "dep:lure-listenbrainz-service-config",
-  "dep:lure-revolt-api",
+  "dep:lure-stoat-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",
 ]

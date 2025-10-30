@@ -13,7 +13,7 @@
 [![CD Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/cd.yaml?style=flat-square&label=CD)](https://github.com/catuhana/lure/actions/workflows/cd.yaml)
 [![Latest Release](https://img.shields.io/github/v/release/catuhana/lure?style=flat-square)](https://github.com/catuhana/lure/releases/latest)
 
-Lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small process that sets the currently playing track on Last.fm, ListenBrainz (and other future platforms, PRs welcome!) as Revolt user status.
+Lure is an improved fork of [lr](https://codeberg.org/arslee07/lr), a small process that sets the currently playing track on Last.fm, ListenBrainz (and other future platforms, PRs welcome!) as Stoat user status.
 
 > [!WARNING]
 > Version 1 contains big configuration changes. If you were on previous versions, check [configuration](#configuration) section.
@@ -74,7 +74,7 @@ Or on NixOS:
 +
 +        services.listenbrainz.username = "<username>";
 +
-+        revolt.session_token = ./<path>;
++        stoat.session_token = ./<path>;
 +      };
 +    }
   ];

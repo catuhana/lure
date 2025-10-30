@@ -10,8 +10,8 @@ members = [
   "lure-listenbrainz-service",
   "lure-listenbrainz-service-config",
   "lure-resources",
-  "lure-revolt-api",
-  "lure-revolt-models",
+  "lure-stoat-api",
+  "lure-stoat-models",
 ]
 resolver = "3"
 

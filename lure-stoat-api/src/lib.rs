@@ -1,6 +1,6 @@
 use core::{future::Future, str::FromStr as _};
 
-use lure_revolt_models::{
+use lure_stoat_models::{
     Authentication,
     schemas::user::{DataEditUser, FieldsUser, User, UserStatus},
 };
@@ -88,11 +88,11 @@ pub enum Error {
 
 #[derive(Debug, thiserror::Error)]
 pub enum APIError {
-    #[error("Revolt API authentication failed. Please check your credentials.")]
+    #[error("Stoat API authentication failed. Please check your credentials.")]
     AuthenticationFailed,
-    #[error("Revolt API rate limit exceeded.")]
+    #[error("Stoat API rate limit exceeded.")]
     RateLimitExceeded(u64),
-    #[error("Revolt API returned an unexpected error: {0}")]
+    #[error("Stoat API returned an unexpected error: {0}")]
     Unknown(String),
 }
 

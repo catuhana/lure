@@ -1,5 +1,5 @@
 [package]
-name = "lure-revolt-models"
+name = "lure-stoat-models"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true

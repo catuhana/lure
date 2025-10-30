@@ -59,13 +59,13 @@ service:
     ## Default: 16
     check_interval: 16
 
-## Configuration for Revolt.
+## Configuration for Stoat.
 ##
-## Environment variable prefix: LURE_REVOLT__
-revolt:
+## Environment variable prefix: LURE_STOAT__
+stoat:
   ## The user status.
   ##
-  ## Environment variable: LURE_REVOLT__STATUS__
+  ## Environment variable: LURE_STOAT__STATUS__
   status:
     ## The status template that will be used.
     ##
@@ -73,7 +73,7 @@ revolt:
     ## - %NAME%: The name of the song.
     ## - %ARTIST%: The artist of the song.
     ##
-    ## Environment variable: LURE_REVOLT__STATUS__TEMPLATE
+    ## Environment variable: LURE_STOAT__STATUS__TEMPLATE
     ##
     ## Default: 🎵 Listening to %NAME% by %ARTIST%
     template: 🎵 Listening to %NAME% by %ARTIST%
@@ -82,21 +82,21 @@ revolt:
     ## If this option is not set, the status will be returned to
     ## the previous status when not listening to anything.
     ##
-    ## Environment variable: LURE_REVOLT__STATUS__IDLE
+    ## Environment variable: LURE_STOAT__STATUS__IDLE
     idle:
   ## The API URL of the instance.
   ##
-  ## Environment variable: LURE_REVOLT__API_URL
+  ## Environment variable: LURE_STOAT__API_URL
   ##
-  ## Default: https://api.revolt.chat
-  api_url: https://api.revolt.chat
+  ## Default: https://api.stoat.chat
+  api_url: https://api.stoat.chat
   ## The session token of the account.
   ##
-  ## To obtain a new session token for lure, run `lure config revolt get-session-token`
+  ## To obtain a new session token for lure, run `lure config stoat get-session-token`
   ## and follow the provided steps.
   ##
   ## A `-file` suffix can be added to read the API key from a file.
   ##
-  ## Environment variable: LURE_REVOLT__SESSION_TOKEN
-  ##                       LURE_REVOLT__SESSION_TOKEN_FILE
+  ## Environment variable: LURE_STOAT__SESSION_TOKEN
+  ##                       LURE_STOAT__SESSION_TOKEN_FILE
   session_token:

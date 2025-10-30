@@ -1,11 +1,11 @@
 #![cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
 
-pub mod revolt;
+pub mod stoat;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct Config {
     pub service: ServiceOptions,
-    pub revolt: revolt::Options,
+    pub stoat: stoat::Options,
 }
 
 #[derive(Debug, serde::Deserialize)]
