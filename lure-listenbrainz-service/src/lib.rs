@@ -47,13 +47,13 @@ impl lure_core::HTTPPlaybackService for Service {
                 let mut recent_tracks: lure_listenbrainz_models::user::playing_now::Data =
                     response.json().await?;
 
-                if let Some(track) = recent_tracks.payload.listens.first_mut() {
-                    if track.playing_now {
-                        return Ok(PlaybackStatus::Playing(TrackInfo {
-                            artist: core::mem::take(&mut track.track_metadata.artist_name),
-                            title: core::mem::take(&mut track.track_metadata.track_name),
-                        }));
-                    }
+                if let Some(track) = recent_tracks.payload.listens.first_mut()
+                    && track.playing_now
+                {
+                    return Ok(PlaybackStatus::Playing(TrackInfo {
+                        artist: core::mem::take(&mut track.track_metadata.artist_name),
+                        title: core::mem::take(&mut track.track_metadata.track_name),
+                    }));
                 }
             }
             Err(error) => return Err(error),

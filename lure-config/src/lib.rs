@@ -22,17 +22,17 @@ impl Config {
         let mut services = Vec::new();
 
         #[cfg(feature = "lastfm-service")]
-        if let Some(lastfm) = &self.service.lastfm {
-            if lastfm.enable {
-                services.push("Last.fm");
-            }
+        if let Some(lastfm) = &self.service.lastfm
+            && lastfm.enable
+        {
+            services.push("Last.fm");
         }
 
         #[cfg(feature = "listenbrainz-service")]
-        if let Some(listenbrainz) = &self.service.listenbrainz {
-            if listenbrainz.enable {
-                services.push("ListenBrainz");
-            }
+        if let Some(listenbrainz) = &self.service.listenbrainz
+            && listenbrainz.enable
+        {
+            services.push("ListenBrainz");
         }
 
         services
