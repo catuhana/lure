@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use demand::Input;
 use lure_revolt_models::{paths::auth::session::login, schemas};
-use regex::Regex;
+use regex_lite::Regex;
 use reqwest::{Client as ReqwestClient, StatusCode};
 
 use crate::Command;
