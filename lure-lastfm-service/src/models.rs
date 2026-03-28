@@ -34,7 +34,7 @@ pub mod user {
 
         #[derive(Debug, serde::Deserialize)]
         pub struct TrackAttr {
-            #[serde(deserialize_with = "crate::bool_from_string")]
+            #[serde(deserialize_with = "crate::models::bool_from_string")]
             pub nowplaying: Option<bool>,
         }
     }

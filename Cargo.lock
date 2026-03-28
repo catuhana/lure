@@ -806,9 +806,7 @@ dependencies = [
  "lure-config",
  "lure-core",
  "lure-lastfm-service",
- "lure-lastfm-service-config",
  "lure-listenbrainz-service",
- "lure-listenbrainz-service-config",
  "lure-resources",
  "lure-stoat-api",
  "lure-stoat-models",
@@ -822,8 +820,8 @@ dependencies = [
 name = "lure-config"
 version = "1.0.0"
 dependencies = [
- "lure-lastfm-service-config",
- "lure-listenbrainz-service-config",
+ "lure-lastfm-service",
+ "lure-listenbrainz-service",
  "serde",
  "serde_yaml",
 ]
@@ -842,13 +840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lure-lastfm-models"
-version = "1.0.0"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "lure-lastfm-service"
 version = "1.0.0"
 dependencies = [
@@ -856,28 +847,12 @@ dependencies = [
  "async-trait",
  "futures",
  "lure-core",
- "lure-lastfm-models",
- "lure-lastfm-service-config",
  "reqwest",
- "secrecy",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "lure-lastfm-service-config"
-version = "1.0.0"
-dependencies = [
  "secrecy",
  "serde",
  "serde_yaml",
-]
-
-[[package]]
-name = "lure-listenbrainz-models"
-version = "1.0.0"
-dependencies = [
- "serde",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -888,20 +863,12 @@ dependencies = [
  "async-trait",
  "futures",
  "lure-core",
- "lure-listenbrainz-models",
- "lure-listenbrainz-service-config",
  "reqwest",
  "secrecy",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "lure-listenbrainz-service-config"
-version = "1.0.0"
-dependencies = [
  "serde",
  "serde_yaml",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

@@ -11,9 +11,9 @@ pub struct Config {
 #[derive(Debug, serde::Deserialize)]
 pub struct ServiceOptions {
     #[cfg(feature = "lastfm-service")]
-    pub lastfm: Option<lure_lastfm_service_config::Options>,
+    pub lastfm: Option<lure_lastfm_service::config::Options>,
     #[cfg(feature = "listenbrainz-service")]
-    pub listenbrainz: Option<lure_listenbrainz_service_config::Options>,
+    pub listenbrainz: Option<lure_listenbrainz_service::config::Options>,
 }
 
 impl Config {

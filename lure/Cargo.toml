@@ -14,9 +14,7 @@ lure-config = { path = "../lure-config", optional = true }
 lure-resources = { path = "../lure-resources" }
 lure-core = { path = "../lure-core", optional = true }
 lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
-lure-lastfm-service-config = { path = "../lure-lastfm-service-config", optional = true }
 lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
-lure-listenbrainz-service-config = { path = "../lure-listenbrainz-service-config", optional = true }
 lure-stoat-api = { path = "../lure-stoat-api", optional = true }
 lure-stoat-models = { path = "../lure-stoat-models" }
 
@@ -39,7 +37,6 @@ lastfm-service = [
   "lure-config?/lastfm-service",
   "dep:lure-core",
   "dep:lure-lastfm-service",
-  "dep:lure-lastfm-service-config",
   "dep:lure-stoat-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",
@@ -49,7 +46,6 @@ listenbrainz-service = [
   "lure-config?/listenbrainz-service",
   "dep:lure-core",
   "dep:lure-listenbrainz-service",
-  "dep:lure-listenbrainz-service-config",
   "dep:lure-stoat-api",
   "dep:figment",
   "dep:figment_file_provider_adapter",

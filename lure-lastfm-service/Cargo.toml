@@ -10,14 +10,14 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
-lure-lastfm-models = { path = "../lure-lastfm-models" }
 lure-core = { path = "../lure-core" }
-lure-lastfm-service-config = { path = "../lure-lastfm-service-config" }
 
 anyhow.workspace = true
 async-trait.workspace = true
 futures.workspace = true
 reqwest = { workspace = true, features = ["json"] }
-secrecy.workspace = true
+secrecy = { workspace = true, features = ["serde"] }
+serde.workspace = true
+serde_yaml.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

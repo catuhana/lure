@@ -4,14 +4,17 @@ use core::time::Duration;
 use lure_core::{HTTPPlaybackAdapter, PlaybackStatus, ServiceCustomError, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
 
+pub mod models;
+pub mod config;
+
 pub struct Service {
     http_client: reqwest::Client,
-    options: lure_listenbrainz_service_config::Options,
+    options: config::Options,
 }
 
 impl Service {
     pub fn try_new(
-        options: lure_listenbrainz_service_config::Options,
+        options: config::Options,
     ) -> Result<Self, ServiceError> {
         Ok(Self {
             http_client: ClientBuilder::new().build()?,
@@ -44,7 +47,7 @@ impl lure_core::HTTPPlaybackService for Service {
             .await
         {
             Ok(response) => {
-                let mut recent_tracks: lure_listenbrainz_models::user::playing_now::Data =
+                let mut recent_tracks: models::user::playing_now::Data =
                     response.json().await?;
 
                 if let Some(track) = recent_tracks.payload.listens.first_mut()
