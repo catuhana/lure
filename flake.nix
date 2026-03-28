@@ -37,32 +37,51 @@
             ];
           };
 
-          packages = rec {
-            default = lure;
+          packages =
+            let
+              cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 
-            lure =
-              let
-                cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+              version = cargoTOML.workspace.package.version;
+            in
+            rec {
+              default =
+                (pkgs.makeRustPlatform {
+                  cargo = pkgs.rustToolchain;
+                  rustc = pkgs.rustToolchain;
+                }).buildRustPackage
+                  {
+                    pname = "lure";
+                    inherit version;
 
-                version = cargoTOML.workspace.package.version;
-              in
-              (pkgs.makeRustPlatform {
-                cargo = pkgs.rustToolchain;
-                rustc = pkgs.rustToolchain;
-              }).buildRustPackage
-                {
-                  pname = "lure";
-                  inherit version;
+                    src = inputs.self;
+                    cargoLock.lockFile = ./Cargo.lock;
 
-                  src = inputs.self;
-                  cargoLock.lockFile = ./Cargo.lock;
+                    # TODO: Deduplicate this with the devShell.
+                    # Or may need to drop if I switch over to rustls.
+                    buildInputs = [ pkgs.openssl ];
+                    nativeBuildInputs = [ pkgs.pkg-config ];
+                  };
 
-                  # TODO: Deduplicate this with the devShell.
-                  # Or may need to drop if I switch over to rustls.
-                  buildInputs = [ pkgs.openssl ];
-                  nativeBuildInputs = [ pkgs.pkg-config ];
+              docker = pkgs.dockerTools.buildLayeredImage {
+                name = "lure";
+                tag = version;
+
+                contents = [ default ];
+
+                config = {
+                  Cmd = [
+                    "/bin/lure"
+                    "start"
+                    "--config"
+                    "/data/lure/config.toml"
+                  ];
+                  # Env = [ "LURE_LOG=info" ];
+                  Volumes = {
+                    "/data/lure" = { };
+                  };
                 };
-          };
+              };
+            };
 
           devShells.default = pkgs.mkShell {
             packages = builtins.attrValues {
