@@ -57,17 +57,6 @@
 
                     src = inputs.self;
                     cargoLock.lockFile = ./Cargo.lock;
-
-                    # TODO: Deduplicate this with the devShell.
-                    # Or may need to drop if I switch over to rustls.
-                    buildInputs = [
-                      pkgs.openssl
-                      pkgs.stdenv.cc.cc.lib
-                    ];
-                    nativeBuildInputs = [
-                      pkgs.pkg-config
-                      pkgs.autoPatchelfHook
-                    ];
                   };
 
               docker = pkgs.dockerTools.buildLayeredImage {
@@ -105,15 +94,6 @@
             env = {
               RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
             };
-
-            buildInputs = [
-              pkgs.openssl
-              pkgs.stdenv.cc.cc.lib
-            ];
-            nativeBuildInputs = [
-              pkgs.pkg-config
-              pkgs.autoPatchelfHook
-            ];
           };
 
           # TODO: Use treefmt-nix.

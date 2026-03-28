@@ -11,6 +11,5 @@ workspace = true
 
 [dependencies]
 lure-stoat-models = { path = "../lure-stoat-models" }
-
 reqwest = { workspace = true, features = ["json"] }
 thiserror.workspace = true

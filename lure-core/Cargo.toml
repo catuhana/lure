@@ -12,8 +12,8 @@ workspace = true
 [dependencies]
 anyhow.workspace = true
 async-trait.workspace = true
+futures-util = "0.3.32"
 futures.workspace = true
 reqwest.workspace = true
 thiserror.workspace = true
-futures-util = "0.3.31"
 tokio = { workspace = true, features = ["time"] }

@@ -10,14 +10,13 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
-lure-core = { path = "../lure-core" }
-
 anyhow.workspace = true
 async-trait.workspace = true
 futures.workspace = true
+lure-core = { path = "../lure-core" }
 reqwest = { workspace = true, features = ["json"] }
 secrecy = { workspace = true, features = ["serde"] }
-serde.workspace = true
 serde_yaml.workspace = true
+serde.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
