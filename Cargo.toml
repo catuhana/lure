@@ -21,7 +21,6 @@ authors = ["tuhana <tuhana.cat+git@gmail.com>"]
 license = "MPL-2.0"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.90"
 
 [profile.release]
 opt-level = "z"
