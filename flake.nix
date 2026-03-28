@@ -44,7 +44,9 @@
               version = cargoTOML.workspace.package.version;
             in
             rec {
-              default =
+              default = lure;
+
+              lure =
                 (pkgs.makeRustPlatform {
                   cargo = pkgs.rustToolchain;
                   rustc = pkgs.rustToolchain;
@@ -58,24 +60,31 @@
 
                     # TODO: Deduplicate this with the devShell.
                     # Or may need to drop if I switch over to rustls.
-                    buildInputs = [ pkgs.openssl ];
-                    nativeBuildInputs = [ pkgs.pkg-config ];
+                    buildInputs = [
+                      pkgs.openssl
+                      pkgs.stdenv.cc.cc.lib
+                    ];
+                    nativeBuildInputs = [
+                      pkgs.pkg-config
+                      pkgs.autoPatchelfHook
+                    ];
                   };
 
               docker = pkgs.dockerTools.buildLayeredImage {
                 name = "lure";
                 tag = version;
 
-                contents = [ default ];
+                contents = lure;
 
                 config = {
                   Cmd = [
                     "/bin/lure"
                     "start"
-                    "--config"
-                    "/data/lure/config.toml"
                   ];
+                  WorkingDir = "/data/lure";
+
                   # Env = [ "LURE_LOG=info" ];
+
                   Volumes = {
                     "/data/lure" = { };
                   };
@@ -97,8 +106,14 @@
               RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
             };
 
-            buildInputs = [ pkgs.openssl ];
-            nativeBuildInputs = [ pkgs.pkg-config ];
+            buildInputs = [
+              pkgs.openssl
+              pkgs.stdenv.cc.cc.lib
+            ];
+            nativeBuildInputs = [
+              pkgs.pkg-config
+              pkgs.autoPatchelfHook
+            ];
           };
 
           # TODO: Use treefmt-nix.
