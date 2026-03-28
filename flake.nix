@@ -28,7 +28,7 @@
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
             overlays = [
-              (final: prev: {
+              (_: _: {
                 rustToolchain = inputs.fenix.packages.${system}.fromToolchainFile {
                   file = ./rust-toolchain.toml;
                   sha256 = "sha256-zC8E38iDVJ1oPIzCqTk/Ujo9+9kx9dXq7wAwPMpkpg0=";
@@ -43,6 +43,8 @@
             lure =
               let
                 cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+
+                version = cargoTOML.workspace.package.version;
               in
               (pkgs.makeRustPlatform {
                 cargo = pkgs.rustToolchain;
@@ -50,7 +52,7 @@
               }).buildRustPackage
                 {
                   pname = "lure";
-                  version = cargoTOML.workspace.package.version;
+                  inherit version;
 
                   src = inputs.self;
                   cargoLock.lockFile = ./Cargo.lock;
