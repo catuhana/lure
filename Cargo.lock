@@ -807,7 +807,6 @@ dependencies = [
  "lure-core",
  "lure-lastfm-service",
  "lure-listenbrainz-service",
- "lure-resources",
  "lure-stoat-api",
  "lure-stoat-models",
  "regex-lite",
@@ -870,10 +869,6 @@ dependencies = [
  "thiserror",
  "tokio",
 ]
-
-[[package]]
-name = "lure-resources"
-version = "1.0.0"
 
 [[package]]
 name = "lure-stoat-api"

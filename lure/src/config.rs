@@ -84,7 +84,7 @@ impl Command for Subcommands {
 
 impl Subcommands {
     pub fn generate_config_sample() {
-        print!("{}", lure_resources::CONFIG_SAMPLE_FILE);
+        print!("{}", include_str!("../config.sample.yaml"));
     }
 }
 

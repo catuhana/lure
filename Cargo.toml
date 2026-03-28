@@ -5,7 +5,6 @@ members = [
   "lure-core",
   "lure-lastfm-service",
   "lure-listenbrainz-service",
-  "lure-resources",
   "lure-stoat-api",
   "lure-stoat-models",
 ]
