@@ -1,12 +1,3 @@
-# lure
-
-## TODO
-
-- [ ] Add `tracing` logging
-- [x] Create ~~Docker~~Containerfile
-- [x] Create Nix flake
-- [x] ~~Create systemd service file (and distribution packaging files?)~~
-
 <!-- # lure
 
 [![CI Status](https://img.shields.io/github/actions/workflow/status/catuhana/lure/ci.yaml?style=flat-square&label=CI)](https://github.com/catuhana/lure/actions/workflows/ci.yaml)
