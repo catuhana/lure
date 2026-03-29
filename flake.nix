@@ -80,7 +80,7 @@
 
                 config = {
                   Cmd = [
-                    "${lib.getExe lure-musl}"
+                    "${lib.getExe lure}"
                     "start"
                   ];
                   WorkingDir = "/data/lure";
