@@ -3,6 +3,8 @@ fn main() {
         feature = "services-lastfm",
         feature = "services-listenbrainz"
     )) {
-        println!("cargo:warning=No services are enabled. Having no features enabled removes most functionality.");
+        println!(
+            "cargo:warning=No services are enabled. Having no features enabled removes most functionality."
+        );
     }
 }

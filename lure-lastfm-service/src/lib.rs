@@ -7,8 +7,8 @@ use lure_core::{
 use reqwest::{ClientBuilder, StatusCode, Url};
 use secrecy::ExposeSecret as _;
 
-pub mod models;
 pub mod config;
+pub mod models;
 
 pub struct Service {
     http_client: reqwest::Client,

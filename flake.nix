@@ -3,19 +3,28 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    fenix.url = "github:nix-community/fenix";
 
-    flake-parts.url = "github:hercules-ci/flake-parts";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
   };
 
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "aarch64-darwin"
-      ];
+      imports = [ inputs.treefmt-nix.flakeModule ];
+
+      systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
       perSystem =
         {
@@ -90,14 +99,26 @@
                 nixfmt
                 ;
             };
-
-            env = {
-              RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
-            };
           };
 
-          # TODO: Use treefmt-nix.
-          formatter = pkgs.nixfmt-tree;
+          treefmt = {
+            programs = {
+              rustfmt = {
+                enable = true;
+
+                package = pkgs.rustToolchain;
+              };
+
+              yamlfmt = {
+                enable = true;
+
+                settings.formatter.retain_line_breaks = true;
+              };
+
+              mdformat.enable = true;
+              nixfmt.enable = true;
+            };
+          };
         };
     };
 }
