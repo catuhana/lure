@@ -9,6 +9,7 @@ use figment::{
 };
 use figment_file_provider_adapter::FileAdapter;
 use futures::FutureExt as _;
+use lure_config::ServiceOptions;
 use lure_types::{PlaybackStatus, TrackInfo};
 use tokio::time::sleep;
 
@@ -29,27 +30,31 @@ pub async fn run(config_path: Option<PathBuf>) -> Result<(), RunError> {
         .merge(FileAdapter::wrap(Env::prefixed("LURE_").split("__")).only(SECURE_CONFIG_KEYS))
         .extract()?;
 
-    let enabled_services = config.enabled_services();
-    let service = match enabled_services.len() {
-        0 => return Err(RunError::NoServicesEnabled),
-        1 => match enabled_services.first() {
-            #[cfg(feature = "lastfm-service")]
-            Some(&"Last.fm") => Service::LastFm(
-                lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())
-                    .map_err(ServiceError::LastFm)?,
-            ),
-            #[cfg(feature = "listenbrainz-service")]
-            Some(&"ListenBrainz") => Service::ListenBrainz(
-                lure_listenbrainz_service::Service::try_new(config.service.listenbrainz.unwrap())
-                    .map_err(ServiceError::ListenBrainz)?,
-            ),
-            Some(_) | None => unreachable!(),
-        },
-        _ => {
+    let service = match config.service {
+        ServiceOptions {
+            lastfm: Some(config),
+            listenbrainz: None,
+        } => Service::LastFm(
+            lure_lastfm_service::Service::try_new(config).map_err(ServiceError::from)?,
+        ),
+        ServiceOptions {
+            lastfm: None,
+            listenbrainz: Some(config),
+        } => Service::ListenBrainz(
+            lure_listenbrainz_service::Service::try_new(config).map_err(ServiceError::from)?,
+        ),
+        ServiceOptions {
+            lastfm: Some(_),
+            listenbrainz: Some(_),
+        } => {
             return Err(RunError::MoreThanOneServiceEnabled(
-                enabled_services.join(", "),
+                "lastfm and listenbrainz".to_string(),
             ));
         }
+        ServiceOptions {
+            lastfm: None,
+            listenbrainz: None,
+        } => return Err(RunError::NoServicesEnabled),
     };
 
     let stoat_client = lure_stoat_api::Client::try_new(

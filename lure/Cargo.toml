@@ -29,7 +29,6 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 default = ["lastfm-service", "listenbrainz-service"]
 lastfm-service = [
   "dep:lure-config",
-  "lure-config?/lastfm-service",
   "dep:lure-types",
   "dep:lure-lastfm-service",
   "dep:lure-stoat-api",
@@ -38,7 +37,6 @@ lastfm-service = [
 ]
 listenbrainz-service = [
   "dep:lure-config",
-  "lure-config?/listenbrainz-service",
   "dep:lure-types",
   "dep:lure-listenbrainz-service",
   "dep:lure-stoat-api",

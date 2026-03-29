@@ -1,5 +1,3 @@
-#![cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
-
 pub mod stoat;
 
 #[derive(Debug, serde::Deserialize)]
@@ -8,33 +6,8 @@ pub struct Config {
     pub stoat: stoat::Options,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Default, serde::Deserialize)]
 pub struct ServiceOptions {
-    #[cfg(feature = "lastfm-service")]
     pub lastfm: Option<lure_lastfm_service::config::Options>,
-    #[cfg(feature = "listenbrainz-service")]
     pub listenbrainz: Option<lure_listenbrainz_service::config::Options>,
-}
-
-impl Config {
-    #[must_use]
-    pub fn enabled_services(&self) -> Vec<&str> {
-        let mut services = Vec::new();
-
-        #[cfg(feature = "lastfm-service")]
-        if let Some(lastfm) = &self.service.lastfm
-            && lastfm.enable
-        {
-            services.push("Last.fm");
-        }
-
-        #[cfg(feature = "listenbrainz-service")]
-        if let Some(listenbrainz) = &self.service.listenbrainz
-            && listenbrainz.enable
-        {
-            services.push("ListenBrainz");
-        }
-
-        services
-    }
 }

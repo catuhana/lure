@@ -10,13 +10,9 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
-lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
-lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
+lure-lastfm-service = { path = "../lure-lastfm-service" }
+lure-listenbrainz-service = { path = "../lure-listenbrainz-service" }
 serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 serde_yaml.workspace = true
-
-[features]
-lastfm-service = ["dep:lure-lastfm-service"]
-listenbrainz-service = ["dep:lure-listenbrainz-service"]
