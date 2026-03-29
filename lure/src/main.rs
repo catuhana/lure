@@ -1,3 +1,4 @@
+mod service;
 mod start;
 
 #[tokio::main]

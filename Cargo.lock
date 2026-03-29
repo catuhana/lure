@@ -735,11 +735,11 @@ dependencies = [
  "figment_file_provider_adapter",
  "futures",
  "lure-config",
- "lure-core",
  "lure-lastfm-service",
  "lure-listenbrainz-service",
  "lure-stoat-api",
  "lure-stoat-models",
+ "lure-types",
  "reqwest",
  "thiserror 2.0.18",
  "tokio",
@@ -756,26 +756,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "lure-core"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "futures-util",
- "reqwest",
- "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
 name = "lure-lastfm-service"
 version = "1.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
  "futures",
- "lure-core",
+ "lure-types",
  "reqwest",
  "secrecy",
  "serde",
@@ -791,7 +778,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "futures",
- "lure-core",
+ "lure-types",
  "reqwest",
  "secrecy",
  "serde",
@@ -814,6 +801,19 @@ name = "lure-stoat-models"
 version = "1.0.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "lure-types"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "futures-util",
+ "reqwest",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]

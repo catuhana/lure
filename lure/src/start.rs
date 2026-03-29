@@ -1,18 +1,21 @@
 #![cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
 
-use std::path::PathBuf;
-use std::{path::Path, time::Duration};
+use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use figment::{
     Figment,
     providers::{Env, Format as _, Yaml},
 };
 use figment_file_provider_adapter::FileAdapter;
-use futures::{FutureExt as _, TryStreamExt as _};
-use lure_core::{PlaybackService as _, PlaybackStatus, ServiceCustomError as _, TrackInfo};
+use futures::FutureExt as _;
+use lure_types::{PlaybackStatus, TrackInfo};
 use tokio::time::sleep;
 
-pub async fn run(config_path: Option<PathBuf>) -> Result<(), ArgumentsError> {
+#[cfg(feature = "lastfm-service")]
+use crate::service::Service;
+
+pub async fn run(config_path: Option<PathBuf>) -> Result<(), RunError> {
     const SECURE_CONFIG_KEYS: &[&str; 2] = &["session_token", "api_key"];
 
     let config_path = config_path
@@ -27,25 +30,23 @@ pub async fn run(config_path: Option<PathBuf>) -> Result<(), ArgumentsError> {
         .extract()?;
 
     let enabled_services = config.enabled_services();
-    let mut service_stream = match enabled_services.len() {
-        0 => return Err(ArgumentsError::NoServicesEnabled),
+    let service = match enabled_services.len() {
+        0 => return Err(RunError::NoServicesEnabled),
         1 => match enabled_services.first() {
             #[cfg(feature = "lastfm-service")]
-            Some(&"Last.fm") => {
-                lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())?
-                    .into_playback_service()
-                    .into_stream()
-            }
+            Some(&"Last.fm") => Service::LastFm(
+                lure_lastfm_service::Service::try_new(config.service.lastfm.unwrap())
+                    .map_err(ServiceError::LastFm)?,
+            ),
             #[cfg(feature = "listenbrainz-service")]
-            Some(&"ListenBrainz") => {
-                lure_listenbrainz_service::Service::try_new(config.service.listenbrainz.unwrap())?
-                    .into_playback_service()
-                    .into_stream()
-            }
+            Some(&"ListenBrainz") => Service::ListenBrainz(
+                lure_listenbrainz_service::Service::try_new(config.service.listenbrainz.unwrap())
+                    .map_err(ServiceError::ListenBrainz)?,
+            ),
             Some(_) | None => unreachable!(),
         },
         _ => {
-            return Err(ArgumentsError::MoreThanOneServiceEnabled(
+            return Err(RunError::MoreThanOneServiceEnabled(
                 enabled_services.join(", "),
             ));
         }
@@ -66,91 +67,80 @@ pub async fn run(config_path: Option<PathBuf>) -> Result<(), ArgumentsError> {
             _ = &mut ctrl_c => {
                 println!("Received Ctrl+C, exiting...");
                 break;
-            },
-            item = service_stream.try_next() => {
-                match item {
-                    Ok(None) => unreachable!(),
-                    Ok(Some(status)) => match status {
-                        PlaybackStatus::Playing(track) if previous_track.as_ref().is_some_and(|prev| prev == &track) => {
-                            continue;
-                        }
-                        PlaybackStatus::Playing(track) => {
-                            let status = config
-                                .stoat
-                                .status
-                                .template
-                                .replace("%ARTIST%", &track.artist)
-                                .replace("%NAME%", &track.title);
-
-                            match stoat_client.set_status_text(Some(status)).await {
-                                Ok(()) => previous_track = Some(track),
-                                Err(lure_stoat_api::Error::ApiError(
-                                    lure_stoat_api::APIError::RateLimitExceeded(remaining)
-                                )) => sleep(Duration::from_millis(remaining)).await,
-                                Err(error) => return Err(error.into()),
-                            }
-                        }
-                        PlaybackStatus::NotPlaying if previous_track.is_none() => continue,
-                        PlaybackStatus::NotPlaying => {
-                            match stoat_client.set_status_text(first_status.clone()).await {
-                                Ok(()) => previous_track = None,
-                                Err(lure_stoat_api::Error::ApiError(
-                                    lure_stoat_api::APIError::RateLimitExceeded(remaining)
-                                )) => sleep(Duration::from_millis(remaining)).await,
-                                Err(error) => return Err(error.into()),
-                            }
-                        }
+            }
+            result = service.poll() => match result {
+                Ok(PlaybackStatus::Playing(track)) => {
+                    if previous_track.as_ref().is_some_and(|prev| prev == &track) {
+                        continue;
                     }
-                    Err(error) => {
-                        #[cfg(feature = "lastfm-service")]
-                        if let Some(lure_lastfm_service::ServiceError::CustomError(api_error)) =
-                            error.downcast_ref::<lure_lastfm_service::ServiceError>()
-                        {
-                            match api_error.handle_error() {
-                                lure_core::ErrorSeverity::Graceful => continue,
-                                lure_core::ErrorSeverity::Fatal => break,
-                            }
-                        }
 
-                        #[cfg(feature = "listenbrainz-service")]
-                        if let Some(lure_listenbrainz_service::ServiceError::CustomError(api_error)) =
-                            error.downcast_ref::<lure_listenbrainz_service::ServiceError>()
-                        {
-                            match api_error.handle_error() {
-                                lure_core::ErrorSeverity::Graceful => continue,
-                                lure_core::ErrorSeverity::Fatal => break,
-                            }
-                        }
+                    let status_text = config
+                        .stoat
+                        .status
+                        .template
+                        .replace("%ARTIST%", &track.artist)
+                        .replace("%NAME%", &track.title);
 
-                        eprintln!("Unknown catastrophic error: {error}");
+                    match stoat_client.set_status_text(Some(status_text)).await {
+                        Ok(()) => previous_track = Some(track),
+                        Err(lure_stoat_api::Error::ApiError(
+                            lure_stoat_api::APIError::RateLimitExceeded(remaining)
+                        )) => sleep(Duration::from_millis(remaining)).await,
+                        Err(error) => return Err(error.into()),
+                    }
+                }
+                Ok(PlaybackStatus::NotPlaying) => {
+                    if previous_track.is_none() {
+                        continue;
+                    }
+
+                    match stoat_client.set_status_text(first_status.clone()).await {
+                        Ok(()) => previous_track = None,
+                        Err(lure_stoat_api::Error::ApiError(
+                            lure_stoat_api::APIError::RateLimitExceeded(remaining)
+                        )) => sleep(Duration::from_millis(remaining)).await,
+                        Err(error) => return Err(error.into()),
+                    }
+                }
+                Err(error) => {
+                    if service.is_fatal_error(&error) {
+                        eprintln!("Fatal error: {error}");
                         break;
                     }
+
+                    eprintln!("Non-fatal error, retrying: {error}");
                 }
             }
         }
     }
 
-    stoat_client.set_status_text(first_status.clone()).await?;
+    stoat_client.set_status_text(first_status).await?;
 
     Ok(())
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum ArgumentsError {
-    #[error("More than one service ({0}) is enabled. Only one service can be enabled at a time.")]
-    MoreThanOneServiceEnabled(String),
-    #[error("None of the services are enabled. One service must be enabled.")]
-    NoServicesEnabled,
+pub enum ServiceError {
     #[cfg(feature = "lastfm-service")]
     #[error(transparent)]
-    LastFM(#[from] lure_lastfm_service::ServiceError),
+    LastFm(#[from] lure_lastfm_service::ServiceError),
     #[cfg(feature = "listenbrainz-service")]
     #[error(transparent)]
     ListenBrainz(#[from] lure_listenbrainz_service::ServiceError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RunError {
+    #[error("More than one service ({0}) is enabled. Only one service can be enabled at a time.")]
+    MoreThanOneServiceEnabled(String),
+    #[error("No services are enabled. One service must be enabled.")]
+    NoServicesEnabled,
     #[error(transparent)]
     StoatApi(#[from] lure_stoat_api::Error),
     #[error(transparent)]
     Figment(#[from] figment::Error),
     #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
+    #[error(transparent)]
+    Service(#[from] ServiceError),
 }

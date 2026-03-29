@@ -1,8 +1,6 @@
-use std::{future::Future, time::Duration};
+use std::time::Duration;
 
-use lure_core::{
-    HTTPPlaybackAdapter, PlaybackService, PlaybackStatus, ServiceCustomError, TrackInfo,
-};
+use lure_types::{PlaybackStatus, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode, Url};
 use secrecy::ExposeSecret as _;
 
@@ -22,17 +20,9 @@ impl Service {
         })
     }
 
-    #[must_use]
-    pub fn into_playback_service(self) -> impl PlaybackService {
-        HTTPPlaybackAdapter(self)
-    }
-}
+    pub async fn poll(&self) -> Result<PlaybackStatus, ServiceError> {
+        tokio::time::sleep(Duration::from_secs(self.options.check_interval)).await;
 
-#[async_trait::async_trait]
-impl lure_core::HTTPPlaybackService for Service {
-    type Error = ServiceError;
-
-    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error> {
         let url = Url::parse_with_params(
             "https://ws.audioscrobbler.com/2.0/",
             &[
@@ -45,38 +35,29 @@ impl lure_core::HTTPPlaybackService for Service {
         )
         .map_err(|error| ServiceError::Anyhow(error.into()))?;
 
-        match self
+        let response = self
             .http_client
             .get(url)
             .send()
             .await?
             .handle_user_friendly_error()
-            .await
-        {
-            Ok(response) => {
-                let mut recent_tracks: models::user::get_recent_tracks::Data =
-                    response.json().await?;
+            .await?;
 
-                if let Some(track) = recent_tracks.recenttracks.track.first_mut()
-                    && track
-                        .attr
-                        .as_ref()
-                        .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| *np))
-                {
-                    return Ok(PlaybackStatus::Playing(TrackInfo {
-                        artist: std::mem::take(&mut track.artist.text),
-                        title: std::mem::take(&mut track.name),
-                    }));
-                }
-            }
-            Err(error) => return Err(error),
+        let mut recent_tracks: models::user::get_recent_tracks::Data = response.json().await?;
+
+        if let Some(track) = recent_tracks.recenttracks.track.first_mut()
+            && track
+                .attr
+                .as_ref()
+                .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| *np))
+        {
+            return Ok(PlaybackStatus::Playing(TrackInfo {
+                artist: std::mem::take(&mut track.artist.text),
+                title: std::mem::take(&mut track.name),
+            }));
         }
 
         Ok(PlaybackStatus::NotPlaying)
-    }
-
-    fn polling_interval(&self) -> Duration {
-        Duration::from_secs(self.options.check_interval)
     }
 }
 
@@ -100,28 +81,34 @@ pub enum APIError {
     Unexpected(String),
 }
 
-pub type ServiceError = lure_core::ServiceError<APIError>;
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceError {
+    #[error(transparent)]
+    Api(#[from] APIError),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+    #[error(transparent)]
+    Anyhow(#[from] anyhow::Error),
+}
 
-impl ServiceCustomError for APIError {
-    fn handle_error(&self) -> lure_core::ErrorSeverity {
-        match self {
-            Self::AuthenticationFailed | Self::InvalidAPIKey | Self::SuspendedAPIKey => {
-                eprintln!("Fatal LastFM error: {self}");
-                lure_core::ErrorSeverity::Fatal
-            }
-            _ => {
-                eprintln!("Non-fatal LastFM error: {self}");
-                lure_core::ErrorSeverity::Graceful
-            }
-        }
+impl ServiceError {
+    pub const fn is_fatal(&self) -> bool {
+        matches!(
+            self,
+            Self::Api(
+                APIError::AuthenticationFailed
+                    | APIError::InvalidAPIKey
+                    | APIError::SuspendedAPIKey
+            )
+        )
     }
 }
 
-pub trait HandleServiceAPIError: Sized {
-    fn handle_user_friendly_error(self) -> impl Future<Output = Result<Self, ServiceError>>;
+trait HandleUserFriendlyError: Sized {
+    async fn handle_user_friendly_error(self) -> Result<Self, ServiceError>;
 }
 
-impl HandleServiceAPIError for reqwest::Response {
+impl HandleUserFriendlyError for reqwest::Response {
     async fn handle_user_friendly_error(self) -> Result<Self, ServiceError> {
         match self.status() {
             StatusCode::OK => Ok(self),

@@ -3,11 +3,11 @@ resolver = "3"
 members = [
   "lure",
   "lure-config",
-  "lure-core",
   "lure-lastfm-service",
   "lure-listenbrainz-service",
   "lure-stoat-api",
   "lure-stoat-models",
+  "lure-types",
 ]
 
 [workspace.package]

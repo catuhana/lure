@@ -1,5 +1,5 @@
 [package]
-name = "lure-core"
+name = "lure-types"
 repository.workspace = true
 authors.workspace = true
 license.workspace = true

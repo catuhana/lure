@@ -1,6 +1,6 @@
-use std::{future::Future, time::Duration};
+use std::time::Duration;
 
-use lure_core::{HTTPPlaybackAdapter, PlaybackStatus, ServiceCustomError, TrackInfo};
+use lure_types::{PlaybackStatus, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
 
 pub mod config;
@@ -19,50 +19,34 @@ impl Service {
         })
     }
 
-    #[must_use]
-    pub fn into_playback_service(self) -> impl lure_core::PlaybackService {
-        HTTPPlaybackAdapter(self)
-    }
-}
+    pub async fn poll(&self) -> Result<PlaybackStatus, ServiceError> {
+        tokio::time::sleep(Duration::from_secs(self.options.check_interval)).await;
 
-#[async_trait::async_trait]
-impl lure_core::HTTPPlaybackService for Service {
-    type Error = ServiceError;
-
-    async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error> {
         let url = format!(
             "{}/1/user/{}/playing-now",
-            self.options.api_url, &self.options.username
+            self.options.api_url, self.options.username
         );
 
-        match self
+        let response = self
             .http_client
             .get(url)
             .send()
             .await?
             .handle_user_friendly_error()
-            .await
-        {
-            Ok(response) => {
-                let mut recent_tracks: models::user::playing_now::Data = response.json().await?;
+            .await?;
 
-                if let Some(track) = recent_tracks.payload.listens.first_mut()
-                    && track.playing_now
-                {
-                    return Ok(PlaybackStatus::Playing(TrackInfo {
-                        artist: std::mem::take(&mut track.track_metadata.artist_name),
-                        title: std::mem::take(&mut track.track_metadata.track_name),
-                    }));
-                }
-            }
-            Err(error) => return Err(error),
+        let mut data: models::user::playing_now::Data = response.json().await?;
+
+        if let Some(track) = data.payload.listens.first_mut()
+            && track.playing_now
+        {
+            return Ok(PlaybackStatus::Playing(TrackInfo {
+                artist: std::mem::take(&mut track.track_metadata.artist_name),
+                title: std::mem::take(&mut track.track_metadata.track_name),
+            }));
         }
 
         Ok(PlaybackStatus::NotPlaying)
-    }
-
-    fn polling_interval(&self) -> Duration {
-        Duration::from_secs(self.options.check_interval)
     }
 }
 
@@ -74,25 +58,25 @@ pub enum APIError {
     Unexpected(String),
 }
 
-pub type ServiceError = lure_core::ServiceError<APIError>;
+#[derive(thiserror::Error, Debug)]
+pub enum ServiceError {
+    #[error(transparent)]
+    Api(#[from] APIError),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+}
 
-impl ServiceCustomError for APIError {
-    fn handle_error(&self) -> lure_core::ErrorSeverity {
-        if matches!(self, Self::NotFound) {
-            eprintln!("Fatal ListenBrainz error: {self}");
-            lure_core::ErrorSeverity::Fatal
-        } else {
-            eprintln!("Non-fatal ListenBrainz error: {self}");
-            lure_core::ErrorSeverity::Graceful
-        }
+impl ServiceError {
+    pub const fn is_fatal(&self) -> bool {
+        matches!(self, Self::Api(APIError::NotFound))
     }
 }
 
-pub trait HandleServiceAPIError: Sized {
-    fn handle_user_friendly_error(self) -> impl Future<Output = Result<Self, ServiceError>>;
+trait HandleUserFriendlyError: Sized {
+    async fn handle_user_friendly_error(self) -> Result<Self, ServiceError>;
 }
 
-impl HandleServiceAPIError for reqwest::Response {
+impl HandleUserFriendlyError for reqwest::Response {
     async fn handle_user_friendly_error(self) -> Result<Self, ServiceError> {
         match self.status() {
             StatusCode::OK => Ok(self),

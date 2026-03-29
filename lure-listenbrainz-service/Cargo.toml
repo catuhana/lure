@@ -13,7 +13,7 @@ workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
 futures.workspace = true
-lure-core = { path = "../lure-core" }
+lure-types = { path = "../lure-types" }
 reqwest = { workspace = true, features = ["json"] }
 secrecy = { workspace = true, features = ["serde"] }
 serde_yaml.workspace = true

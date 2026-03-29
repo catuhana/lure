@@ -16,7 +16,7 @@ figment = { version = "0.10.19", features = ["env", "yaml"], optional = true }
 figment_file_provider_adapter = { version = "0.1.1", optional = true }
 futures.workspace = true
 lure-config = { path = "../lure-config", optional = true }
-lure-core = { path = "../lure-core", optional = true }
+lure-types = { path = "../lure-types", optional = true }
 lure-lastfm-service = { path = "../lure-lastfm-service", optional = true }
 lure-listenbrainz-service = { path = "../lure-listenbrainz-service", optional = true }
 lure-stoat-api = { path = "../lure-stoat-api", optional = true }
@@ -30,7 +30,7 @@ default = ["lastfm-service", "listenbrainz-service"]
 lastfm-service = [
   "dep:lure-config",
   "lure-config?/lastfm-service",
-  "dep:lure-core",
+  "dep:lure-types",
   "dep:lure-lastfm-service",
   "dep:lure-stoat-api",
   "dep:figment",
@@ -39,7 +39,7 @@ lastfm-service = [
 listenbrainz-service = [
   "dep:lure-config",
   "lure-config?/listenbrainz-service",
-  "dep:lure-core",
+  "dep:lure-types",
   "dep:lure-listenbrainz-service",
   "dep:lure-stoat-api",
   "dep:figment",
