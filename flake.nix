@@ -49,35 +49,38 @@
           packages =
             let
               cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
-
               version = cargoTOML.workspace.package.version;
+
+              rustPlatform = pkgs.makeRustPlatform {
+                cargo = pkgs.rustToolchain;
+                rustc = pkgs.rustToolchain;
+              };
+              rustPlatformMusl = pkgs.pkgsMusl.makeRustPlatform {
+                cargo = pkgs.rustToolchain;
+                rustc = pkgs.rustToolchain;
+              };
+
+              lureBuildArgs = {
+                pname = "lure";
+                inherit version;
+
+                src = inputs.self;
+                cargoLock.lockFile = ./Cargo.lock;
+              };
             in
             rec {
               default = lure;
 
-              lure =
-                (pkgs.makeRustPlatform {
-                  cargo = pkgs.rustToolchain;
-                  rustc = pkgs.rustToolchain;
-                }).buildRustPackage
-                  {
-                    pname = "lure";
-                    inherit version;
+              lure = rustPlatform.buildRustPackage lureBuildArgs;
+              lure-musl = rustPlatformMusl.buildRustPackage lureBuildArgs;
 
-                    src = inputs.self;
-                    cargoLock.lockFile = ./Cargo.lock;
-                  };
-
-              # TODO: Build with `musl` for smaller image size.
               docker = pkgs.dockerTools.streamLayeredImage {
                 name = "lure";
                 tag = version;
 
-                contents = lure;
-
                 config = {
                   Cmd = [
-                    "/bin/lure"
+                    "${lib.getExe lure-musl}"
                     "start"
                   ];
                   WorkingDir = "/data/lure";
