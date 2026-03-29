@@ -14,8 +14,8 @@ jobs:
     if: inputs.runs-on != 'windows-latest'
     runs-on: ${{ inputs.runs-on }}
     permissions:
-      id-token: write
       attestations: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -47,8 +47,8 @@ jobs:
     if: inputs.runs-on == 'windows-latest'
     runs-on: ${{ inputs.runs-on }}
     permissions:
-      id-token: write
       attestations: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
