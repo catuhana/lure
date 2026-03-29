@@ -15,8 +15,7 @@ impl Command for Arguments {
     async fn run(&self) -> Result<(), Self::Error> {
         const SECURE_CONFIG_KEYS: &[&str; 2] = &["session_token", "api_key"];
 
-        use core::time::Duration;
-        use std::path::Path;
+        use std::{path::Path, time::Duration};
 
         use figment::{
             Figment,

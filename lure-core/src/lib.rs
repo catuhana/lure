@@ -27,11 +27,11 @@ pub trait PlaybackService: Send + Sync {
 
 #[async_trait::async_trait]
 pub trait HTTPPlaybackService: Send + Sync + 'static {
-    type Error: core::error::Error + Send + Sync + 'static;
+    type Error: std::error::Error + Send + Sync + 'static;
 
     async fn get_current_playing_track(&self) -> Result<PlaybackStatus, Self::Error>;
 
-    fn polling_interval(&self) -> core::time::Duration;
+    fn polling_interval(&self) -> std::time::Duration;
 }
 
 pub trait WebSocketPlaybackService:
@@ -79,7 +79,7 @@ impl<T: WebSocketPlaybackService> PlaybackService for WebSocketPlaybackAdapter<T
     }
 }
 
-pub trait ServiceCustomError: core::error::Error + Send + Sync + 'static {
+pub trait ServiceCustomError: std::error::Error + Send + Sync + 'static {
     fn handle_error(&self) -> ErrorSeverity;
 }
 

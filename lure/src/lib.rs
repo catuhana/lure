@@ -1,4 +1,4 @@
-use core::future::Future;
+use std::future::Future;
 
 pub mod config;
 pub mod start;

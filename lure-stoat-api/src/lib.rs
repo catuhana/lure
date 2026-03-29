@@ -1,4 +1,4 @@
-use core::{future::Future, str::FromStr as _};
+use std::{future::Future, str::FromStr as _};
 
 use lure_stoat_models::{
     Authentication,
@@ -97,7 +97,7 @@ pub enum APIError {
 }
 
 pub trait HandleAPIError: Sized {
-    type Error: core::error::Error;
+    type Error: std::error::Error;
 
     fn handle_return_error(self) -> impl Future<Output = Result<Self, Self::Error>>;
 }

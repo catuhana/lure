@@ -1,5 +1,4 @@
-use core::future::Future;
-use core::time::Duration;
+use std::{future::Future, time::Duration};
 
 use lure_core::{
     HTTPPlaybackAdapter, PlaybackService, PlaybackStatus, ServiceCustomError, TrackInfo,
@@ -65,8 +64,8 @@ impl lure_core::HTTPPlaybackService for Service {
                         .is_some_and(|attr| attr.nowplaying.as_ref().is_some_and(|np| *np))
                 {
                     return Ok(PlaybackStatus::Playing(TrackInfo {
-                        artist: core::mem::take(&mut track.artist.text),
-                        title: core::mem::take(&mut track.name),
+                        artist: std::mem::take(&mut track.artist.text),
+                        title: std::mem::take(&mut track.name),
                     }));
                 }
             }

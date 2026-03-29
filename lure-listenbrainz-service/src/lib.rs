@@ -1,5 +1,4 @@
-use core::future::Future;
-use core::time::Duration;
+use std::{future::Future, time::Duration};
 
 use lure_core::{HTTPPlaybackAdapter, PlaybackStatus, ServiceCustomError, TrackInfo};
 use reqwest::{ClientBuilder, StatusCode};
@@ -51,8 +50,8 @@ impl lure_core::HTTPPlaybackService for Service {
                     && track.playing_now
                 {
                     return Ok(PlaybackStatus::Playing(TrackInfo {
-                        artist: core::mem::take(&mut track.track_metadata.artist_name),
-                        title: core::mem::take(&mut track.track_metadata.track_name),
+                        artist: std::mem::take(&mut track.track_metadata.artist_name),
+                        title: std::mem::take(&mut track.track_metadata.track_name),
                     }));
                 }
             }
