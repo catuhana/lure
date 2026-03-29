@@ -32,6 +32,7 @@ jobs:
           - windows-latest
     with:
       runs-on: ${{ matrix.os }}
+
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml

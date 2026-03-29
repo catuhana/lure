@@ -7,35 +7,57 @@ on:
         description: Runs on
         type: string
         required: true
-      rust-toolchain:
-        description: Rust toolchain
-        default: stable
-        type: string
 
 jobs:
-  build:
-    name: Build Code and Upload Artifact
+  build-nix:
+    name: Build Code via Nix
+    if: inputs.runs-on != 'windows-latest'
     runs-on: ${{ inputs.runs-on }}
     permissions:
       id-token: write
       attestations: write
-    env:
-      CARGO_TERM_COLOR: always
-      CARGO_TERM_VERBOSE: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: ./.github/actions/check-rust-input-parameters
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Set up Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build project
+        run: nix build
+
+      - name: Upload artifact
+        id: upload-artifact
+        uses: actions/upload-artifact@v7
         with:
-          runs-on: ${{ inputs.runs-on }}
-          rust-toolchain: ${{ inputs.rust-toolchain }}
+          name: lure-${{ runner.os }}
+          path: result/bin/lure
 
-      - name: Setup or update Rust toolchain
-        run: rustup toolchain install ${{ inputs.rust-toolchain }} --profile default
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: lure-${{ runner.os }}
+          subject-digest: sha256:${{ steps.upload-artifact.outputs.artifact-digest }}
 
-      - name: Set-up Rust cache
-        uses: actions/cache@v4
+  build-cargo:
+    name: Build Code via Cargo
+    if: inputs.runs-on == 'windows-latest'
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Rust toolchain
+        run: rustup toolchain install
+
+      - name: Set up Rust cache
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/bin
@@ -43,20 +65,20 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             target/
-          key: ${{ runner.os }}-cargo-${{ inputs.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build project
         run: cargo build --release
 
       - name: Upload artifact
         id: upload-artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
-          path: target/release/lure${{ runner.os == 'Windows' && '.exe' || '' }}
+          name: lure-${{ runner.os }}
+          path: target/release/lure.exe
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
-          subject-name: lure-${{ inputs.rust-toolchain }}-${{ runner.os }}
+          subject-name: lure-${{ runner.os }}
           subject-digest: sha256:${{ steps.upload-artifact.outputs.artifact-digest }}

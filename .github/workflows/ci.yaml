@@ -7,9 +7,12 @@ on:
       - .github/workflows/ci.yaml
       - .github/workflows/code-check.yaml
       - lure-*/**
+      - lure/**
       - build.rs
       - Cargo.lock
       - Cargo.toml
+      - flake.nix
+      - flake.lock
   pull_request:
     branches:
       - main
@@ -17,9 +20,12 @@ on:
       - .github/workflows/ci.yaml
       - .github/workflows/code-check.yaml
       - lure-*/**
+      - lure/**
       - build.rs
       - Cargo.lock
       - Cargo.toml
+      - flake.nix
+      - flake.lock
   workflow_dispatch:
     inputs:
       reason:
@@ -30,15 +36,3 @@ on:
 jobs:
   code-check:
     uses: ./.github/workflows/code-check.yaml
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-        rust-toolchain:
-          - stable
-          - nightly
-    with:
-      runs-on: ${{ matrix.os }}
-      rust-toolchain: ${{ matrix.rust-toolchain }}

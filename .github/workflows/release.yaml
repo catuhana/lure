@@ -16,6 +16,7 @@ jobs:
         startsWith(github.event.pull_request.title, 'Bump version to')
     steps:
       - run: echo "Conditions met!"
+
   build-and-upload-artifact:
     name: Build and Upload Artifact
     uses: ./.github/workflows/build-code.yaml
@@ -29,6 +30,7 @@ jobs:
           - windows-latest
     with:
       runs-on: ${{ matrix.os }}
+
   create-release:
     name: Create Release on GitHub
     runs-on: ubuntu-latest
@@ -38,9 +40,9 @@ jobs:
       contents: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
-          path: target/release/lure*
+          path: artifacts/
 
       - name: Create release and upload assets
         env:
@@ -50,7 +52,8 @@ jobs:
           RELEASE_TAG=${BRANCH_NAME#*/}
 
           gh release create "$RELEASE_TAG" --title "Release $RELEASE_TAG" --generate-notes
-          gh release upload "$RELEASE_TAG" target/release/lure*
+          gh release upload "$RELEASE_TAG" artifacts/**/*
+
   push-container-image:
     name: Push Container Image
     uses: ./.github/workflows/docker-push.yaml

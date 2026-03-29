@@ -68,7 +68,8 @@
                     cargoLock.lockFile = ./Cargo.lock;
                   };
 
-              docker = pkgs.dockerTools.buildLayeredImage {
+              # TODO: Build with `musl` for smaller image size.
+              docker = pkgs.dockerTools.streamLayeredImage {
                 name = "lure";
                 tag = version;
 

@@ -1,62 +1,21 @@
-name: Check Code, Code Formatting and Linting
+name: Check Code
 
 on:
   workflow_call:
-    inputs:
-      runs-on:
-        description: Runs on
-        default: ubuntu-latest
-        type: string
-      rust-toolchain:
-        description: Rust toolchain
-        default: stable
-        type: string
 
 jobs:
-  tests:
-    name: Check Code, Code Formatting and Linting
-    runs-on: ${{ inputs.runs-on }}
-    env:
-      CARGO_TERM_COLOR: always
-      CARGO_TERM_VERBOSE: true
+  check:
+    name: Check Code
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: ./.github/actions/check-rust-input-parameters
-        with:
-          runs-on: ${{ inputs.runs-on }}
-          rust-toolchain: ${{ inputs.rust-toolchain }}
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
 
-      - name: Set-up Rust problem matchers
-        uses: catuhana/rust-problem-matchers@v2
+      - name: Set up Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Set-up or update Rust ${{ inputs.rust-toolchain }} toolchain
-        run: rustup toolchain install ${{ inputs.rust-toolchain }} --profile default
-
-      - name: Set-up Rust cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-            target/
-          key: ${{ runner.os }}-cargo-${{ inputs.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install cargo-hack
-        run: which cargo-hack || cargo install cargo-hack
-
-      - name: Check Rust code
-        run: cargo +${{ inputs.rust-toolchain }} hack --each-feature check
-
-      - name: Check Rust code format
-        # prettier-ignore
-        if: '!cancelled()'
-        run: cargo +${{ inputs.rust-toolchain }} fmt --all --check
-
-      - name: Check Rust code lint
-        # prettier-ignore
-        if: '!cancelled()'
-        run: cargo +${{ inputs.rust-toolchain }} hack --each-feature clippy
+      - name: Run flake checks
+        run: nix flake check
