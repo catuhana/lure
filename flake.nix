@@ -66,6 +66,14 @@
 
                 src = inputs.self;
                 cargoLock.lockFile = ./Cargo.lock;
+
+                meta = {
+                  mainProgram = "lure";
+
+                  description = "Sync your Last.fm or ListenBrainz listening status to Stoat.";
+                  homepage = "https://github.com/catuhana/lure";
+                  license = lib.licenses.bsd3;
+                };
               };
             in
             rec {
