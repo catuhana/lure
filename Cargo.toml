@@ -13,7 +13,7 @@ members = [
 [workspace.package]
 repository = "https://github.com/catuhana/lure"
 authors = ["tuhana <tuhana.cat+git@gmail.com>"]
-license = "MPL-2.0"
+license = "BSD-3-Clause"
 version = "1.0.0"
 edition = "2024"
 
