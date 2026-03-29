@@ -1,5 +1,3 @@
-#![cfg(any(feature = "lastfm-service", feature = "listenbrainz-service"))]
-
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -13,7 +11,6 @@ use lure_config::ServiceOptions;
 use lure_types::{PlaybackStatus, TrackInfo};
 use tokio::time::sleep;
 
-#[cfg(feature = "lastfm-service")]
 use crate::service::Service;
 
 pub async fn run(config_path: Option<PathBuf>) -> Result<(), RunError> {
@@ -126,10 +123,8 @@ pub async fn run(config_path: Option<PathBuf>) -> Result<(), RunError> {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ServiceError {
-    #[cfg(feature = "lastfm-service")]
     #[error(transparent)]
     LastFm(#[from] lure_lastfm_service::ServiceError),
-    #[cfg(feature = "listenbrainz-service")]
     #[error(transparent)]
     ListenBrainz(#[from] lure_listenbrainz_service::ServiceError),
 }
