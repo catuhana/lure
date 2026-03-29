@@ -43,5 +43,9 @@ jobs:
       github.event_name != 'workflow_run' ||
         (github.event_name == 'workflow_run' &&
           github.event.workflow_run.conclusion == 'success')
+    permissions:
+      attestations: write
+      packages: write
+      id-token: write
     with:
       image-name: lure
