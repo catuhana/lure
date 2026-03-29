@@ -44,12 +44,33 @@ jobs:
         run: |
           VERSION=$(nix eval --raw .#docker.imageTag)
 
+          FULL_SHA=$(git rev-parse HEAD)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          BRANCH=${GITHUB_REF_NAME}
+
           ./result | docker image load
 
-          docker push $IMAGE_NAME:$VERSION
-          docker push $IMAGE_NAME:latest
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            docker tag "ghcr.io/catuhana/lure:$VERSION" "$IMAGE_NAME:$VERSION"
+            docker tag "ghcr.io/catuhana/lure:$VERSION" "$IMAGE_NAME:latest"
 
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_NAME:$VERSION | cut -d@ -f2)
+            docker push "$IMAGE_NAME:$VERSION"
+            docker push "$IMAGE_NAME:latest"
+
+            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME:$VERSION" | cut -d@ -f2)
+          else
+            docker tag "ghcr.io/catuhana/lure:$VERSION" "$IMAGE_NAME:$BRANCH"
+            docker tag "ghcr.io/catuhana/lure:$VERSION" "$IMAGE_NAME:$FULL_SHA"
+            docker tag "ghcr.io/catuhana/lure:$VERSION" "$IMAGE_NAME:sha-$SHORT_SHA"
+
+            docker push "$IMAGE_NAME:$BRANCH"
+            docker push "$IMAGE_NAME:$FULL_SHA"
+            docker push "$IMAGE_NAME:sha-$SHORT_SHA"
+
+            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME:$BRANCH" | cut -d@ -f2)
+          fi
+
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Generate container image attestation
