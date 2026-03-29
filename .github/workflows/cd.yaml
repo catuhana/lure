@@ -45,6 +45,7 @@ jobs:
           github.event.workflow_run.conclusion == 'success')
     permissions:
       attestations: write
+      contents: read
       packages: write
       id-token: write
     with:
